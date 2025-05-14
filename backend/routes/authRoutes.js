@@ -1,0 +1,111 @@
+const express = require('express');
+const router = express.Router();
+// const authController = require('../controllers/authController');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const db = require('../config/db');
+require('dotenv').config();
+const validator = require('validator');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// POST /api/auth/register - Register a new user (likely an Admin for an Organization initially)
+router.post('/register', async (req, res) => {
+    const { email, password, first_name, last_name, company_name /* other org details */ } = req.body;
+
+    if (!email || !password || !company_name) {
+        return res.status(400).json({ message: 'Email, password, and company name are required.' });
+    }
+
+    // Validation for email format, password strength
+        if(!validator.isEmail(email)){
+            return res.status(400).json({message: 'Enter a valid email'})
+        }
+
+        if(password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)){
+            return res.status(400).json({message: 'Password must be at least 8 characters long and include an uppercase letter and a number.'})
+        }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Check if email already exists
+        const [existingUsers] = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUsers.length > 0) {
+            await connection.rollback();
+            return res.status(409).json({ message: 'Email already in use.' });
+        }
+
+        // Create the organization first (basic example)
+        // In a real app, you might have more org details and checks
+        const [orgResult] = await connection.query('INSERT INTO organizations (company_name) VALUES (?)', [company_name]);
+        const organization_id = orgResult.insertId;
+
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(password, salt);
+
+        // TODO: Determine the correct role_id (e.g., find or create an 'Admin' role)
+        const role_id = 1; // Placeholder for Admin role
+
+        // Insert the new user
+        const [userResult] = await connection.query(
+            'INSERT INTO users (email, password_hash, first_name, last_name, role_id, organization_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [email, password_hash, first_name, last_name, role_id, organization_id]
+        );
+        const userId = userResult.insertId;
+
+        await connection.commit();
+
+        // Generate JWT
+        const payload = { user: { id: userId, role_id: role_id, organization_id: organization_id } };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
+
+        res.status(201).json({ token, userId, email, organization_id });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('Error during registration:', error);
+        res.status(500).json({ message: 'Server error during registration.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// POST /api/auth/login - Login a user
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    console.log(req.body);
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    try {
+        // Find user by email
+        const [users] = await db.query('SELECT id, password_hash, role_id, organization_id FROM users WHERE email = ?', [email]);
+        if (users.length === 0) {
+            return res.status(401).json({ message: 'Invalid credentials.' }); // User not found
+        }
+        const user = users[0];
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials.' }); // Wrong password
+        }
+
+        // Generate JWT
+        const payload = { user: { id: user.id, role_id: user.role_id, organization_id: user.organization_id } };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
+
+        res.json({ token, userId: user.id, email: email, organization_id: user.organization_id });
+
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ message: 'Server error during login.' });
+    }
+});
+
+module.exports = router;
