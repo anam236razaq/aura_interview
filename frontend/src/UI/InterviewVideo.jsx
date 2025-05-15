@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useRef, useState} from 'react'
 import { API_BASE_URL } from '../utils/Constants';
 
-export default function InterviewVideo({title, text}) {
+export default function InterviewVideo({title, text, onUpload}) {
     const fileInputRef = useRef();
     const[videoUrl, setVideoUrl] = useState(null);
 
@@ -25,7 +25,9 @@ export default function InterviewVideo({title, text}) {
                         "Content-Type": "multipart/form-data"
                     }
                 })
+                const fileUploadUrl = response?.data?.path
                 setVideoUrl(URL.createObjectURL(file));
+                onUpload(fileUploadUrl);
                 console.log(response);
 
             }catch(error){

@@ -43,7 +43,6 @@ router.get('/', async (req, res) => {
 
           const query = `
               SELECT DISTINCT c.id,
-              JSON_UNQUOTE(JSON_EXTRACT(c.personal_info, '$.name')) AS name,
               JSON_UNQUOTE(JSON_EXTRACT(c.personal_info, '$.email')) AS email
               FROM cvs_skills cs
               JOIN cvs c ON cs.cv_id = c.id
@@ -57,9 +56,9 @@ router.get('/', async (req, res) => {
             [matchedCandidates] = await db.query(query, params);
         }
 
-
         res.json({
           skills: finalSkills.sort(),
+          matchedCandidates
         });
 
         } catch (error) {

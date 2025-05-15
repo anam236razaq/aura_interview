@@ -16,17 +16,15 @@ export default function InterviewSetup() {
     const[selectedPosition, setSelectedPosition] = useState("");
     const[selectedUser, setSelectedUser] = useState([]);
     const[assignedReviewer, setAssignedReviewer] = useState([]);
-    const [selectedSkill, setSelectedSkill] = useState([]);
+    const[selectedSkill, setSelectedSkill] = useState([]);
+    const[introVideoPath, setIntroVideoPath] = useState('');
+    const[outroVideoPath, setOutroVideoPath] = useState('');
     const[users, setUsers] = useState([]);
     const[companies, setCompanies] = useState([]);
     const[jobs,setJobs] = useState([]);
     const[questions, setQuestions] = useState([]);
     const[skills, setSkills] = useState([]);
     const[step, setStep] = useState(1);
-
-    const onSubmit = async (data) => {
-        console.log(data);
-    }
 
     const nextStep = () => {
         setStep((prev) => prev + 1);
@@ -42,7 +40,7 @@ export default function InterviewSetup() {
     }
 
     const stepFields= {
-        1: ["firstName", "lastName", "email", "password" ],
+        1: ["firstName", "lastName", "email", "password", "companyInfo"],
         2: ["positionName", "location", "salaryRange", "application", "positionDescription"],
         3: ["title", "description"],
         4: ["skills", "experience"],
@@ -50,7 +48,7 @@ export default function InterviewSetup() {
     }
 
     useEffect(()=> {
-        //Fetching users data
+        //Fetching users data, Jobs data, Companies data
         const fetchUsers = async () => {
             try{
                 const token = localStorage.getItem('authToken');
@@ -105,6 +103,7 @@ export default function InterviewSetup() {
         fetchJobs();
     }, [])
 
+    //Fetch Skills data and search skills
     useEffect(()=> {
         const skillQuery = selectedSkill.length > 0? selectedSkill.join(',') : "";
 
@@ -136,11 +135,45 @@ export default function InterviewSetup() {
         setQuestions([...questions, {text: '', type: 'video', time_limit: 2}])
     }
 
+
     const toggleReviewer = (userId) => {
         if(assignedReviewer.includes(userId)){
             setAssignedReviewer(assignedReviewer.filter(id => id !== userId));
         }else{
             setAssignedReviewer([...assignedReviewer, userId]);
+        }
+    }
+
+    // creating interview
+     const onSubmit = async (data) => {
+        const payload ={
+            status: 'active',
+            userId: selectedInterviewer,
+            jobId: selectedPosition,
+            skillId: selectedSkill,
+            title: data.title,
+            description: data.description,
+            companyId: data.companyInfo,
+            reviewers: assignedReviewer,
+            assignedUser: selectedUser,
+            expiry_date: data.expiryDate,
+            questions,
+            introVideo: introVideoPath,
+            outroVideo: outroVideoPath,
+            candidateIds: ''
+
+        }
+        try{
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(API_BASE_URL+'/interviews', payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": 'application/json'
+                }
+            })
+            console.log(response);
+        }catch(error){
+            console.log(error);
         }
     }
 
@@ -212,8 +245,15 @@ export default function InterviewSetup() {
 
                                     <div className="col-12">
                                         <label className="form-label" htmlFor="companyInfo">Company Info</label>
-                                        <input type="text" id="companyInfo" name="companyInfo" className="form-control" placeholder="Company Info" {...register("companyInfo", { required: "Company Information is required" })}/>
-                                        {errors.companyInfo && <small className="text-danger">{errors.companyInfo.message}</small>}
+                                        <select className="form-select" {...register("companyInfo", { required: "Please select a company" })}>
+                                            <option value="">Select</option>
+                                            {companies.map((company)=> (
+                                                <option key={company.id} value={company.id}>
+                                                    {company.company_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.companyInfo && <small className='text-danger'>{errors.companyInfo.message}</small>}
                                     </div>
 
                                     <div className="col-12 d-flex justify-content-between">
@@ -226,7 +266,7 @@ export default function InterviewSetup() {
 
                                             let isValid = false;
                                             if(selectedInterviewer){
-                                                isValid = await trigger(['interviewer']);
+                                                isValid = await trigger(['interviewer', 'companyInfo']);
                                             }else{
                                                 isValid = await trigger(stepFields[step]);
                                             }
@@ -407,9 +447,9 @@ export default function InterviewSetup() {
 
                             {step === 5 && <div className='content fv-plugins-bootstrap5 fv-plugins-framework active'>
                                 <div className="row g-6">
-                                    <InterviewVideo title="Intro Video(Optional)" text="Drag and drop your Intro Video" />
+                                    <InterviewVideo title="Intro Video(Optional)" text="Drag and drop your Intro Video" onUpload={(path) => setIntroVideoPath(path)}/>
                                     
-                                    <button onClick={addQuestions} className='btn btn-primary'>
+                                    <button type='button' onClick={addQuestions} className='btn btn-primary'>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24">
                                             <path d="M12 5v14M5 12h14" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
@@ -427,7 +467,7 @@ export default function InterviewSetup() {
                                                         setQuestions(newQuestions)
                                                     }}>
                                                         <option value="video recording">Video Recording</option>
-                                                        <option value="file upload">Text Questions</option>
+                                                        <option value="text question">Text Questions</option>
                                                         <option value="file upload">File Upload</option>
                                                     </select>
                                                 </div>
@@ -485,7 +525,7 @@ export default function InterviewSetup() {
                                     </div>
                                     ))}
 
-                                    <InterviewVideo title="Outro Video(Optional)" text="Drag and drop your Outro Video" />
+                                    <InterviewVideo title="Outro Video(Optional)" text="Drag and drop your Outro Video" onUpload={(path) => setOutroVideoPath(path)}/>
                                     
                                     <div className="col-12 d-flex justify-content-between">
                                         <button className="btn btn-label-secondary btn-prev waves-effect" onClick={prevStep} disabled={step === 1}><i className="icon-base ti tabler-arrow-left icon-xs me-sm-2 me-0"></i> <span className="align-middle d-sm-inline-block d-none">Previous</span></button>
@@ -525,7 +565,8 @@ export default function InterviewSetup() {
 
                                     <div className='d-flex flex-column col-4'>
                                         <label className='form-label'>Expired Date & Time</label>
-                                        <input className='form-control' type='datetime-local' />
+                                        <input className='form-control' type='datetime-local' {...register('expiryDate', { required: 'Expiry date is required' })} />
+                                        {errors.expiryDate && ( <small className='text-danger'>{errors.expiryDate.message}</small>)}
                                     </div>
                                     <div className='d-flex flex-column align-items-center justify-content-center' style={{fontSize: '13px'}}>
                                         <span className='text-black mb-3' style={{fontWeight: '600'}}>Almost Done! Click “Publish” to Save.</span>

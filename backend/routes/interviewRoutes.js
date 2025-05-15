@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/interviews - Create a new interview (uses user's org ID) - Only Admins
 router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
-    const { title, description, userId, jobId, candidateIds, reviewers, expiry_date, questions, newUser, newJob } = req.body;
+    let { title, description, userId, jobId, companyId, introVideo, outroVideo, candidateIds, reviewers, expiry_date, questions, newUser, newJob } = req.body;
     const organization_id = req.user.organization_id; // Get org ID from authenticated user
 
     if (!title) {
@@ -81,7 +81,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 
          // Hash the temporary password
          const salt = await bcrypt.genSalt(10);
-         const password_hash = await bcrypt.hash(temporaryPassword, salt);
+         const password_hash = await bcrypt.hash(password, salt);
  
          // Insert the new user
          const [userResult] = await db.query(
@@ -94,7 +94,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 
     //if job does not exist, create a new one
     if(!jobId && newJob){
-        const { title, description, location, salary_range, application_deadline } = req.body;
+        const { title, description, location, salary_range, application_deadline } = newJob;
 
         if (!title) {
             return res.status(400).json({ message: 'Job title is required.' });
@@ -110,8 +110,8 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 
     try {
         const [result] = await db.query(
-            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, expiry_date) VALUES (?, ?, ?, ?, ?, ?)',
-            [organization_id, title, description, userId, jobId, expiry_date]
+            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [organization_id, title, description, userId, jobId, companyId, expiry_date]
         );
         const interviewId = result.insertId;
 
@@ -147,8 +147,8 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
                      const personal_info = cvsData[0].personal_info;
                      const { email, first_name, last_name } = personal_info;
                      await db.query(
-                         'INSERT INTO invitations (interview_id, email, first_name, last_name, token, organization_id) VALUES (?, ?, ?, ?, ?, ?)',
-                         [interviewId, email, first_name, last_name, token, organization_id]
+                         'INSERT INTO invitations (interview_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                         [interviewId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
                      );
                  }
              }
