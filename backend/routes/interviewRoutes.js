@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 const fs = require('fs').promises; 
 const questionRoutes = require('./questionRoutes'); // Import question routes
 const invitationRoutes = require('./invitationRoutes'); // Import invitation routes
@@ -68,7 +69,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 
     // if user does not exist, create a new one
     if(!userId && newUser){
-        const {first_name, last_name, email, password} = newUser;
+        const {first_name, last_name, email, password, role_id} = newUser;
 
         if (!first_name || !last_name || !email || !password) {
             return res.status(400).json({ message: 'New user info is incomplete.' });
@@ -110,7 +111,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 
     try {
         const [result] = await db.query(
-            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [organization_id, title, description, userId, jobId, companyId, expiry_date]
         );
         const interviewId = result.insertId;
@@ -142,19 +143,29 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
                  // Generate a unique token for each candidate
                  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                  // Fetch candidate details from cvs table
-                 const [cvsData] = await db.query('SELECT personal_info FROM cvs WHERE id = ?', [candidateId]);
+                 const [cvsData] = await db.query('SELECT personal_info FROM cvs WHERE id = ?', [candidateId.candidateId]);
                  if (cvsData.length > 0) {
-                     const personal_info = cvsData[0].personal_info;
-                     const { email, first_name, last_name } = personal_info;
+                    const personal_info = JSON.parse(cvsData[0].personal_info);
+                    const { email, fullName } = personal_info;
+                    
+                    let first_name ='';
+                    let last_name ='';
+
+                    if(fullName){
+                        const nameParts = fullName.trim().split(' ');
+                        first_name = nameParts[0];
+                        last_name = nameParts.length > 1 ? nameParts.slice(1).join(' ') : ''
+                    }
+
                      await db.query(
-                         'INSERT INTO invitations (interview_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                         [interviewId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
+                         'INSERT INTO invitations (interview_id, cvs_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                         [interviewId, candidateId.candidateId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
                      );
                  }
              }
          }
 
-        res.status(201).json({ id: interviewId, organization_id, title, description, userId, jobId, candidateIds, reviewers, expiry_date, questions });
+        res.status(201).json({ id: interviewId, organization_id, title, description, userId, jobId, candidateIds, reviewers, expiry_date, questions, companyId, introVideo, outroVideo });
     } catch (error) {
         console.error('Error creating interview:', error);
         res.status(500).json({ message: 'Error creating interview' });

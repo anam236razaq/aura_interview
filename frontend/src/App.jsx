@@ -24,6 +24,7 @@ import CVDetails from './Pages/Candidates/CVDetails'
 import Documentation from './Pages/Documentation'
 import Support from './Pages/Support'
 import CompanyDetails from './Pages/CompanyDetails'
+import InterviewList from './Pages/Interview/InterviewList'
 
 export default function App() {
 
@@ -44,6 +45,7 @@ export default function App() {
             <Route path='candidates/draft-cvs' element={<CVDetails />} />
             <Route path='candidates/:id' element={<CVDetails />} />
             <Route path='/interviewed/create-interview' element={<InterviewSetup />} />
+            <Route path='/interviewed/interview-list' element={<InterviewList />} />
             <Route path='/accounts/account-settings' element={<AccountSettings />} />
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />

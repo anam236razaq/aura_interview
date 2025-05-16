@@ -14,9 +14,9 @@ export default function InterviewSetup() {
     const[showPassword, setShowPassword] = useState('');
     const[selectedInterviewer, setSelectedInterviewer] = useState("");
     const[selectedPosition, setSelectedPosition] = useState("");
-    const[selectedUser, setSelectedUser] = useState([]);
     const[assignedReviewer, setAssignedReviewer] = useState([]);
     const[selectedSkill, setSelectedSkill] = useState([]);
+    const[selectedCompany, setSelectedCompany]= useState("");
     const[introVideoPath, setIntroVideoPath] = useState('');
     const[outroVideoPath, setOutroVideoPath] = useState('');
     const[users, setUsers] = useState([]);
@@ -34,16 +34,11 @@ export default function InterviewSetup() {
         setStep((prev)=> prev - 1);
     }
 
-    const handleUserChange = (e) => {
-        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
-        setSelectedUser(selectedOptions);
-    }
-
     const stepFields= {
         1: ["firstName", "lastName", "email", "password", "companyInfo"],
         2: ["positionName", "location", "salaryRange", "application", "positionDescription"],
         3: ["title", "description"],
-        4: ["skills", "experience"],
+        4: ["skills"],
         5: []
     }
 
@@ -59,7 +54,7 @@ export default function InterviewSetup() {
                     }
                 })
                 setUsers(response.data);
-                console.log(response);
+                console.log(response.data);
             }catch(error){
                 console.log(error);
             }
@@ -71,12 +66,12 @@ export default function InterviewSetup() {
                 const token = localStorage.getItem('authToken');
                 const response = await axios.get(API_BASE_URL+'/jobs', {
                     headers: {
-                        "Content-Type": 'application.json',
+                        "Content-Type": 'application/json',
                         Authorization: `Bearer ${token}`
                     }
                 })
                 setJobs(response.data);
-                console.log(response);
+                console.log(response.data);
             }catch(error){
                 console.log(error);
             }
@@ -144,25 +139,41 @@ export default function InterviewSetup() {
         }
     }
 
+
     // creating interview
-     const onSubmit = async (data) => {
+    const onSubmit = async (data) => {
+
         const payload ={
             status: 'active',
             userId: selectedInterviewer,
+            newUser: !selectedInterviewer ? {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                email: data.email,
+                password: data.password,
+                role_id:4
+            } : undefined,
             jobId: selectedPosition,
+            newJob: !selectedPosition ? {
+                title: data.positionName,
+                description: data.positionDescription,
+                salary_range: data.salaryRange,
+                location: data.location,
+                application_deadline: data.application
+            } : undefined,
             skillId: selectedSkill,
             title: data.title,
             description: data.description,
-            companyId: data.companyInfo,
+            companyId: selectedCompany,
             reviewers: assignedReviewer,
-            assignedUser: selectedUser,
             expiry_date: data.expiryDate,
             questions,
             introVideo: introVideoPath,
             outroVideo: outroVideoPath,
-            candidateIds: ''
-
+            candidateIds: skills.matchedCandidates
         }
+            console.log("Payload:", JSON.stringify(payload, null, 2)); // See the full object
+
         try{
             const token = localStorage.getItem('authToken');
             const response = await axios.post(API_BASE_URL+'/interviews', payload, {
@@ -245,7 +256,9 @@ export default function InterviewSetup() {
 
                                     <div className="col-12">
                                         <label className="form-label" htmlFor="companyInfo">Company Info</label>
-                                        <select className="form-select" {...register("companyInfo", { required: "Please select a company" })}>
+                                        <select className="form-select" value={selectedCompany} onChange={(e)=> {
+                                                const selected = e.target.value; 
+                                                setSelectedCompany(selected);}} >
                                             <option value="">Select</option>
                                             {companies.map((company)=> (
                                                 <option key={company.id} value={company.id}>
@@ -253,7 +266,6 @@ export default function InterviewSetup() {
                                                 </option>
                                             ))}
                                         </select>
-                                        {errors.companyInfo && <small className='text-danger'>{errors.companyInfo.message}</small>}
                                     </div>
 
                                     <div className="col-12 d-flex justify-content-between">
@@ -297,7 +309,7 @@ export default function InterviewSetup() {
                                                         }}>
                                                     <option value="">Select</option>
                                                     {jobs.map((job) => (
-                                                        <option key={job.id} value={job.title}>{job.title}</option>
+                                                        <option key={job.id} value={job.id}>{job.title}</option>
                                                     ))}
                                                 </select>
                                                 <span style={{fontSize: '12px'}}>Select Position or create one below</span>
@@ -323,19 +335,7 @@ export default function InterviewSetup() {
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div className="col-12">
-                                        <div className="row g-6">
-                                            <div className="col-md mb-md-0">
-                                                <label className="form-label me-2 mb-1">Assign Users:</label>
-                                                <select id="users" className="form-select" multiple onChange={handleUserChange} value={selectedUser}>
-                                                    {users.map(user => (
-                                                        <option key={user.id} value={user.id}>{user.email}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                     <div className="col-12 d-flex justify-content-between">
                                         <button className="btn btn-label-secondary btn-prev waves-effect" onClick={prevStep} disabled={step === 1}><i className="icon-base ti tabler-arrow-left icon-xs me-sm-2 me-0"></i> <span className="align-middle d-sm-inline-block d-none">Previous</span></button>
                                         <button className="btn btn-primary btn-next waves-effect waves-light" onClick={async(e) => {
@@ -406,24 +406,6 @@ export default function InterviewSetup() {
                                                         setSelectedSkill(selectedValues);
                                                     }}/>
                                                 {errors.skills && <small className="text-danger">{errors.skills.message}</small>}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-12">
-                                        <div className="row g-6">
-                                            <div className="col-md mb-md-0">
-                                                <label className="form-label" htmlFor="title">Select Experience</label>
-                                                <select className='form-select'  {...register("experience", {required: "Please select a experience",})}>
-                                                    <option value="">Select Experience</option>
-                                                    <option value= '1'>1</option>
-                                                    <option value= '2'>2</option>
-                                                    <option value= '3'>3</option>
-                                                    <option value= '4'>4</option>
-                                                    <option value= '5'>5</option>
-                                                    
-                                                </select>
-                                                {errors.experience && <small className="text-danger">{errors.experience.message}</small>}
                                             </div>
                                         </div>
                                     </div>

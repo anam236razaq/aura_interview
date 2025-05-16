@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
           const likeParams = selectedSkill.map(skill => `%${skill}%`);
 
           const query = `
-              SELECT DISTINCT c.id,
+              SELECT DISTINCT c.id AS candidateId,
               JSON_UNQUOTE(JSON_EXTRACT(c.personal_info, '$.email')) AS email
               FROM cvs_skills cs
               JOIN cvs c ON cs.cv_id = c.id
@@ -58,7 +58,10 @@ router.get('/', async (req, res) => {
 
         res.json({
           skills: finalSkills.sort(),
-          matchedCandidates
+          matchedCandidates: matchedCandidates.map(c => ({
+            candidateId: c.candidateId,
+            email: c.email
+          }))
         });
 
         } catch (error) {
