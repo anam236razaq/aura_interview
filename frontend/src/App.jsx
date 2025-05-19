@@ -1,4 +1,3 @@
-import React from 'react'
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom"
 import { SidebarProvider } from './Contexts/SidebarContext'
 import Dashboard from './Pages/Dashboard'
@@ -25,6 +24,7 @@ import Documentation from './Pages/Documentation'
 import Support from './Pages/Support'
 import CompanyDetails from './Pages/CompanyDetails'
 import InterviewList from './Pages/Interview/InterviewList'
+import InterviewDetails from './Pages/Interview/InterviewDetails'
 
 export default function App() {
 
@@ -46,6 +46,7 @@ export default function App() {
             <Route path='candidates/:id' element={<CVDetails />} />
             <Route path='/interviewed/create-interview' element={<InterviewSetup />} />
             <Route path='/interviewed/interview-list' element={<InterviewList />} />
+            <Route path='/interviewed/interview-list/:id' element={<InterviewDetails />} />
             <Route path='/accounts/account-settings' element={<AccountSettings />} />
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />

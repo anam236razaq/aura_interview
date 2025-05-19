@@ -1,0 +1,482 @@
+import { useState } from 'react'
+import { Link, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { API_BASE_URL } from '../../utils/Constants';
+import Footer from '../../UI/Footer';
+import {toast, Toaster} from 'react-hot-toast';
+import AddQuestionModel from '../../UI/AddQuestionModel';
+import AddCandidateModal from '../../UI/AddCandidateModal';
+
+export default function InterviewDetails() {
+    const [interview, setInterview] = useState(null);
+    const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [invitationToken, setInvitationToken] = useState('');
+    const [newStatus, setNewStatus] = useState('');
+    const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
+    const {id} = useParams();
+
+     // Callback function to update questions list when a new one is added
+    const handleQuestionAdded = (newQuestion) => {
+        setQuestions(prevQuestions => [...prevQuestions, newQuestion].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))); // Add and re-sort
+    };
+
+    //Fetching Interview Details
+    useEffect(() => {
+    const fetchInterviewData = async () => {
+        setLoading(true);
+
+        try{
+            const token = localStorage.getItem('authToken');
+            if(!token) return;
+
+            const config ={
+                headers: {
+                    "Content-Type": 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            //Fetch interview Details and questions Details
+            const [interviewRes, questionRes] = await Promise.all([
+                axios.get(API_BASE_URL+`/interviews/${id}`, config),
+                axios.get(API_BASE_URL+`/interviews/${id}/questions`, config)
+            ])
+
+            setInterview(interviewRes?.data);
+            console.log(interviewRes);
+            setQuestions(questionRes?.data || []);
+            console.log(questionRes);
+
+            // Fetch invitation token
+            const invitationRes = await axios.get(API_BASE_URL+`/interviews/${id}/invitation-token`, config);
+            setInvitationToken(invitationRes.data.token);
+            console.log(invitationRes)
+
+            }catch(err){
+                if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                    toast.error('Unauthorized or session expired. Please log in again.');
+                } else if (err.response && err.response.status === 404) {
+                    toast.error('Interview not found or access denied.');
+                } else {
+                    toast.error('Failed to load interview details.');
+                }
+                setInterview(null);
+                setQuestions([]);
+            }finally{
+                setLoading(false);
+            }
+        }
+            fetchInterviewData();
+    }, [id]);
+
+    //Updating Status of interviews
+    const handleUpdateStatus = async () => {
+        setStatusUpdateLoading(true);
+        try{
+            const token = localStorage.getItem('authToken');
+            if(!token) return;
+
+             const config ={
+                headers: {
+                    "Content-Type": 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            await axios.patch(API_BASE_URL+`/interviews/${id}/status`, {status: newStatus}, config);
+            setInterview(prev => ({ ...prev, status: newStatus }));
+
+        }catch(err){
+            toast.error('Failed to update status. ' + (err.response?.data?.message || ''));
+        }finally{
+            setStatusUpdateLoading(false);
+        }
+    }
+
+    const publicLink = `${window.location.origin}/interview/${invitationToken}`;
+
+  return (
+    <>
+    <Toaster position="top-center" reverseOrder={false} />
+    <div className="content-wrapper">
+    <div className="container-xxl flex-grow-1 container-p-y">
+        <div className='d-flex justify-content-between'>
+            <h4 className='text-black'>{interview?.title}</h4>
+            <div>
+                <Link to="/interviewed/interview-list" className="btn py-3" style={{backgroundColor: 'rgba(115, 103, 240, 0.24)', color: '#646cff'}}>Back to Interview List</Link>
+                <Link to={`/interviewed/interview/${id}/responses`} className="btn ms-2 text-white py-3" style={{backgroundColor: '#646cff'}}>View Responses</Link>
+            </div>
+        </div> 
+        <div className="row mt-4">
+            <div className="col-12 col-lg-4">
+
+                <div className="card mb-6">
+                    <div className="card-header">
+                        <h5 className="card-title m-0">Public Link</h5>
+                    </div>
+                    <div className="card-body">
+                        <div className="d-flex justify-content-start align-items-center mb-4">
+                            <div className="d-flex flex-column">
+                                {invitationToken ? (
+                                    <>
+                                        <p className='mb-2'>Share this link with candidates:</p>
+                                        <p>{publicLink}</p>
+                                    </>
+                                    ) : (
+                                        <p>No public link generated yet.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card mb-6">
+                    <div className="card-header">
+                        <h5 className="card-title m-0">Details</h5>
+                    </div>
+                    <div className="card-body">
+                        <div className="d-flex justify-content-start flex-column mb-4">
+                            <div className="d-flex flex-column">
+                                <p><strong>Description:</strong> {interview?.description || 'N/A'}</p>
+                                <p><strong>Status:</strong> {interview?.status}</p>
+                            </div>
+                            <div className="mt-1 mb-3 d-flex flex-column justify-conten-start">
+                                <label htmlFor="statusSelect" className="form-label mb-2" style={{fontWeight: '600'}}>Change Status:</label>
+                                <select id="statusSelect" className="form-select mb-2" style={{ width: 'auto' }} 
+                                    value={newStatus || interview?.status} onChange={(e) => setNewStatus(e.target.value)}>
+                                        <option value="draft">Draft</option>
+                                        <option value="active">Active</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="archived">Archived</option>
+                                </select>
+                                <button className="btn btn-primary btn-sm py-2" onClick={handleUpdateStatus} 
+                                    disabled={statusUpdateLoading || !newStatus || newStatus === interview.status}>
+                                        {statusUpdateLoading ? 'Saving...' : 'Save Status'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {interview?.job && (
+                    <div className="card mb-6">
+                        <div className="card-header">
+                            <h5 className="card-title m-0">Job Details</h5>
+                        </div>
+                        <div className="card-body">
+                            <div className="d-flex justify-content-start flex-column mb-4">
+                                <div className="d-flex flex-column">
+                                    <p><strong>Title:</strong> {interview?.job?.title}</p>
+                                    <p><strong>Description:</strong> {interview?.job?.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <AssignmentList interviewId={id} />
+            </div>
+            <div className="col-12 col-lg-8">
+                <QuestionList 
+                        questions={questions} 
+                        interviewId={id} 
+                        onQuestionAdded={handleQuestionAdded} 
+                />
+
+                <InvitationList interviewId={id} />
+                </div>
+            </div>
+    </div>
+    <Footer />
+    <div className="content-backdrop fade"></div>
+    </div>
+    </>
+    )
+}
+
+function QuestionList({ questions, interviewId, onQuestionAdded }){
+    const [showModal, setShowModal] = useState(false);
+
+    return (
+
+        <div className="card mb-6">
+            <div className="card-datatable">
+                <div id="DataTables_Table_0_wrapper" className="dt-container dt-bootstrap5 dt-empty-footer">
+                    <div className="row card-header border-bottom mx-0 px-3">
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+                            <h5 className="card-title mb-0">Questions</h5>
+                        </div>
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
+                            <button className="btn text-white" style={{backgroundColor: '#646cff'}} onClick={()=> setShowModal(true)}>
+                                <span className="d-flex align-items-center gap-2">
+                                    <i className="icon-base ti tabler-plus icon-xs"></i>
+                                    <span className="d-none d-sm-inline-block">Add Question</span>
+                                </span>
+                            </button>
+                            {showModal && <AddQuestionModel setShowModal={setShowModal} interviewId={interviewId}
+                                onQuestionAdded ={onQuestionAdded}/>}
+                        </div>
+                    </div>
+                     <div className="justify-content-between dt-layout-table">
+                            <div className="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive">
+                              <table className="datatables-users table dataTable dtr-column collapsed" id="DataTables_Table_0"
+                                aria-describedby="DataTables_Table_0_info" style={{width: '100%'}}>
+                                    <colgroup>
+                                        <col data-dt-column="0" style={{width: '15%'}} />
+                                        <col data-dt-column="1" style={{width: '35%'}} />
+                                        <col data-dt-column="2" style={{width: '25%'}} />
+                                        <col data-dt-column="3" style={{width: '25%'}} />
+                                    </colgroup>
+                                    <thead className="border-top">
+                                      <tr>
+                                        <th data-dt-column="0" rowSpan="1" colSpan="1" className="dt-select" aria-label="">
+                                          <span className="dt-column-title"></span>
+                                          <input className="form-check-input custom-checkbox" type="checkbox" />
+                                        </th>
+                                        {[{columnName: 'QUESTIONS', dtColumn: '1'}, {columnName: 'TYPE', dtColumn: '2'},
+                                            {columnName: 'TIME LIMIT(Sec)', dtColumn: '3'}].map((column, index) => (
+                                                <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
+                                                    <span className="dt-column-title">{column.columnName}</span>
+                                                </th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                        {questions.map((question) => (
+                                            <tr key={question.id}>
+                                                <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
+                                                <td>{question.text}</td>
+                                                <td>{question.type}</td>
+                                                <td>{question.time_limit}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    );
+
+}
+
+function AssignmentList({interviewId}){
+    const [assignments, setAssignments] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
+    const [selectedUserId, setSelectedUserId] = useState('');
+    const [loadingAssignments, setLoadingAssignments] = useState(true);
+    const [loadingUsers, setLoadingUsers] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const fetchAssignmentsAndUsers = async () => {
+        setLoadingAssignments(true);
+        setLoadingUsers(true);
+        const token = localStorage.getItem('authToken');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        try {
+            const [assignRes, usersRes] = await Promise.all([
+                axios.get(`${API_BASE_URL}/interviews/${interviewId}/assignments`, config),
+                axios.get(`${API_BASE_URL}/users`, config)
+            ]);
+            setAssignments(assignRes.data || []);
+            setAllUsers(usersRes.data || []);
+            if (usersRes.data && usersRes.data.length > 0) {
+                const assignedIds = new Set((assignRes.data || []).map(a => a.user_id));
+                const firstAvailable = usersRes.data.find(u => !assignedIds.has(u.id));
+                setSelectedUserId(firstAvailable ? firstAvailable.id : '');
+            } else {
+                setSelectedUserId('');
+            }
+        } catch (err) {
+            toast.error('Failed to load assignment data. ' + (err.response?.data?.message || ''));
+        } finally {
+            setLoadingAssignments(false);
+            setLoadingUsers(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAssignmentsAndUsers();
+    }, [interviewId]);
+
+    const handleAddAssignment = async (event) => {
+        event.preventDefault();
+        if (!selectedUserId) {
+            toast.error('Please select a user to assign.');
+            return;
+        }
+        setActionLoading(true);
+        const token = localStorage.getItem('authToken');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        try {
+            await axios.post(`${API_BASE_URL}/interviews/${interviewId}/assignments`, { userId: selectedUserId }, config);
+            fetchAssignmentsAndUsers();
+        } catch (err) {
+            toast.error('Failed to assign user. ' + (err.response?.data?.message || ''));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleRemoveAssignment = async (userIdToRemove) => {        
+        setActionLoading(true);
+        const token = localStorage.getItem('authToken');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        try {
+            await axios.delete(`${API_BASE_URL}/interviews/${interviewId}/assignments/${userIdToRemove}`, config);
+            fetchAssignmentsAndUsers(); 
+        } catch (err) {
+            toast.error('Failed to unassign user. ' + (err.response?.data?.message || ''));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const assignedUserIds = new Set(assignments.map(a => a.user_id));
+    const availableUsers = allUsers.filter(u => !assignedUserIds.has(u.id));
+
+    return (
+
+    <div className="card mb-6">
+        <div className="card-header d-flex justify-content-between">
+          <h5 className="card-title mb-0">Assigned Reviewers</h5>
+        </div>
+        <div className="card-body">
+              {loadingAssignments ? <p>Loading assignments...</p> : (
+                assignments.length === 0 ? (
+                    <p>No users assigned yet.</p>
+                ) : (
+                    <ul className="list-group">
+                        {assignments.map(a => (
+                            <li key={a.user_id} className="list-group-item d-flex justify-content-between align-items-center">
+                                {a.first_name || ''} {a.last_name || ''} ({a.email})
+                                <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm">
+                                    <i className="bi bi-x-circle"></i> Unassign
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )
+            )}
+
+             <form onSubmit={handleAddAssignment} className="mt-3 border-top pt-3">
+                <h5 className='card-title my-3'>Assign New Reviewer</h5>
+                {loadingUsers ? <p>Loading users...</p> : (
+                    availableUsers.length === 0 ? (
+                        <p>No available users to assign.</p>
+                    ) : (
+                        <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} required className="form-select">
+                            <option value="">-- Select User --</option>
+                            {availableUsers.map(u => (
+                                <option key={u.id} value={u.id}>
+                                    {u.first_name || ''} {u.last_name || ''} ({u.email})
+                                </option>
+                            ))}
+                        </select>
+                    )
+                )}
+                <button type="submit" disabled={actionLoading || loadingUsers || availableUsers.length === 0 || !selectedUserId} className="btn btn-primary mt-2 w-100">
+                    {actionLoading ? 'Assigning...' : 'Assign User'}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    );
+}
+
+const InvitationList = ({ interviewId }) => {
+    const [invitations, setInvitations] = useState([]);
+    const [loadingInvites, setLoadingInvites] = useState(true);
+    
+    const [showModal, setShowModal] = useState(false);
+
+    const fetchInvitations = async () => {
+        setLoadingInvites(true);
+        const token = localStorage.getItem('authToken');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+
+        try {
+            const response = await axios.get(`${API_BASE_URL}/interviews/${interviewId}/invitations`, config);
+            setInvitations(response.data || []);
+        } catch (err) {
+            toast.error('Failed to load invitations. ' + (err.response?.data?.message || ''));
+        } finally {
+            setLoadingInvites(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInvitations();
+    }, [interviewId]);
+
+
+    return (
+        <div className="card mb-6">
+            <div className="card-datatable">
+                <div id="DataTables_Table_0_wrapper" className="dt-container dt-bootstrap5 dt-empty-footer">
+                    <div className="row card-header border-bottom mx-0 px-3">
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+                            <h5 className="card-title mb-0">Candidate Invitations</h5>
+                        </div>
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
+                            <button className="btn text-white" style={{backgroundColor: '#646cff'}} onClick={()=> setShowModal(true)}>
+                                <span className="d-flex align-items-center gap-2">
+                                    <i className="icon-base ti tabler-plus icon-xs"></i>
+                                    <span className="d-none d-sm-inline-block">Add Candidate</span>
+                                </span>
+                            </button>
+                            {showModal && <AddCandidateModal setShowModal={setShowModal} interviewId={interviewId}
+                                fetchInvitations ={fetchInvitations}/>}
+                        </div>
+                    </div>
+                     <div className="justify-content-between dt-layout-table">
+                            <div className="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive">
+                              <table className="datatables-users table dataTable dtr-column collapsed" id="DataTables_Table_0"
+                                aria-describedby="DataTables_Table_0_info" style={{width: '100%'}}>
+                                    <colgroup>
+                                        <col data-dt-column="0" style={{width: '10%'}} />
+                                        <col data-dt-column="1" style={{width: '20%'}} />
+                                        <col data-dt-column="2" style={{width: '25%'}} />
+                                        <col data-dt-column="3" style={{width: '25%'}} />
+                                        <col data-dt-column="4" style={{width: '20%'}} />
+                                    </colgroup>
+                                    <thead className="border-top">
+                                      <tr>
+                                        <th data-dt-column="0" rowSpan="1" colSpan="1" className="dt-select" aria-label="">
+                                          <span className="dt-column-title"></span>
+                                          <input className="form-check-input custom-checkbox" type="checkbox" />
+                                        </th>
+                                        {[{columnName: 'Email', dtColumn: '1'}, {columnName: 'name', dtColumn: '2'},
+                                            {columnName: 'status', dtColumn: '3'}, {columnName: 'sent', dtColumn: '4'}].map((column, index) => (
+                                                <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
+                                                    <span className="dt-column-title">{column.columnName}</span>
+                                                </th>
+                                        ))}
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                        {invitations.map((inv) => (
+                                            <tr key={inv.id}>
+                                                <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
+                                                 <td>{inv.email}</td>
+                                                <td>{inv.first_name || ''} {inv.last_name || ''}</td>
+                                                <td>{inv.status}</td>
+                                                <td>{new Date(inv.created_at).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    );
+};
