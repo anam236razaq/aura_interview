@@ -158,8 +158,8 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
                     }
 
                      await db.query(
-                         'INSERT INTO invitations (interview_id, cvs_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                         [interviewId, candidateId.candidateId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
+                        'INSERT INTO invitations (interview_id, cvs_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [interviewId, candidateId.candidateId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
                      );
                  }
              }

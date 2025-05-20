@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Footer from '../../UI/Footer'
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import ShowPasswordIcon from '../../UI/ShowPasswordIcon';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
@@ -8,9 +8,10 @@ import Step from '../../UI/Step';
 import InputField from '../../UI/InputField';
 import InterviewVideo from '../../UI/InterviewVideo';
 import Select from 'react-select';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function InterviewSetup() {
-    const{register, handleSubmit, formState: {errors}, trigger, clearErrors, reset} = useForm({mode: 'onChange'});
+    const{register, handleSubmit, formState: {errors}, trigger, clearErrors, reset, setValue, control} = useForm({mode: 'onChange'});
     const[showPassword, setShowPassword] = useState('');
     const[selectedInterviewer, setSelectedInterviewer] = useState("");
     const[selectedPosition, setSelectedPosition] = useState("");
@@ -127,7 +128,7 @@ export default function InterviewSetup() {
     }, [selectedSkill]);
 
     const addQuestions = () => {
-        setQuestions([...questions, {text: '', type: 'video', time_limit: 2}])
+        setQuestions([...questions, {text: '', type: 'video', time_limit: 60}])
     }
 
 
@@ -172,8 +173,7 @@ export default function InterviewSetup() {
             outroVideo: outroVideoPath,
             candidateIds: skills.matchedCandidates
         }
-            console.log("Payload:", JSON.stringify(payload, null, 2)); // See the full object
-
+            console.log(payload);
         try{
             const token = localStorage.getItem('authToken');
             const response = await axios.post(API_BASE_URL+'/interviews', payload, {
@@ -189,6 +189,8 @@ export default function InterviewSetup() {
     }
 
   return (
+    <>
+    <Toaster reverseOrder={false} position='top-center' />
     <div className="content-wrapper">
         <div className="container-xxl flex-grow-1 container-p-y">
             <div id="wizard-property-listing" className="bs-stepper vertical mt-2 linear">
@@ -220,8 +222,9 @@ export default function InterviewSetup() {
                                                         const selected = e.target.value; 
                                                         setSelectedInterviewer(selected); 
                                                         if(selected){
-                                                            clearErrors(stepFields[step]);
-                                                            reset({firstName: '', lastName: '',  password: '', email: ''})
+                                                            clearErrors(['firstName', 'lastName', 'password', 'email']);
+                                                            reset({firstName: '', lastName: '',  password: '', email: ''});
+                                                            trigger('companyInfo');
                                                         }
                                                         }}>
                                                     <option value="">Select</option>
@@ -256,9 +259,11 @@ export default function InterviewSetup() {
 
                                     <div className="col-12">
                                         <label className="form-label" htmlFor="companyInfo">Company Info</label>
-                                        <select className="form-select" value={selectedCompany} onChange={(e)=> {
+                                        <select className="form-select" {...register("companyInfo", { required: "Company Info is required" })}
+                                            value={selectedCompany} onChange={(e)=> {
                                                 const selected = e.target.value; 
-                                                setSelectedCompany(selected);}} >
+                                                setSelectedCompany(selected);
+                                                setValue('companyInfo', selected, { shouldValidate: true })}} >
                                             <option value="">Select</option>
                                             {companies.map((company)=> (
                                                 <option key={company.id} value={company.id}>
@@ -266,6 +271,7 @@ export default function InterviewSetup() {
                                                 </option>
                                             ))}
                                         </select>
+                                        {errors.companyInfo && <small className="text-danger">{errors.companyInfo.message}</small>}
                                     </div>
 
                                     <div className="col-12 d-flex justify-content-between">
@@ -399,13 +405,24 @@ export default function InterviewSetup() {
                                     <div className="col-12">
                                         <div className="row g-6">
                                             <div className="col-md mb-md-0">
-                                                <Select options={skills.skills.map(skill => ({ label: skill, value: skill }))}
-                                                    isMulti name="skills" className="basic-multi-select" classNamePrefix="select skills"
-                                                    onChange={(selectedOptions) =>{
-                                                        const selectedValues= selectedOptions.map(option => option.value);
-                                                        setSelectedSkill(selectedValues);
-                                                    }}/>
-                                                {errors.skills && <small className="text-danger">{errors.skills.message}</small>}
+                                                <label className="form-label" htmlFor="skills">Skills</label>
+                                                <Controller control={control} name='skills' 
+                                                    rules={{required: 'skills are required'}} 
+                                                    render={({field, fieldState: {error}}) => ( 
+                                                        <>
+                                                            <Select {...field} options={skills.skills.map(skill => ({ label: skill, value: skill }))}
+                                                            isMulti name="skills" className="basic-multi-select" classNamePrefix="select skills"
+                                                                value={skills.skills.map(skill => ({ label: skill, value: skill }))
+                                                                    .filter(option => field.value?.includes(option.value))}
+                                                                onChange={(selectedOptions) =>{
+                                                                const selectedValues= selectedOptions.map(option => option.value);
+                                                                    field.onChange(selectedValues);
+                                                                    setSelectedSkill(selectedValues);
+                                                            }}/>
+                                                            {error && <small className="text-danger">{error.message}</small>}
+                                                        </>
+                                                    )}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -513,6 +530,12 @@ export default function InterviewSetup() {
                                         <button className="btn btn-label-secondary btn-prev waves-effect" onClick={prevStep} disabled={step === 1}><i className="icon-base ti tabler-arrow-left icon-xs me-sm-2 me-0"></i> <span className="align-middle d-sm-inline-block d-none">Previous</span></button>
                                         <button className="btn btn-primary btn-next waves-effect waves-light" onClick={async(e) => {
                                             e.preventDefault();
+
+                                            if(questions.length === 0 || questions.some(q => q.text.trim() === '')){
+                                                toast.error("Please add at least one question and make sure it's not empty.");
+                                                return
+                                            }
+
                                             const isValid = await trigger(stepFields[step]);
                                             if(isValid){
                                                 nextStep();
@@ -575,5 +598,6 @@ export default function InterviewSetup() {
             <Footer />
             <div className="content-backdrop fade"></div>
         </div>
+    </>
   )
 }

@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="text-body">
           ©
             {new Date().getFullYear()}
-          , made with ❤️ by <a href="https://pixinvent.com" target="_blank" className="footer-link">KeyDevs</a>
+          , made with ❤️ by <Link to="https://pixinvent.com" target="_blank" className="footer-link">KeyDevs</Link>
         </div>
         <div className="d-none d-lg-inline-block">
           <Link to="https://themeforest.net/licenses/standard" className="footer-link me-4" target="_blank"

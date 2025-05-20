@@ -25,6 +25,9 @@ import Support from './Pages/Support'
 import CompanyDetails from './Pages/CompanyDetails'
 import InterviewList from './Pages/Interview/InterviewList'
 import InterviewDetails from './Pages/Interview/InterviewDetails'
+import InterviewResponses from "./Pages/Interview/InterviewResponses"
+import ViewResponse from "./Pages/Interview/ViewResponse"
+import CandidatePublicInterview from "./Pages/Interview/CandidatePublicInterview"
 
 export default function App() {
 
@@ -47,6 +50,8 @@ export default function App() {
             <Route path='/interviewed/create-interview' element={<InterviewSetup />} />
             <Route path='/interviewed/interview-list' element={<InterviewList />} />
             <Route path='/interviewed/interview-list/:id' element={<InterviewDetails />} />
+            <Route path="/interviewed/interview/:interviewId/responses" element={<InterviewResponses />} />
+            <Route path="/interview/:interviewId/responses/:cvId" element={<ViewResponse />} />
             <Route path='/accounts/account-settings' element={<AccountSettings />} />
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />
@@ -55,6 +60,7 @@ export default function App() {
         </Route>
         <Route path='register' element={<Register />} />
         <Route path='login' element={<Login onLogin = {handleLogin}/>} />
+        <Route path='/interview/:invitationToken' element={<CandidatePublicInterview />} />
         <Route path='reset-password' element={<ResetPassword />} />
         <Route path='forgot-password' element={<ForgotPassword />} />
         <Route path='verify-email' element={<VerifyEmail />} />

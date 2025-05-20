@@ -8,7 +8,6 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
     const [newInviteFirstName, setNewInviteFirstName] = useState('');
     const [newInviteLastName, setNewInviteLastName] = useState('');
     const [sendingInvite, setSendingInvite] = useState(false);
-    const [sendSuccess, setSendSuccess] = useState('');
 
     useEffect(() => {
             document.body.style.overflow='hidden';
@@ -22,7 +21,6 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
             return;
         }
         setSendingInvite(true);
-        setSendSuccess('');
         const token = localStorage.getItem('authToken');
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -36,11 +34,12 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
                 },
                 config
             );
-            setSendSuccess(`Invitation sent successfully to ${newInviteEmail}.`);
+            toast.success(`Invitation sent successfully to ${newInviteEmail}.`);
             // Reset form
             setNewInviteEmail('');
             setNewInviteFirstName('');
             setNewInviteLastName('');
+            setShowModal(false);
             fetchInvitations(); // Refresh the list
         } catch (err) {
             console.error('Error sending invitation:', err);
@@ -92,7 +91,6 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
                         className="form-control"
                     />
                 </div>
-                {sendSuccess && <p className="text-success">{sendSuccess}</p>}
                 <button type="submit" disabled={sendingInvite} className="btn btn-primary">
                     {sendingInvite ? 'Sending...' : 'Send Invitation'}
                 </button>

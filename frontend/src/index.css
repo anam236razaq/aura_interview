@@ -117,3 +117,38 @@ button:focus-visible {
 .css-t3ipsp-control:hover{
   border-color: #7367f0 !important;
 }
+
+ .custom-heading{
+        line-height: 45px;
+        color: var(--heading-color); 
+        font-weight: 800;
+    }
+
+    .card-video-body{
+        background-color: var(--bg-body);
+    }
+
+    .card-video-description{
+        background-color: var(--bg-body); 
+        border-radius: 6px;
+    }
+
+    .bg-faq{
+        background-color: var(--bg-faq);
+    }
+
+    [data-bs-theme = "dark"]{
+        --heading-color: #cfcde4;
+        --bg-body: #25293c;
+        --bg-faq: #2b2e42;
+    }
+
+    .border-start{
+        border-left: 2px solid lightgray;
+    }
+
+    @media(max-width: 992px){
+        .border-start{
+            border-left: none;
+        }
+    }

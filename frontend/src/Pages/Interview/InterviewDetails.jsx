@@ -7,6 +7,7 @@ import Footer from '../../UI/Footer';
 import {toast, Toaster} from 'react-hot-toast';
 import AddQuestionModel from '../../UI/AddQuestionModel';
 import AddCandidateModal from '../../UI/AddCandidateModal';
+import Pagination from '../../UI/Pagination';
 
 export default function InterviewDetails() {
     const [interview, setInterview] = useState(null);
@@ -45,14 +46,11 @@ export default function InterviewDetails() {
             ])
 
             setInterview(interviewRes?.data);
-            console.log(interviewRes);
             setQuestions(questionRes?.data || []);
-            console.log(questionRes);
 
             // Fetch invitation token
             const invitationRes = await axios.get(API_BASE_URL+`/interviews/${id}/invitation-token`, config);
             setInvitationToken(invitationRes.data.token);
-            console.log(invitationRes)
 
             }catch(err){
                 if (err.response && (err.response.status === 401 || err.response.status === 403)) {
@@ -95,6 +93,7 @@ export default function InterviewDetails() {
         }
     }
 
+    if(loading) return
     const publicLink = `${window.location.origin}/interview/${invitationToken}`;
 
   return (
@@ -292,7 +291,7 @@ function AssignmentList({interviewId}){
                 setSelectedUserId('');
             }
         } catch (err) {
-            toast.error('Failed to load assignment data. ' + (err.response?.data?.message || ''));
+            console.log('Failed to load assignment data. ' + (err.response?.data?.message || ''));
         } finally {
             setLoadingAssignments(false);
             setLoadingUsers(false);
@@ -357,7 +356,7 @@ function AssignmentList({interviewId}){
                             <li key={a.user_id} className="list-group-item d-flex justify-content-between align-items-center">
                                 {a.first_name || ''} {a.last_name || ''} ({a.email})
                                 <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm">
-                                    <i className="bi bi-x-circle"></i> Unassign
+                                    <i className="bi bi-x-circle me-1"></i> Unassign
                                 </button>
                             </li>
                         ))}
@@ -394,6 +393,8 @@ function AssignmentList({interviewId}){
 const InvitationList = ({ interviewId }) => {
     const [invitations, setInvitations] = useState([]);
     const [loadingInvites, setLoadingInvites] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     
     const [showModal, setShowModal] = useState(false);
 
@@ -406,7 +407,7 @@ const InvitationList = ({ interviewId }) => {
             const response = await axios.get(`${API_BASE_URL}/interviews/${interviewId}/invitations`, config);
             setInvitations(response.data || []);
         } catch (err) {
-            toast.error('Failed to load invitations. ' + (err.response?.data?.message || ''));
+            console.log('Failed to load invitations. ' + (err.response?.data?.message || ''));
         } finally {
             setLoadingInvites(false);
         }
@@ -416,6 +417,20 @@ const InvitationList = ({ interviewId }) => {
         fetchInvitations();
     }, [interviewId]);
 
+    if(loadingInvites) return;
+
+    
+    //Pagination
+    const totalPages = Math.ceil(invitations.length/itemsPerPage);
+    const endIndex = currentPage * itemsPerPage;
+    const startIndex = endIndex - itemsPerPage;
+    const currentInvitationList = invitations.slice(startIndex, endIndex)
+
+    const handlePageChange = (page) => {
+      if(page >= 1 && page <= totalPages){
+        setCurrentPage(page);
+      }
+    }
 
     return (
         <div className="card mb-6">
@@ -462,7 +477,7 @@ const InvitationList = ({ interviewId }) => {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {invitations.map((inv) => (
+                                        {currentInvitationList.map((inv) => (
                                             <tr key={inv.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                  <td>{inv.email}</td>
@@ -475,6 +490,9 @@ const InvitationList = ({ interviewId }) => {
                                 </table>
                             </div>
                         </div>
+                        <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
+                            list ={invitations} handlePageChange = {handlePageChange}
+                            totalPages={totalPages}/>
                     </div>
                 </div>
             </div>
