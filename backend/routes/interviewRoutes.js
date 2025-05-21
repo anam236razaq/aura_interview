@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const fs = require('fs').promises; 
+const { v4: uuidv4 } = require('uuid');
 const questionRoutes = require('./questionRoutes'); // Import question routes
 const invitationRoutes = require('./invitationRoutes'); // Import invitation routes
 const assignmentRoutes = require('./assignmentRoutes'); // Import assignment routes
@@ -110,9 +111,10 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
     }
 
     try {
+        const sharedUUID = uuidv4();
         const [result] = await db.query(
-            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [organization_id, title, description, userId, jobId, companyId, expiry_date]
+            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [organization_id, title, description, userId, jobId, companyId, expiry_date, `/public/${sharedUUID}`]
         );
         const interviewId = result.insertId;
 
@@ -141,7 +143,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
          if (candidateIds && Array.isArray(candidateIds)) {
              for (const candidateId of candidateIds) {
                  // Generate a unique token for each candidate
-                 const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                 const token = uuidv4();
                  // Fetch candidate details from cvs table
                  const [cvsData] = await db.query('SELECT personal_info FROM cvs WHERE id = ?', [candidateId.candidateId]);
                  if (cvsData.length > 0) {

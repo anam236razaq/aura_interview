@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../utils/Constants';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import DeviceSelection from '../../UI/DeviceSelection';
 
 export default function CandidatePublicInterview() {
@@ -14,7 +14,6 @@ export default function CandidatePublicInterview() {
     const [cvFile, setCvFile] = useState(null);
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [uploadError, setUploadError] = useState('');
     const [interview, setInterview] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -62,7 +61,7 @@ export default function CandidatePublicInterview() {
     useEffect(() => {
         const initRecorder = async () => {
             // Only initialize when on the question step and devices are selected
-            if (currentStep !== 3 || !selectedDevices) return;
+            if (currentStep !== 4 || !selectedDevices) return;
 
             try {
                 const constraints = {
@@ -250,7 +249,7 @@ export default function CandidatePublicInterview() {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-            navigate('/login');
+            setCurrentStep(5)
         }
     };
 
@@ -281,7 +280,7 @@ export default function CandidatePublicInterview() {
             setCurrentStep(3);
         } catch (error) {
             console.error('Error uploading CV:', error);
-            setUploadError('Failed to upload CV. Please try again.');
+            toast.error('Failed to upload CV. Please try again.');
         } finally {
             setUploading(false);
         }
@@ -302,8 +301,10 @@ export default function CandidatePublicInterview() {
     const questionSubmitted = responses[currentQuestion?.id] === 'submitted';
 
     return (
+        <>
+        <Toaster reverseOrder={false} position='top-center' />
         <div className="container">
-            {currentStep === 4 && (
+            {currentStep === 1 && (
                 <div className="card m-5">
                     <div className="row">
                         <div className="col-12 col-lg-7 card-body">
@@ -312,7 +313,7 @@ export default function CandidatePublicInterview() {
                         </div>
                         <div className="col-12 col-lg-5 card-body border-start">
                             <h5 style={{fontWeight: '600'}}>Video Interview</h5>
-                            <h2 className="mb-5 custom-heading">Sales Associate at Example Company</h2>
+                            <h2 className="mb-5 custom-heading">{interview?.title}</h2>
                             <div className="d-flex flex-column align-items-center justify-conetnt-center p-4 mb-5 card-video-description">
                                 <span className="mb-3">Here you can start your interview.</span>
                                 <h4>Total 5 Questions</h4>
@@ -333,7 +334,7 @@ export default function CandidatePublicInterview() {
                         </div>
                         <div className="col-12 col-lg-5 card-body border-start">
                             <h5  style={{fontWeight: '600'}}>Video Interview</h5>
-                            <h2 className="mb-5 custom-heading" style={{fontSize: '34px'}}>Sales Associate at Example Company</h2>
+                            <h2 className="mb-5 custom-heading" style={{fontSize: '34px'}}>{interview?.title}</h2>
                             <form onSubmit={handleFormSubmit}>
                                 <div className="mt-3">
                                     <label className="form-label">Full Name</label>
@@ -374,92 +375,113 @@ export default function CandidatePublicInterview() {
                 <DeviceSelection onDevicesSelected={handleDevicesSelected} />
             )}
 
-            {currentStep === 1 && interview && questions && questions.length > 0 && (
+            {currentStep === 4 && interview && questions && questions.length > 0 && (
                 <div class="card m-5">
                         <div class="row">
                             <div class="col-12 col-lg-7 card-body">
                                 <img src="/assets/img/image 2.png" alt="Video Intro" style={{width: '100%', borderRadius: '8px'}}/>
                             </div>
                             <div class="col-12 col-lg-5 card-body d-flex flex-column border-start">
-                                <h4>Question {currentQuestionIndex + 1} of {questions.length}</h4>
-                                                        <p>{currentQuestion.text}</p>
-                                                        <p>{/*<FontAwesomeIcon icon={faClock} />*/} Time limit: {currentQuestion.time_limit} seconds</p>
+                                <h5 class="mb-2" style={{fontWeight: '600'}}>Question {currentQuestionIndex + 1} of {questions.length}</h5>
+                                    <p className='mb-2'>{currentQuestion.text}</p>
+                                    <p>
+                                        <i className="bi bi-clock me-2"></i>
+                                        Time limit: {currentQuestion.time_limit} seconds
+                                    </p>
                                 
-                                                        {currentQuestion.type === 'text' && (
-                                                            <div>
-                                                                <textarea
-                                                                    value={currentTextResponse}
-                                                                    onChange={handleTextResponseChange}
-                                                                    placeholder="Type your answer here..."
-                                                                    style={{ width: '100%', minHeight: '100px' }}
-                                                                    disabled={questionSubmitted}
-                                                                />
-                                                            </div>
-                                                        )}
+                                    {currentQuestion.type === 'text' && (
+                                        <div>
+                                            <textarea className='form-control'
+                                                value={currentTextResponse}
+                                                onChange={handleTextResponseChange}
+                                                placeholder="Type your answer here..."
+                                                style={{ width: '100%', minHeight: '100px' }}
+                                                disabled={questionSubmitted}
+                                            />
+                                        </div>
+                                    )}
                                 
-                                                        {currentQuestion.type === 'file' && (
-                                                            <div>
-                                                                <label htmlFor="fileUpload" className="form-label">
-                                                                    Drag and drop image here, or click to select:
-                                                                </label>
-                                                                <input
-                                                                    type="file"
-                                                                    id="fileUpload"
-                                                                    className="form-control"
-                                                                    onChange={handleVideoFileChange}
-                                                                    disabled={questionSubmitted}
-                                                                    accept="image/*"
-                                                                />
-                                                            </div>
-                                                        )}
+                                    {currentQuestion.type === 'file' && (
+                                        <div>
+                                            <label htmlFor="fileUpload" className="form-label">
+                                                Drag and drop image here, or click to select:
+                                            </label>
+                                            <input
+                                                type="file"
+                                                id="fileUpload"
+                                                className="form-control"
+                                                onChange={handleVideoFileChange}
+                                                disabled={questionSubmitted}
+                                                accept="image/*"
+                                            />
+                                        </div>
+                                    )}
                                 
-                                                        {currentQuestion.type === 'video' && (
-                                                            <div>
-                                                                <div style={{ marginBottom: '10px' }}>
-                                                                    <video id="liveFeed" width="320" height="240" style={{ marginBottom: '10px', border: '1px solid #ccc' }} />
-                                                                    {!recording && !blobUrl && (
-                                                                        <button onClick={startRecording} disabled={recording || questionSubmitted} style={{ marginRight: '10px' }}>
-                                                                            {/*<FontAwesomeIcon icon={faVideo} />*/} Start Recording
-                                                                        </button>
-                                                                    )}
-                                                                    {recording && (
-                                                                        <button onClick={stopRecording} disabled={!recording || questionSubmitted} style={{ marginRight: '10px' }}>
-                                                                            Stop Recording
-                                                                        </button>
-                                                                    )}
-                                                                    {blobUrl && (
-                                                                        <button onClick={clearBlobUrl} style={{ marginRight: '10px' }}>Clear</button>
-                                                                    )}
-                                                                </div>
+                                    {currentQuestion.type === 'video' && (
+                                        <div>
+                                            <div style={{ marginBottom: '10px' }}>
+                                                <video id="liveFeed" width="320" height="240" style={{ marginBottom: '10px', border: '1px solid #ccc' }} />
+                                                {!recording && !blobUrl && (
+                                                    <button onClick={startRecording} disabled={recording || questionSubmitted} style={{ marginRight: '10px' }}>
+                                                        <i className="bi bi-camera-video"></i>Start Recording
+                                                    </button>
+                                                )}
+                                                {recording && (
+                                                    <button onClick={stopRecording} disabled={!recording || questionSubmitted} style={{ marginRight: '10px' }}>
+                                                        Stop Recording
+                                                    </button>
+                                                )}
+                                                {blobUrl && (
+                                                    <button onClick={clearBlobUrl} style={{ marginRight: '10px' }}>Clear</button>
+                                                )}
+                                            </div>
                                 
-                                                                {blobUrl && (
-                                                                    <video src={blobUrl} controls width="320" height="240" style={{ marginBottom: '10px' }} />
-                                                                )}
-                                                            </div>
-                                                        )}
+                                            {blobUrl && (
+                                                <video src={blobUrl} controls width="320" height="240" style={{ marginBottom: '10px' }} />
+                                            )}
+                                        </div>
+                                    )}
                                 
-                                                        {submitError && <p style={{ color: 'red' }}>{submitError}</p>}
+                                    {submitError && <p style={{ color: 'red' }}>{submitError}</p>}
                                 
-                                                        {!questionSubmitted ? (
-                                                            <button onClick={handleSubmitResponse} disabled={submitLoading} style={{ marginRight: '10px' }}>
-                                                                {submitLoading ? 'Submitting...' : 'Submit Response'}
-                                                            </button>
-                                                        ) : (
-                                                            <p style={{ color: 'green' }}>{/*<FontAwesomeIcon icon={faCheckCircle} />*/} Submitted</p>
-                                                        )}
+                                    <div className='d-flex align-items-center justify-content-between mt-5'>
+                                    {!questionSubmitted ? (
+                                        <button onClick={handleSubmitResponse} disabled={submitLoading} className='btn btn-primary' style={{ marginRight: '10px' }}>
+                                            {submitLoading ? 'Submitting...' : 'Submit Response'}
+                                        </button>
+                                    ) : (
+                                        <p style={{ color: 'green' }}><i className="bi bi-check-circle"></i> Submitted</p>
+                                    )}
                                 
-                                                        <button onClick={goToNextQuestion} disabled={submitLoading || !questionSubmitted}>
-                                                            {isLastQuestion ? 'Finish Interview' : 'Next Question'}
-                                                        </button>
-                                                
+                                    <button onClick={goToNextQuestion} className='btn btn-secondary' disabled={submitLoading || !questionSubmitted}>
+                                        {isLastQuestion ? 'Finish Interview' : 'Next Question'}
+                                    </button>
+                                    </div>
                             </div>
                         </div>
                     </div>
                 
             )}
-            {currentStep === 5 && (!interview || !questions || questions.length === 0) && !loading && (
-                <p>Interview details or questions could not be loaded.</p>
+            {currentStep === 5 && (
+                <div className="card px-3">
+                    <div className="row">
+                        <div className="col-12 col-lg-7 card-body">
+                            <h6 className="text-center">Video Outro</h6>
+                            <img src="/assets/img/image 1.png" alt="Video Outro" style={{width: '100%'}}/>
+                        </div>
+                        <div className="col-12 col-lg-5 card-body border-start">
+                            <h5  style={{fontWeight: '600'}}>Thank you for Interview</h5>
+                            <h2 className="mb-5 custom-heading">{interview?.title}</h2>
+                            <div className="d-flex flex-column align-items-center justify-conetnt-center p-5 card-video-description">
+                                <button className="btn btn-secondary w-100 mb-3" onClick={()=>navigate('/login')}>Done</button>
+                                <span className="mb-3 text-center">Thank you for completing interview, we will contact you shortly..</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
+    </>
     );
 }
+
