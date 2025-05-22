@@ -94,7 +94,7 @@ export default function InterviewDetails() {
     }
 
     if(loading) return
-    const publicLink = `${window.location.origin}/interview/${invitationToken}`;
+    const publicLink = `${window.location.origin}/interview/public/${invitationToken}`;
 
   return (
     <>
@@ -121,7 +121,7 @@ export default function InterviewDetails() {
                                 {invitationToken ? (
                                     <>
                                         <p className='mb-2'>Share this link with candidates:</p>
-                                        <p>{publicLink}</p>
+                                        <p className='text-break'>{publicLink}</p>
                                     </>
                                     ) : (
                                         <p>No public link generated yet.</p>

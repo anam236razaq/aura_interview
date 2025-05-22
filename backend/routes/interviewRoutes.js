@@ -114,7 +114,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
         const sharedUUID = uuidv4();
         const [result] = await db.query(
             'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [organization_id, title, description, userId, jobId, companyId, expiry_date, `/public/${sharedUUID}`]
+            [organization_id, title, description, userId, jobId, companyId, expiry_date, sharedUUID]
         );
         const interviewId = result.insertId;
 
@@ -318,7 +318,7 @@ router.get('/:id/invitation-token', authMiddleware, checkRole([ADMIN_ROLE]), asy
             let tokenExists = true;
             // Ensure token is unique
             while (tokenExists) {
-                token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                token = uuidv4();
                 const [existingToken] = await db.query('SELECT token FROM interviews WHERE token = ?', [token]);
                 tokenExists = existingToken.length > 0;
             }
@@ -334,6 +334,39 @@ router.get('/:id/invitation-token', authMiddleware, checkRole([ADMIN_ROLE]), asy
         res.status(500).json({ message: 'Error generating invitation token.' });
     }
 });
+
+//Retrives invitation token on the basis of interview_id
+router.get('/invitation/:interviewId/:token' ,  async (req, res) => { 
+    const { interviewId, token } = req.params;
+
+    try {
+        const [rows] = await db.query(
+            `SELECT inv.*
+             FROM invitations inv
+             JOIN interviews i ON i.id = inv.interview_id
+             WHERE inv.token = ? AND i.id = ?`,
+            [token, interviewId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Invalid or unauthorized token.' });
+        }
+
+        const invitation = rows[0];
+
+        // Valid token — proceed to show interview screen
+        res.status(200).json({
+            message: 'Valid invitation',
+            interviewId: invitation.interview_id,
+            token: invitation.token,
+            candidateName: `${invitation.first_name} ${invitation.last_name}`,
+        });
+    } catch (err) {
+        console.error('Error validating invitation:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 // GET /api/interviews/:interviewId/all-responses - Get all responses for an interview, grouped by candidate
 router.get('/:interviewId/all-responses', async (req, res) => {

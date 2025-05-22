@@ -376,13 +376,13 @@ export default function CandidatePublicInterview() {
             )}
 
             {currentStep === 4 && interview && questions && questions.length > 0 && (
-                <div class="card m-5">
-                        <div class="row">
-                            <div class="col-12 col-lg-7 card-body">
+                <div className="card m-5">
+                        <div className="row">
+                            <div className="col-12 col-lg-7 card-body">
                                 <img src="/assets/img/image 2.png" alt="Video Intro" style={{width: '100%', borderRadius: '8px'}}/>
                             </div>
-                            <div class="col-12 col-lg-5 card-body d-flex flex-column border-start">
-                                <h5 class="mb-2" style={{fontWeight: '600'}}>Question {currentQuestionIndex + 1} of {questions.length}</h5>
+                            <div className="col-12 col-lg-5 card-body d-flex flex-column border-start">
+                                <h5 className="mb-2" style={{fontWeight: '600'}}>Question {currentQuestionIndex + 1} of {questions.length}</h5>
                                     <p className='mb-2'>{currentQuestion.text}</p>
                                     <p>
                                         <i className="bi bi-clock me-2"></i>
