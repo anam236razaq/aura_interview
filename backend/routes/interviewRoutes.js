@@ -504,7 +504,7 @@ const videoStorage = multer.diskStorage({
     if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Invalid file type. Only MP4, AVI, and MOV are allowed.'), false);
+        cb(new Error('Invalid file type. Only MP4 and webm are allowed.'), false);
     }
   };
 

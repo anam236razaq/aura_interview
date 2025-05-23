@@ -1,18 +1,23 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import AIReprocessModal from '../../UI/AIReprocessModal';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
 import Pagination from '../../UI/Pagination';
+import DeleteModal from '../../UI/DeleteModal';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function CandidateList() {
     const[open, setOpen] = useState(false);
     const[showModal, setShowModal] = useState(false);
-    const [candidatesList, setCandidatesList] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[selectedCandidateId, setSelectedCandidateId] = useState(null);
+    const[candidatesList, setCandidatesList] = useState([]);
+    const[currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const navigate = useNavigate();
     
     const toggleDropdown = () => setOpen(!open);
 
@@ -49,7 +54,33 @@ export default function CandidateList() {
       }
     }
 
+    //method for handling id for delete
+    const handleDeleteClick = (id) => {
+      setSelectedCandidateId(id);
+      setShowDeleteModal(true);
+    }
+
+    //Deleting Cv of specific candidate
+    const confirmDelete = async () => {
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.delete(`${API_BASE_URL}/cv/${selectedCandidateId}`, {
+          headers: {
+            "Content-Type": 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setShowDeleteModal(false);
+        toast.success(response.data.message);
+
+      }catch(error){
+        toast.error(error.response?.data?.message || 'An unexpected error occured');
+      }
+    }
+
   return (
+    <>
+    <Toaster reverseOrder={false} position='top-center' />
     <div className="content-wrapper">
     <div className="container-xxl flex-grow-1 container-p-y">
       <div className='mb-4'>
@@ -181,7 +212,7 @@ export default function CandidateList() {
                             </span>
                           </button>
                           {showModal && <AIReprocessModal setShowModal={setShowModal}/>}
-                          <button className="btn add-new btn-primary ms-4 override-radius" tabIndex="0" aria-controls="DataTables_Table_0" type="button" style={{marginRight: '1.5rem',}}>
+                          <button className="btn add-new btn-primary ms-4 override-radius" onClick={()=>navigate('/candidates/cv-import')} tabIndex="0" aria-controls="DataTables_Table_0" type="button" style={{marginRight: '1.5rem',}}>
                             <span>
                               <span className="d-flex align-items-center gap-2">
                                   <i className="icon-base ti tabler-plus icon-xs"></i>
@@ -257,6 +288,7 @@ export default function CandidateList() {
                                         </Link>
                                         <div className="dropdown-menu dropdown-menu-end m-0">
                                             <Link to={`/candidates/${candidate.id}`} className="dropdown-item">View</Link>
+                                            <button onClick={()=> handleDeleteClick(candidate.id)} className="dropdown-item">Delete</button>
                                         </div>
                                     </div>
                                   </td>
@@ -264,6 +296,7 @@ export default function CandidateList() {
                               ))}
                           </tbody>
                       </table>
+                      {showDeleteModal && <DeleteModal confirmDelete ={confirmDelete} setShowDeleteModal= {setShowDeleteModal} />}
                     </div>
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
@@ -277,5 +310,6 @@ export default function CandidateList() {
     <Footer />
     <div className="content-backdrop fade"></div>
     </div>
+    </>
     )
 }

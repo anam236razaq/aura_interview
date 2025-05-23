@@ -476,10 +476,46 @@ router.post('/:id/notes', async (req, res) => {
     }
 });
 
-// TODO: Add DELETE /api/cv/:id endpoint (likely Admin only)
+// DELETE /api/cv/:id endpoint (likely Admin only)
+router.delete('/:id', async(req, res) => {
+  const {id} = req.params;
+  const organization_id = req.user.organization_id;
 
+  const connection = await db.getConnection();
+  await connection.beginTransaction();
 
+  try{
+    //Ensure Cv exists and belongs to organization
+    const [cvs] = await connection.query('SELECT * FROM cvs WHERE id = ? AND organization_id = ?', [id, organization_id]);
+    
+    if(cvs.length === 0){
+      await connection.rollback();
+      return res.status(404).json({message: 'CV not found or access denied'});
+    }
 
+    // Delete from all related tables first (child tables)
+    const relatedTables = ['cvs_experience', 'cvs_education', 'cvs_projects',
+      'cvs_volunteer', 'cvs_skills', 'cvs_achievements', 'cvs_certifications',
+      'cvs_publications', 'cvs_references', 'cvs_extra', 'cvs_internal_notes']
+
+      for(const table of relatedTables){
+        await connection.query(`DELETE FROM ${table} WHERE cv_id =?`, [id]);
+      }
+
+    // Delete the main CV record
+    await  connection.query('DELETE FROM cvs WHERE id = ? AND organization_id = ?', [id, organization_id]);
+
+    await connection.commit();
+    res.json({ message: 'CV and related data deleted successfully' });
+
+  }catch(error){
+    await connection.rollback();
+    res.status(500).json({ message: 'Error deleting CV' });
+
+  }finally{
+    connection.release();
+  }
+})
 
 
 module.exports = router;

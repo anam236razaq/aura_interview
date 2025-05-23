@@ -5,10 +5,13 @@ import UserModel from '../UI/UserModel';
 import Pagination from '../UI/Pagination';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/Constants';
+import AddCompanyModal from '../UI/addCompanyModal';
+import DeleteModal from '../UI/DeleteModal';
 
 export default function CompanyDetails() {
     const[open, setOpen] = useState(false);
     const[showModal, setShowModal] = useState(false);
+    const[showDeleteModal, setShowDeleteModal] = useState(false);
     const [companyList, setCompanyList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -47,6 +50,10 @@ export default function CompanyDetails() {
       }
       handleCompanyList();
     }, []);
+
+    const handleAddCompany = (newCompany) => {
+      setCompanyList(prev => [newCompany, ...prev]);
+    }
 
 
   return (
@@ -142,7 +149,7 @@ export default function CompanyDetails() {
                                       </span>
                                     </span>
                                   </button>
-                                  {showModal && <UserModel setShowModal={setShowModal} /> }
+                                  {showModal && <AddCompanyModal setShowModal={setShowModal} onAddedCompany = {handleAddCompany} /> }
                               </div>
                           </div>
                         </div>
@@ -188,7 +195,7 @@ export default function CompanyDetails() {
                                                 <td className='text-black'>
                                                     <img src={company.logo} alt='Company Logo' style={{height: '40px', width: '100px'}} />
                                                 </td>
-                                                <td>{company.address}, {company.city}</td>
+                                                <td>{company.address}, {company.city}, {company.state}</td>
                                                 <td>{company.country}</td>
                                                 <td>{company.phone_number}</td>
                                                 <td>{company.title}</td>
@@ -205,7 +212,7 @@ export default function CompanyDetails() {
                                                             <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                                         </Link>
                                                         <div className="dropdown-menu dropdown-menu-end m-0">
-                                                            <Link to="#" className="dropdown-item">View</Link>
+                                                            <button className="dropdown-item">Delete</button>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -213,6 +220,7 @@ export default function CompanyDetails() {
                                         ))}
                                     </tbody>
                                 </table>
+                                {showDeleteModal && <DeleteModal confirmDelete={confirmDelete}  setShowDeleteModal={setShowDeleteModal}/>}
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
