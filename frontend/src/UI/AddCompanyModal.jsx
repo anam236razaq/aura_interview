@@ -4,29 +4,57 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form';
 import { API_BASE_URL } from '../utils/Constants';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
-export default function AddCompanyModal({setShowModal, onAddedCompany}) {
-    const {register, handleSubmit, setValue, formState: {errors}, clearErrors} = useForm();
+export default function AddCompanyModal({setShowModal, onAddedCompany, companyToEdit}) {
+    const isEditMode = !!companyToEdit;
+    const { register, handleSubmit, setValue, formState: { errors }, clearErrors, reset } = useForm();
     const fileInputRef = useRef();
     const [logoPreview, setLogoPreview] = useState(null);
 
+    // Pre-fill in edit mode
+    useEffect(() => {
+        if (isEditMode) {
+            reset({
+                company_name: companyToEdit.company_name || '',
+                email: companyToEdit.email || '',
+                address: companyToEdit.address || '',
+                city: companyToEdit.city || '',
+                country: companyToEdit.country || '',
+                phone_number: companyToEdit.phone_number || '',
+                title: companyToEdit.title || '',
+                state: companyToEdit.state || ''
+            });
+
+            if (companyToEdit.logo) {
+                setLogoPreview(companyToEdit.logo);
+                clearErrors('logo');
+            }
+        }
+    }, [companyToEdit, reset, clearErrors, isEditMode]);
+
+    useEffect(() => {
+        register('logo', { required: !logoPreview && 'Logo is required' });
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'auto'; }
+    }, [register, logoPreview]);
+
     const handleSelectFilesClick = () => {
-        if(fileInputRef.current){
+        if (fileInputRef.current) {
             fileInputRef.current.click();
         }
-    }
+    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if(file){
+        if (file) {
             setValue('logo', file);
-            clearErrors('logo')
+            clearErrors('logo');
             setLogoPreview(URL.createObjectURL(file));
         }
-    }
+    };
 
-    const onSubmit = async(data) => {
-        
+    const onSubmit = async (data) => {
         const formData = new FormData();
         formData.append('company_name', data.company_name);
         formData.append('email', data.email);
@@ -35,31 +63,52 @@ export default function AddCompanyModal({setShowModal, onAddedCompany}) {
         formData.append('country', data.country);
         formData.append('phone_number', data.phone_number);
         formData.append('title', data.title);
-        formData.append('logo', data.logo);
         formData.append('state', data.state);
 
-        try{
-            const token = localStorage.getItem('authToken');
-            const response = await axios.post(`${API_BASE_URL}/companies`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            onAddedCompany(response.data);
-            console.log(response);
-            setShowModal(false);
-        }catch(error){
-            console.log(error);
+        if (data.logo && data.logo instanceof File) {
+            formData.append('logo', data.logo);
         }
 
-    }
+        const token = localStorage.getItem('authToken');
+        try {
+            const response = isEditMode
+                ? await axios.put(`${API_BASE_URL}/companies/${companyToEdit.id}`, formData, {
+                      headers: {
+                          'Content-Type': 'multipart/form-data',
+                          Authorization: `Bearer ${token}`
+                      }
+                  })
+                : await axios.post(`${API_BASE_URL}/companies`, formData, {
+                      headers: {
+                          'Content-Type': 'multipart/form-data',
+                          Authorization: `Bearer ${token}`
+                      }
+                  });
 
-    useEffect(() => {
-            register('logo', { required: 'Logo is required' });
-            document.body.style.overflow='hidden';
-            return () => { document.body.style.overflow='auto'; }
-        }, [register]);
+            const companyId = response.data.company_id || companyToEdit.id;
+            const logoURL = (data.logo instanceof File) ? logoPreview : (response.data.logo || companyToEdit?.logo);
+
+            const updatedCompany = {
+                id: companyId,
+                title: data.title,
+                email: data.email,
+                company_name: data.company_name,
+                logo: logoURL,
+                address: data.address,
+                city: data.city,
+                state: data.state,
+                country: data.country,
+                phone_number: data.phone_number
+            };
+
+            onAddedCompany(updatedCompany);
+            toast.success(response.data.message);
+            setShowModal(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'An unexpected error occurred');
+            console.error(error);
+        }
+    };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -74,7 +123,7 @@ export default function AddCompanyModal({setShowModal, onAddedCompany}) {
                 <div className="modal-body">
                     <button type="button" className="btn-close" onClick={()=> setShowModal(false)} style={{top: '-0.1rem', right: '0.3rem'}}></button>
                     <div className="mb-6">
-                        <h5 className="mb-2">Add Company</h5>
+                        <h5 className="mb-2">{isEditMode? 'Edit Company' : 'Add Company'}</h5>
                     </div>
                     <form className="row g-5" onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown}>
                         <div className="col-12 col-sm-5">
@@ -152,7 +201,7 @@ export default function AddCompanyModal({setShowModal, onAddedCompany}) {
                             <button type="reset" className="btn btn-label-secondary  me-3"
                                 onClick={()=> setShowModal(false)}>Close
                             </button>
-                            <button type="submit" className="btn btn-primary">Add</button>
+                            <button type="submit" className="btn btn-primary">{isEditMode? 'Update' : 'Add'}</button>
                         </div>
                     </form>
                 </div>

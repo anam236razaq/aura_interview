@@ -31,6 +31,8 @@ import CandidatePublicInterview from "./Pages/Interview/CandidatePublicInterview
 import InterviewInvitation from "./Pages/Interview/InterviewInvitation"
 import { useState } from "react"
 import { useEffect } from "react"
+import UpcomingInterview from "./Pages/Interview/UpcomingInterview"
+import ExpiredInterview from "./Pages/Interview/ExpiredInterview"
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -79,6 +81,8 @@ export default function App() {
             <Route path='candidates/:id' element={<CVDetails />} />
             <Route path='/interviewed/create-interview' element={<InterviewSetup />} />
             <Route path='/interviewed/interview-list' element={<InterviewList />} />
+            <Route path='/interviewed/upcoming-interview' element={<UpcomingInterview type="upcoming"/>} />
+            <Route path='/interviewed/expired-interview' element={<ExpiredInterview  type="expired" />} />
             <Route path='/interviewed/interview-list/:id' element={<InterviewDetails />} />
             <Route path="/interviewed/interview/:interviewId/responses" element={<InterviewResponses />} />
             <Route path="/interview/:interviewId/responses/:cvId" element={<ViewResponse />} />

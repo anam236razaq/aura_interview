@@ -8,9 +8,9 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 
-export default function InterviewList() {
+export default function UpcomingInterview({type}) {
     const[open, setOpen] = useState(false);
-    const [interviewList, setInterviewList] = useState([]);
+    const[interviewList, setInterviewList] = useState([]);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
     const[selectedInterviewId, setSelectedInterviewId] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -24,7 +24,7 @@ export default function InterviewList() {
       const handleInterviewList = async () => {
         try{
           const token = localStorage.getItem('authToken');
-          const response = await axios.get(API_BASE_URL+'/interviews', {
+          const response = await axios.get(`${API_BASE_URL}/interviews?type=${type}`, {
             headers: {
               "Content-Type": 'application/json',
               Authorization: `Bearer ${token}`
@@ -38,7 +38,7 @@ export default function InterviewList() {
         }
       }
       handleInterviewList();
-    }, []);
+    }, [type]);
 
     //Pagination
     const totalPages = Math.ceil(interviewList.length/itemsPerPage);
@@ -83,8 +83,8 @@ export default function InterviewList() {
     <div className="content-wrapper">
     <div className="container-xxl flex-grow-1 container-p-y">
       <div className='mb-4'>
-        <p className='mb-2 text-black' style={{fontSize: '18px', fontWeight: '600'}}>Interview List</p>
-        <span>List of interviews</span>
+        <p className='mb-2 text-black' style={{fontSize: '18px', fontWeight: '600'}}>Upcoming Interview List</p>
+        <span>List of upcoming interviews</span>
       </div>
       <div className="card">
         <div className="card-datatable">
@@ -98,16 +98,6 @@ export default function InterviewList() {
                     
                 </div>
                 <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                    <div className='dt-length mt-m0 mt-md-5'>
-                        <select name='DataTables_Table_0_length' aria-controls="DataTables_Table_0" className="form-select ms-0"
-                          id="dt-length-0">
-                              <option value= '10'>10</option>
-                              <option value= '25'>25</option>
-                              <option value= '50'>50</option>
-                              <option value= '100'>100</option>
-                          </select>
-                          <label htmlFor='dt-length-0'></label>
-                    </div>
                   <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                       <div className="btn-group">
                           <button className="btn buttons-collection btn-label-secondary dropdown-toggle" tabIndex="0"  onClick={toggleDropdown}
