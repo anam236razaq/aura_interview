@@ -18,8 +18,23 @@ const USER_ROLE = 2; // Assuming User role ID is 2
 // GET /api/interviews - Get all interviews for the logged-in user's organization
 router.get('/', async (req, res) => {
   const organization_id = req.user.organization_id; // Get org ID from authenticated user
+  const {type} = req.query;
+  const now =new Date();
+
+  let query = 'SELECT * FROM interviews WHERE organization_id = ?';
+  let params =[organization_id];
+
+   // Apply filtering based on query param
+   if(type === 'upcoming'){
+     query += ' AND expiry_date > ?';
+     params.push(now);
+   }else if(type === 'expired'){
+     query += ' AND expiry_date <= ?';
+     params.push(now);
+   }
+
   try {
-    const [interviews] = await db.query('SELECT * FROM interviews WHERE organization_id = ?', [organization_id]);
+    const [interviews] = await db.query(query, params);
     res.json(interviews);
   } catch (error) {
     console.error('Error fetching interviews:', error);
@@ -255,7 +270,7 @@ router.delete('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
       return res.status(404).json({ message: 'Interview not found or access denied' });
     }
 
-    res.status(204).send(); // No content on successful deletion
+    res.json({message: 'Interview Deleted Successfully'}); // No content on successful deletion
   } catch (error) {
     console.error('Error deleting interview:', error);
     // Handle foreign key constraint errors if cascading delete is not set up
@@ -530,7 +545,6 @@ const videoStorage = multer.diskStorage({
         res.status(500).json({ message: 'Failed to upload video.', error: error.message });
       }
   })
-
 
 // Nested route for questions related to a specific interview
 router.use('/:interviewId/questions', questionRoutes);
