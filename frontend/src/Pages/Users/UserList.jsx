@@ -2,14 +2,87 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import UserModel from '../../UI/UserModel';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { API_BASE_URL } from '../../utils/Constants';
+import toast, { Toaster } from 'react-hot-toast';
+import Pagination from '../../UI/Pagination';
+import DeleteModal from '../../UI/DeleteModal';
 
 export default function UserList() {
- const[open, setOpen] = useState(false);
- const[showModal, setShowModal] = useState(false);
+  const[open, setOpen] = useState(false);
+  const[showModal, setShowModal] = useState(false);
+  const[showDeleteModal, setShowDeleteModal] = useState(false);
+  const[userList, setUserList] = useState([]);
+  const[selectedUserId, setSelectedUserId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const toggleDropdown = () => setOpen(!open);
 
+   //Fetching user List
+    useEffect(() => {
+      const handleUserList = async () => {
+        try{
+          const token = localStorage.getItem('authToken');
+          const response = await axios.get(API_BASE_URL+'/users', {
+            headers: {
+              "Content-Type": 'application/json',
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setUserList(response?.data);
+          console.log(response);
+
+        }catch(error){
+          console.log(error);
+        }
+      }
+      handleUserList();
+    }, []);
+
+      //Pagination
+    const totalPages = Math.ceil(userList.length/itemsPerPage);
+    const endIndex = currentPage * itemsPerPage;
+    const startIndex = endIndex - itemsPerPage;
+    const currentUserList = userList.slice(startIndex, endIndex)
+
+    const handlePageChange = (page) => {
+      if(page >= 1 && page <= totalPages){
+        setCurrentPage(page);
+      }
+    }
+
+    const handleDeleteClick = (id) => {
+      setSelectedUserId(id);
+      setShowDeleteModal(true);
+    }
+
+    const confirmDelete = async ()=> {
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.delete(`${API_BASE_URL}/users/${selectedUserId}`, {
+          headers: {
+            "Content-Type": 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setShowDeleteModal(false);
+        setUserList(prevList => prevList.filter(company => company.id !== selectedUserId))
+        toast.success(response.data.message);
+
+      }catch(error){
+          toast.error(error.response?.data?.message || 'An unexpected error occured');
+      }
+    }
+
+    const handleAddedUser = (newUser) => {
+      setUserList(prev => [newUser, ...prev]);
+    }
+
   return (
+    <>
+     <Toaster reverseOrder={false} position='top-center' />
     <div className="content-wrapper">
             <div className="container-xxl flex-grow-1 container-p-y">
               <div className='mb-4'>
@@ -48,16 +121,6 @@ export default function UserList() {
                             
                         </div>
                         <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                            <div className='dt-length mt-m0 mt-md-5'>
-                                <select name='DataTables_Table_0_length' aria-controls="DataTables_Table_0" className="form-select ms-0"
-                                  id="dt-length-0">
-                                      <option value= '10'>10</option>
-                                      <option value= '25'>25</option>
-                                      <option value= '50'>50</option>
-                                      <option value= '100'>100</option>
-                                  </select>
-                                  <label htmlFor='dt-length-0'></label>
-                            </div>
                           <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                               <div className="btn-group">
                                   <button className="btn buttons-collection btn-label-secondary dropdown-toggle" tabIndex="0"  onClick={toggleDropdown}
@@ -122,7 +185,7 @@ export default function UserList() {
                                       </span>
                                     </span>
                                   </button>
-                                  {showModal && <UserModel setShowModal={setShowModal} /> }
+                                  {showModal && <UserModel setShowModal={setShowModal} onAddedUser = {handleAddedUser}/> }
                               </div>
                           </div>
                         </div>
@@ -139,54 +202,38 @@ export default function UserList() {
                                         <col data-dt-column="5" style={{width: '12%'}} />
                                         <col data-dt-column="6" style={{width: '15%'}} />
                                     </colgroup>
-                                    <thead className="border-top">
+                                    <thead className="border-top"> 
                                       <tr>
-                                        <th data-dt-column="0" rowSpan="1" colSpan="1" className="dt-select dt-orderable-none" aria-label="">
+                                        <th data-dt-column="0" rowSpan="1" colSpan="1">
                                           <span className="dt-column-title"></span>
-                                          <span className="dt-column-order"></span>
-                                          <input className="form-check-input custom-checkbox" type="checkbox" aria-label="Select all rows" />
+                                          <input className="form-check-input custom-checkbox" type="checkbox" />
                                         </th>
-                                        <th data-dt-column="1" rowSpan="1" colSpan="1" className="dt-orderable-asc dt-orderable-desc dt-ordering-desc" aria-sort="descending"  tabIndex="0">
-                                          <span className="dt-column-title" role="button">FULL NAME</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
-                                        <th data-dt-column="2" rowSpan="1" colSpan="1" className="dt-orderable-asc dt-orderable-desc" tabIndex="0">
-                                          <span className="dt-column-title" role="button">EMAIL</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
-                                        <th data-dt-column="3" rowSpan="1" colSpan="1" className="dt-orderable-asc dt-orderable-desc" tabIndex="0">
-                                          <span className="dt-column-title" role="button">ACTIVE/DEACTIVE</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
-                                        <th data-dt-column="4" rowSpan="1" colSpan="1" className="dt-orderable-asc dt-orderable-desc" tabIndex="0">
-                                          <span className="dt-column-title" role="button">REGISTER DATE</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
-                                        <th data-dt-column="5" rowSpan="1" colSpan="1" className="dt-orderable-asc dt-orderable-desc" tabIndex="0" >
-                                          <span className="dt-column-title" role="button">TYPE</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
-                                        <th data-dt-column="6" rowSpan="1" colSpan="1" className="dt-orderable-none" >
-                                          <span className="dt-column-title">ACTIONS</span>
-                                          <span className="dt-column-order"></span>
-                                        </th>
+
+                                        {[{columnName: 'Full name', dtColumn: '1'}, {columnName: 'email', dtColumn: '2'},
+                                          {columnName: 'active/deactive', dtColumn: '3'}, {columnName: 'register date', dtColumn: '4'},
+                                          {columnName: 'type', dtColumn: '5'}, {columnName: 'ACTIONS', dtColumn: '6'}].map((column, index) => (
+                                            <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
+                                              <span className="dt-column-title">{column.columnName}</span>
+                                            </th>
+                                        ))}
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      <tr>
+                                      {currentUserList.map((user) => (
+                                      <tr key={user.id}>
                                         <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
-                                        <td className="sorting_1 text-black">Asif Ali</td>
-                                        <td className='text-black'>admin@gmail.com</td>
+                                        <td className="sorting_1 text-black">{user.first_name} {user.last_name}</td>
+                                        <td className='text-black'>{user.email}</td>
                                         <td>
                                           <div className="form-check form-switch m-0">
                                             <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
                                           </div>
                                         </td>
                                         <td style={{color: '#5232C2B2'}}>20-10-2024</td>
-                                      <td>
-                                        <span className="badge bg-label-success">Owner</span>
-                                      </td>
-                                      <td className="dtr-hidden">
+                                        <td>
+                                          <span className="badge bg-label-success text-capitalize">{user.role_name}</span>
+                                        </td>
+                                        <td className="dtr-hidden">
                                           <div className="d-flex align-items-center">
                                               <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
@@ -199,156 +246,20 @@ export default function UserList() {
                                                 <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                               </Link>
                                               <div className="dropdown-menu dropdown-menu-end m-0">
-                                                  <Link to="#" className="dropdown-item">Edit</Link>
-                                                  <Link to="#" className="dropdown-item">Suspend</Link>
+                                                  <button onClick= {()=> handleDeleteClick(user.id)} className="dropdown-item">Delete</button>
                                               </div>
                                           </div>
                                         </td>
                                       </tr>
-                                      <tr>
-                                          <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
-                                          <td className="sorting_1 text-black">Ali Haider</td>
-                                          <td className='text-black'>ali@gmail.com</td>
-                                          <td>
-                                              <div className="form-check form-switch m-0">
-                                                  <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
-                                              </div>
-                                          </td>
-                                          <td style={{color: '#5232C2B2'}}>20-10-2024</td>
-                                          <td>
-                                            <span className="badge bg-label-danger">User</span>
-                                          </td>
-                                          <td className="dtr-hidden">
-                                              <div className="d-flex align-items-center">
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
-                                                      <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                  </Link>
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                      <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
-                                                  </Link>
-                                                  <div className="dropdown-menu dropdown-menu-end m-0">
-                                                    <Link to="#" className="dropdown-item">Edit</Link>
-                                                    <Link to="#" className="dropdown-item">Suspend</Link>
-                                                  </div>
-                                              </div>
-                                          </td>
-                                      </tr>
-                                      <tr>
-                                          <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
-                                          <td className="sorting_1 text-black">Kashif Abbasi</td>
-                                          <td className='text-black'>kashif@gmail.com</td>
-                                          <td>
-                                              <div className="form-check form-switch m-0">
-                                                  <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
-                                              </div>
-                                          </td>
-                                          <td style={{color: '#5232C2B2'}}>20-10-2024</td>
-                                          <td>
-                                            <span className="badge bg-label-success">Owner</span>
-                                          </td>
-                                          <td className="dtr-hidden">
-                                              <div className="d-flex align-items-center">
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
-                                                      <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                  </Link>
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                      <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
-                                                  </Link>
-                                                  <div className="dropdown-menu dropdown-menu-end m-0">
-                                                    <Link to="#" className="dropdown-item">Edit</Link>
-                                                    <Link to="#" className="dropdown-item">Suspend</Link>
-                                                  </div>
-                                              </div>
-                                          </td>
-                                      </tr>
-                                      <tr>
-                                          <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
-                                          <td className="sorting_1 text-black">Ali Haider</td>
-                                          <td className='text-black'>ali@gmail.com</td>
-                                          <td>
-                                              <div className="form-check form-switch m-0">
-                                                  <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
-                                              </div>
-                                          </td>
-                                          <td style={{color: '#5232C2B2'}}>20-10-2024</td>
-                                          <td>
-                                            <span className="badge bg-label-success">Owner</span>
-                                          </td>
-                                          <td className="dtr-hidden">
-                                              <div className="d-flex align-items-center">
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
-                                                      <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                      <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                    </svg>
-                                                  </Link>
-                                                  <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                      <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
-                                                  </Link>
-                                                  <div className="dropdown-menu dropdown-menu-end m-0">
-                                                    <Link to="#" className="dropdown-item">Edit</Link>
-                                                    <Link to="#" className="dropdown-item">Suspend</Link>
-                                                  </div>
-                                              </div>
-                                          </td>
-                                      </tr>
+                                      ))}
                                   </tbody>
                               </table>
+                              {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
                             </div>
                         </div>
-                        <div className="row mx-3 justify-content-between">
-                          <div className="mt-0 mt-sm-4 d-md-flex align-items-center dt-layout-start col-md-auto me-auto d-flex justify-content-md-between justify-content-center">
-                            <div className="dt-info" aria-live="polite" id="DataTables_Table_0_info" role="status">
-                              Showing 1 to 4 of 4 entries
-                            </div>
-                          </div>
-                          <div className="me-4 mt-4 d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                            <div className="dt-paging">
-                              <nav aria-label="pagination">
-                                <ul className="pagination">
-                                  <li className="dt-paging-button page-item disabled">
-                                    <button className="page-link first" role="link" type="button" aria-controls="DataTables_Table_0" aria-disabled="true" aria-label="First" data-dt-idx="first" tabIndex="-1">
-                                      <i className="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>
-                                    </button>
-                                  </li>
-                                  <li className="dt-paging-button page-item disabled">
-                                    <button className="page-link previous" role="link" type="button" aria-controls="DataTables_Table_0" aria-disabled="true" aria-label="Previous" data-dt-idx="previous" tabIndex="-1">
-                                      <i className="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>
-                                    </button>
-                                  </li>
-                                  <li className="dt-paging-button page-item active">
-                                    <button className="page-link me-1" role="link" type="button" aria-controls="DataTables_Table_0" aria-current="page" data-dt-idx="0">1</button>
-                                  </li>
-                                  <li classN="dt-paging-button page-item">
-                                    <button className="page-link" role="link" type="button" aria-controls="DataTables_Table_0" data-dt-idx="1">2</button>
-                                  </li>
-                                  <li className="dt-paging-button page-item">
-                                    <button className="page-link" role="link" type="button" aria-controls="DataTables_Table_0" data-dt-idx="2">3</button>
-                                  </li>
-                                  <li className="dt-paging-button page-item">
-                                    <button className="page-link next" role="link" type="button" aria-controls="DataTables_Table_0" aria-label="Next" data-dt-idx="next">
-                                      <i className="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>
-                                    </button>
-                                  </li>
-                                  <li className="dt-paging-button page-item">
-                                      <button className="page-link last" role="link" type="button" aria-controls="DataTables_Table_0" aria-label="Last" data-dt-idx="last">
-                                        <i className="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>
-                                      </button>
-                                  </li>
-                                </ul>
-                              </nav>
-                            </div>
-                          </div>
-                        </div>
+                        <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
+                          list ={userList} handlePageChange = {handlePageChange}
+                          totalPages={totalPages}/>
                     </div>
                   </div>
                 </div>
@@ -357,5 +268,6 @@ export default function UserList() {
             <Footer/>
           <div className="content-backdrop fade"></div>
     </div>
+     </>
   )
 }

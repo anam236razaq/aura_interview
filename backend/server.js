@@ -11,6 +11,7 @@ const jobRoutes = require('./routes/jobRoutes'); // Import job routes
 const userRoutes = require('./routes/userRoutes'); // Import user routes
 const candidateRoutes = require('./routes/candidateRoutes'); // Import candidate routes
 const skillsRoutes = require('./routes/skillsRoutes');
+const rolesRoutes = require('./routes/rolesRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const cors = require('cors');
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/skills', authMiddleware, skillsRoutes);
 app.use('/api/companies', authMiddleware, companyRoutes);
 
 // Routes potentially needing different access control:
+app.use('/api/roles', rolesRoutes);
 app.use('/api/users', userRoutes); // Mount user routes
 app.use('/api/invitations', invitationRoutes); // Contains public /:token access and protected /interviews/:id/invitations
 app.use('/api/responses', responseRoutes); // Contains public submission and protected retrieval

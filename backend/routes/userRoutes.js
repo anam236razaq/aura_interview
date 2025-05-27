@@ -9,15 +9,23 @@ const authMiddleware = require('../middleware/authMiddleware');
 const axios = require('axios');
 const FormData = require('form-data');
 
-const ADMIN_ROLE = 1;
 const USER_ROLE = 2; // Assuming User role ID is 2
 
 // GET /api/users - List users within the admin's organization (Admin only)
-router.get('/', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
     const organization_id = req.user.organization_id;
     try {
         const [users] = await db.query(
-            'SELECT id, email, first_name, last_name, role_id FROM users WHERE organization_id = ?',
+            `SELECT 
+                users.id, 
+                users.email, 
+                users.first_name, 
+                users.last_name, 
+                users.role_id, 
+                roles.name AS role_name
+            FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.organization_id = ?`,
             [organization_id]
         );
         res.json(users);
@@ -27,8 +35,9 @@ router.get('/', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
     }
 });
 
+
 // POST /api/users/invite - Invite/Create a new user within the organization (Admin only)
-router.post('/invite', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {
     const { email, first_name, last_name, role_id } = req.body;
     const organization_id = req.user.organization_id;
 
@@ -37,8 +46,8 @@ router.post('/invite', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res)
         return res.status(400).json({ message: 'Email, first name, last name, and role ID are required.' });
     }
     // Ensure admin isn't trying to create another admin or invalid role through this route
-    if (parseInt(role_id) !== USER_ROLE) { 
-        return res.status(400).json({ message: `Invalid role_id. Only role ${USER_ROLE} (User) can be invited here.` });
+    if (parseInt(role_id) === 1) { 
+        return res.status(400).json({ message: `Admin cannot invite another admin.` });
     }
 
     // TODO: Implement a proper invitation flow (e.g., generate temporary password/token, send email)
@@ -76,7 +85,7 @@ router.post('/invite', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res)
 });
 
 // DELETE /api/users/:id - Delete a user within the organization (Admin only)
-router.delete('/:id', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
     const { id } = req.params; // ID of user to delete
     const adminUserId = req.user.id;
     const organization_id = req.user.organization_id;
@@ -107,7 +116,7 @@ router.delete('/:id', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) 
 });
 
 // GET /api/candidates - Search for candidates (Admin only)
-router.get('/candidates', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.get('/candidates', authMiddleware, checkRole([1]), async (req, res) => {
     const { search } = req.query;
     const organization_id = req.user.organization_id;
 
@@ -352,3 +361,4 @@ router.post('/upload', fileUpload(), async (req, res) => {
 // TODO: Add PUT /api/users/:id for updating user details (e.g., name, role - maybe restrict role changes)
 
 module.exports = router;
+ 

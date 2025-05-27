@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const authMiddleware = require('../middleware/authMiddleware');
-const checkRole = require('../middleware/roleMiddleware');
 
 // GET /api/candidates - Get all candidates or search candidates by name
 router.get('/', authMiddleware, async (req, res) => {

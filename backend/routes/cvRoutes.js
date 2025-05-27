@@ -45,7 +45,7 @@ router.post('/upload', checkRole([ADMIN_ROLE]), uploadCv.single('cvFile'), async
 
     if (!file) {
         return res.status(400).json({ message: 'CV file (cvFile) is required.' });
-    }
+    } 
 
     const n8nWebhookUrl = 'https://social.keydevsdemo.com/webhook/0bc2284e-f2c2-427f-b11e-78fa8fad4aea';
     const formData = new FormData();

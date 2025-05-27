@@ -1,11 +1,58 @@
+import axios from 'axios';
 import React, { useEffect } from 'react'
+import { useState } from 'react';
+import { API_BASE_URL } from '../utils/Constants';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 
-export default function UserModel({setShowModal}) {
+export default function UserModel({setShowModal, onAddedUser}) {
+    const[roles, setRoles] = useState([]);
+    const { register, handleSubmit, reset } = useForm();
 
     useEffect(() => {
             document.body.style.overflow='hidden';
             return () => { document.body.style.overflow='auto'; }
         }, []);
+    
+    useEffect(() => {
+        const fetchRoles = async () => {
+            const response = await axios.get(`${API_BASE_URL}/roles`, {
+                headers: {
+                    "Content-Type": 'application/json'
+                }
+            });
+            setRoles(response.data);
+            console.log(response);
+        }
+        fetchRoles();
+    }, [])
+
+    const onSubmit = async (data) => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const response = await axios.post(`${API_BASE_URL}/users/invite`, {
+                first_name: data.first_name,
+                last_name: data.last_name,
+                email: data.email,
+                role_id: data.role_id
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            console.log(response);
+            onAddedUser(response.data.user);
+            reset();
+            setShowModal(false);
+            toast.success(response.data.message || 'User invited successfully')
+        } catch (error) {
+            console.error('Error submitting user:', error);
+            toast.error(error.response?.data?.message || 'Something went wrong');
+        }
+    };
+
 
   return (
     <div className="modal fade show" tabIndex="-1" role='dialog' onClick={()=>setShowModal(false)} style={{display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
@@ -16,9 +63,20 @@ export default function UserModel({setShowModal}) {
                     <div className="mb-6">
                         <h5 className="mb-2">Invite User</h5>
                     </div>
-                    <p>Fill out the email address to invite a user to your account.</p>
-                    <form className="row g-5" onSubmit="return false">
-                        <div className="col-12 form-control-validation">
+                    <p>Fill out the form to invite a user to your account.</p>
+                    <form className="row g-5" onSubmit={handleSubmit(onSubmit)}>
+                        <div className='col-12 d-flex align-items-center'>
+                            <div className='col-6 pe-2'>
+                                <label className='form-label'>First Name</label>
+                                <input type='text' className='form-control' placeholder='First Name' {...register('first_name')}/>
+                            </div>
+                            <div className='col-6 ps-2'>
+                                <label className='form-label'>Last Name</label>
+                                <input type='text' className='form-control' placeholder='Last Name' {...register('last_name')}/>
+                            </div>
+                        </div>
+                        <div className="col-12">
+                            <label className='form-label'>Email</label>
                             <div className="input-group input-group-merge">
                                 <span className="input-group-text" >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -31,8 +89,17 @@ export default function UserModel({setShowModal}) {
                                 </span>
                                 <input type="email"
                                     className="form-control"
-                                    placeholder="Email Address" />
+                                    placeholder="Email Address" {...register('email')}/>
                             </div>
+                        </div>
+                        <div className='col-12'>
+                            <label className='form-label'>Role</label>
+                            <select className='form-select' {...register('role_id')}>
+                                <option value="">Select</option>
+                                {roles.map((role) => (
+                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="col-12 d-flex align-items-center justify-content-end">
                             <button type="reset" className="btn btn-label-secondary  me-3"
