@@ -75,6 +75,43 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/companies/search - Search company
+router.get('/search', async (req, res) => {
+  const organization_id = req.user.organization_id;
+  const { search } = req.query;
+
+  if (!search) {
+    return res.status(400).json({ message: 'Search query is required' });
+  }
+
+  const searchTerm = `%${search}%`;
+
+  const query = `
+    SELECT * FROM companies 
+    WHERE organization_id = ? 
+    AND (
+      company_name LIKE ? OR
+      email LIKE ? OR
+      title LIKE ? OR
+      country LIKE ? OR
+      state LIKE ? OR
+      city LIKE ?
+    )
+    ORDER BY created_at DESC
+  `;
+
+  const params = [organization_id, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
+
+  try {
+    const [results] = await db.query(query, params);
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching companies:', error);
+    res.status(500).json({ message: 'Error searching companies.' });
+  }
+});
+
+
 // PUT /api/companies/:id - Update a company for the organization (All authenticated users)
 router.put('/:id', uploadLogo.single('logo'),  async(req, res) => {
     const {id} = req.params;

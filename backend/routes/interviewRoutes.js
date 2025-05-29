@@ -17,30 +17,70 @@ const USER_ROLE = 2; // Assuming User role ID is 2
 
 // GET /api/interviews - Get all interviews for the logged-in user's organization
 router.get('/', async (req, res) => {
-  const organization_id = req.user.organization_id; // Get org ID from authenticated user
-  const {type} = req.query;
-  const now =new Date();
+  const organization_id = req.user.organization_id;
+  const { type, page = 1, limit = 10 } = req.query; // Defaults: page 1, 10 items per page
+  const now = new Date();
 
   let query = 'SELECT * FROM interviews WHERE organization_id = ?';
-  let params =[organization_id];
+  let params = [organization_id];
 
-   // Apply filtering based on query param
-   if(type === 'upcoming'){
-     query += ' AND expiry_date > ?';
-     params.push(now);
-   }else if(type === 'expired'){
-     query += ' AND expiry_date <= ?';
-     params.push(now);
-   }
+  if (type === 'upcoming') {
+    query += ' AND expiry_date > ?';
+    params.push(now);
+  } else if (type === 'expired') {
+    query += ' AND expiry_date <= ?';
+    params.push(now);
+  }
+
+  // Pagination logic
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+  query += ' ORDER BY expiry_date DESC LIMIT ? OFFSET ?';
+  params.push(parseInt(limit), offset);
 
   try {
     const [interviews] = await db.query(query, params);
-    res.json(interviews);
+    res.json({
+      page: parseInt(page),
+      limit: parseInt(limit),
+      interviews,
+    });
   } catch (error) {
     console.error('Error fetching interviews:', error);
     res.status(500).json({ message: 'Error fetching interviews' });
   }
 });
+
+
+// GET /api/interviews/search - search interviews
+router.get('/search', async (req, res) => {
+  const organization_id = req.user.organization_id;
+  const { search } = req.query;
+
+  if (!search) {
+    return res.status(400).json({ message: 'Search query is required' });
+  }
+
+  const searchTerm = `%${search}%`;
+
+  const query = `
+    SELECT * FROM interviews 
+    WHERE organization_id = ? 
+    AND (
+        title LIKE ? OR
+        description LIKE ?
+    )`;
+
+  const params = [organization_id, searchTerm, searchTerm];
+
+  try {
+    const [results] = await db.query(query, params);
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching interviews:', error);
+    res.status(500).json({ message: 'Error searching interviews' });
+  }
+});
+
 
 // GET /api/interviews/:id - Get a specific interview (ensure it belongs to the user's org)
 router.get('/:id', async (req, res) => {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useState } from 'react';
 import { API_BASE_URL } from '../utils/Constants';
 import { useForm } from 'react-hook-form';
@@ -16,13 +16,16 @@ export default function UserModel({setShowModal, onAddedUser}) {
     
     useEffect(() => {
         const fetchRoles = async () => {
-            const response = await axios.get(`${API_BASE_URL}/roles`, {
+            try{
+                const response = await axios.get(`${API_BASE_URL}/roles`, {
                 headers: {
                     "Content-Type": 'application/json'
                 }
             });
-            setRoles(response.data);
-            console.log(response);
+                setRoles(response.data);
+            }catch(error){
+                console.log(error);
+            }
         }
         fetchRoles();
     }, [])
@@ -42,13 +45,15 @@ export default function UserModel({setShowModal, onAddedUser}) {
                     Authorization: `Bearer ${token}`
                 }
             })
-            console.log(response);
-            onAddedUser(response.data.user);
+
+            const role = roles.find(r => r.id === parseInt(data.role_id));
+            const newUserWithRoleName = {...response.data.user, role_name: role?.name};
+
+            onAddedUser(newUserWithRoleName);
             reset();
             setShowModal(false);
             toast.success(response.data.message || 'User invited successfully')
         } catch (error) {
-            console.error('Error submitting user:', error);
             toast.error(error.response?.data?.message || 'Something went wrong');
         }
     };

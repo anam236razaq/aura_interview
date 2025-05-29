@@ -383,6 +383,41 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/cv/search
+router.get('/search', async (req, res) => {
+    const organization_id = req.user.organization_id;
+    const search = req.query.search?.trim().toLowerCase();
+
+    if (!search) {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    try {
+        const query = `
+            SELECT id, organization_id, file_path, 
+                  JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name")) AS name, 
+                  JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email,  
+                  score, created_at 
+            FROM cvs 
+            WHERE organization_id = ?
+              AND (
+                  LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name"))) LIKE ?
+                  OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email"))) LIKE ?
+              )
+            ORDER BY created_at DESC
+        `;
+
+        const searchPattern = `%${search}%`;
+        const params = [organization_id, searchPattern, searchPattern];
+
+        const [results] = await db.query(query, params);
+        res.json(results);
+    } catch (error) {
+        console.error('Error searching CVs:', error);
+        res.status(500).json({ message: 'Error searching CVs' });
+    }
+});
+
 // GET /api/cv/:id - Get full details for a specific CV (ensure it belongs to user's org)
 router.get('/:id', async (req, res) => {
     const { id } = req.params;

@@ -14,6 +14,7 @@ export default function UserList() {
   const[showModal, setShowModal] = useState(false);
   const[showDeleteModal, setShowDeleteModal] = useState(false);
   const[userList, setUserList] = useState([]);
+  const[searchQuery, setSearchQuery] = useState('');
   const[selectedUserId, setSelectedUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -21,25 +22,35 @@ export default function UserList() {
   const toggleDropdown = () => setOpen(!open);
 
    //Fetching user List
-    useEffect(() => {
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
       const handleUserList = async () => {
-        try{
-          const token = localStorage.getItem('authToken');
-          const response = await axios.get(API_BASE_URL+'/users', {
-            headers: {
-              "Content-Type": 'application/json',
-              Authorization: `Bearer ${token}`
-            }
-          });
-          setUserList(response?.data);
-          console.log(response);
+        try {
+            const token = localStorage.getItem('authToken');
+            const endPoint = searchQuery.trim()
+              ? `${API_BASE_URL}/users/search?search=${encodeURIComponent(searchQuery)}`
+              : `${API_BASE_URL}/users`;
 
-        }catch(error){
-          console.log(error);
-        }
-      }
+            const response = await axios.get(endPoint, {
+              headers: {
+                "Content-Type": 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            setUserList(response?.data);
+            setCurrentPage(1);
+          } catch (error) {
+            console.log(error);
+          }
+      };
+
       handleUserList();
-    }, []);
+    }, 500);
+
+      return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
 
       //Pagination
     const totalPages = Math.ceil(userList.length/itemsPerPage);
@@ -115,7 +126,8 @@ export default function UserList() {
                     <div className='row my-0 justify-content-between'>
                         <div className='d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto'>
                             <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '1.5rem'}}>
-                              <input type="search" className="form-control" id="dt-search-0" placeholder="Search User" aria-controls="DataTables_Table_0" />
+                              <input type="search" className="form-control" id="dt-search-0" placeholder="Search User" 
+                                aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} />
                               <label htmlFor='dt-search-0'></label>
                             </div>
                             

@@ -115,6 +115,40 @@ router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
     }
 });
 
+// GET /api/users/search - Search for users (Admin only)
+router.get('/search', authMiddleware, checkRole([1]), async (req, res) => {
+    const organization_id = req.user.organization_id;
+    const { search } = req.query;
+
+    try {
+        const [users] = await db.query(
+            `SELECT 
+                users.id, 
+                users.email, 
+                users.first_name, 
+                users.last_name, 
+                users.role_id, 
+                roles.name AS role_name
+             FROM users
+             JOIN roles ON users.role_id = roles.id
+             WHERE users.organization_id = ?
+             AND (
+                users.first_name LIKE ? OR
+                users.last_name LIKE ? OR
+                users.email LIKE ? OR
+                CONCAT(users.first_name, ' ', users.last_name) LIKE ?
+             )`,
+            [organization_id, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`]
+        );
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error searching users:', error);
+        res.status(500).json({ message: 'Error searching users.' });
+    }
+});
+
+
 // GET /api/candidates - Search for candidates (Admin only)
 router.get('/candidates', authMiddleware, checkRole([1]), async (req, res) => {
     const { search } = req.query;

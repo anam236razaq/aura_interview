@@ -15,8 +15,9 @@ export default function CompanyDetails() {
     const[showEditModal, setShowEditModal] = useState(false);
     const[selectedCompanyId, setSelectedCompanyId] = useState(null);
     const[companyToEdit, setCompanyToEdit] = useState(null);
-    const [companyList, setCompanyList] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const[searchQuery, setSearchQuery] = useState('');
+    const[companyList, setCompanyList] = useState([]);
+    const[currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
     const toggleDropdown = () => setOpen(!open);
@@ -35,24 +36,33 @@ export default function CompanyDetails() {
 
     //Fetching Candidate List
     useEffect(() => {
+    const delayDebounce = setTimeout(() => {
       const handleCompanyList = async () => {
-        try{
-          const token = localStorage.getItem('authToken');
-          const response = await axios.get(API_BASE_URL+'/companies', {
-            headers: {
-              "Content-Type": 'application/json',
-              Authorization: `Bearer ${token}`
-            }
-          });
-          setCompanyList(response?.data);
-          console.log(response);
+        try {
+            const token = localStorage.getItem('authToken');
+            const endPoint = searchQuery.trim()
+              ? `${API_BASE_URL}/companies/search?search=${encodeURIComponent(searchQuery)}`
+              : `${API_BASE_URL}/companies`;
 
-        }catch(error){
-          console.log(error);
-        }
-      }
+            const response = await axios.get(endPoint, {
+              headers: {
+                "Content-Type": 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            setCompanyList(response?.data);
+            setCurrentPage(1);
+          } catch (error) {
+            console.log(error);
+          }
+      };
+
       handleCompanyList();
-    }, []);
+    }, 500);
+
+      return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
     //Add company
     const handleAddCompany = (newCompany) => {
@@ -100,22 +110,13 @@ export default function CompanyDetails() {
                     <div className='row my-0 justify-content-between'>
                         <div className='d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto'>
                             <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '1.5rem'}}>
-                              <input type="search" className="form-control" id="dt-search-0" placeholder="Search Company" aria-controls="DataTables_Table_0" />
+                              <input type="search" className="form-control" id="dt-search-0" placeholder="Search Company" 
+                                  aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)}/>
                               <label htmlFor='dt-search-0'></label>
                             </div>
                             
                         </div>
                         <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                            <div className='dt-length mt-m0 mt-md-5'>
-                                <select name='DataTables_Table_0_length' aria-controls="DataTables_Table_0" className="form-select ms-0"
-                                  id="dt-length-0">
-                                      <option value= '10'>10</option>
-                                      <option value= '25'>25</option>
-                                      <option value= '50'>50</option>
-                                      <option value= '100'>100</option>
-                                  </select>
-                                  <label htmlFor='dt-length-0'></label>
-                            </div>
                           <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                               <div className="btn-group">
                                   <button className="btn buttons-collection btn-label-secondary dropdown-toggle" tabIndex="0"  onClick={toggleDropdown}
