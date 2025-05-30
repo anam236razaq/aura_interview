@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const db = require('../config/db');
 
-const ADMIN_ROLE = 1;
 
 // Middleware to check if the user can access/review the specified response
 // Access allowed if: User is Admin OR User is assigned to the interview associated with the response
@@ -34,7 +33,7 @@ async function checkReviewPermission(req, res, next) {
         const { interview_id } = responses[0];
 
         // 2. Check if user is an Admin
-        if (userRoleId === ADMIN_ROLE) {
+        if (userRoleId === 1) {
             req.interviewId = interview_id; // Pass interviewId for later use if needed
             return next(); // Admins have access
         }

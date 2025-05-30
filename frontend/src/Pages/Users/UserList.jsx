@@ -17,6 +17,8 @@ export default function UserList() {
   const[searchQuery, setSearchQuery] = useState('');
   const[selectedUserId, setSelectedUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const[totalPages, setTotalPages] = useState(1);
+  const[totalEntries, setTotalEntries] = useState(0);
   const itemsPerPage = 10;
 
   const toggleDropdown = () => setOpen(!open);
@@ -26,37 +28,40 @@ export default function UserList() {
     const delayDebounce = setTimeout(() => {
       const handleUserList = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const endPoint = searchQuery.trim()
-              ? `${API_BASE_URL}/users/search?search=${encodeURIComponent(searchQuery)}`
-              : `${API_BASE_URL}/users`;
+              const token = localStorage.getItem('authToken');
+              const params = new URLSearchParams({
+                page: currentPage,
+                limit: itemsPerPage
+              });
+
+            if (searchQuery.trim()) {
+              params.append('search', searchQuery.trim());
+            }
+
+            const endPoint = `${API_BASE_URL}/users?${params.toString()}`;
 
             const response = await axios.get(endPoint, {
-              headers: {
-                "Content-Type": 'application/json',
-                Authorization: `Bearer ${token}`
-              }
+                headers: {
+                  "Content-Type": 'application/json',
+                  Authorization: `Bearer ${token}`
+                }
             });
 
-            setUserList(response?.data);
-            setCurrentPage(1);
+            console.log(response)
+            setUserList(response?.data?.users || []);
+            setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+            setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
           }
       };
 
       handleUserList();
-    }, 500);
+    }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
+  }, [searchQuery, currentPage]);
 
-
-      //Pagination
-    const totalPages = Math.ceil(userList.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const currentUserList = userList.slice(startIndex, endIndex)
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -231,7 +236,7 @@ export default function UserList() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {currentUserList.map((user) => (
+                                      {userList.map((user) => (
                                       <tr key={user.id}>
                                         <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                         <td className="sorting_1 text-black">{user.first_name} {user.last_name}</td>
@@ -270,7 +275,7 @@ export default function UserList() {
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                          list ={userList} handlePageChange = {handlePageChange}
+                          totalEntries ={totalEntries} handlePageChange = {handlePageChange}
                           totalPages={totalPages}/>
                     </div>
                   </div>

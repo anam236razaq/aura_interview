@@ -1,11 +1,11 @@
 
-export default function Pagination({currentPage, itemsPerPage, list, handlePageChange, totalPages}) {
+export default function Pagination({currentPage, itemsPerPage, handlePageChange, totalPages, totalEntries}) {
 
   return (
     <div className="row mx-3 justify-content-between">
         <div className="mt-0 mt-sm-4 d-md-flex align-items-center dt-layout-start col-md-auto me-auto d-flex justify-content-md-between justify-content-center">
             <div className="dt-info" aria-live="polite" id="DataTables_Table_0_info" role="status">
-                {`Showing ${(currentPage - 1) * itemsPerPage +1} to ${Math.min(currentPage * itemsPerPage, list.length)} of ${list.length} entries`}
+                {`Showing ${(currentPage - 1) * itemsPerPage +1} to ${Math.min(currentPage * itemsPerPage, totalEntries)} of ${totalEntries} entries`}
             </div>
         </div>
         <div className="me-4 mt-4 d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">

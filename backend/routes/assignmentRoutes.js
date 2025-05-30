@@ -4,8 +4,6 @@ const router = express.Router({ mergeParams: true });
 const db = require('../config/db');
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 
-const ADMIN_ROLE = 1;
-
 // Middleware to check if the interview belongs to the user's organization
 async function checkInterviewOwnership(req, res, next) {
     const { interviewId } = req.params;
@@ -26,7 +24,7 @@ async function checkInterviewOwnership(req, res, next) {
 router.use(checkInterviewOwnership);
 
 // POST /api/interviews/:interviewId/assignments - Assign a user to an interview (Admin only)
-router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/', checkRole([1]), async (req, res) => {
   const { interviewId } = req.params;
   const { userId } = req.body;
   // Ownership already checked by middleware
@@ -76,7 +74,7 @@ router.get('/', async (req, res) => {
 });
 
 // DELETE /api/interviews/:interviewId/assignments/:userId - Unassign a user from an interview (Admin only)
-router.delete('/:userId', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.delete('/:userId', checkRole([1]), async (req, res) => {
     const { interviewId, userId } = req.params;
     // Ownership already checked by middleware
 

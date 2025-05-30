@@ -3,10 +3,8 @@ const router = express.Router();
 const db = require('../config/db');
 const checkRole = require('../middleware/roleMiddleware');
 
-const ADMIN_ROLE = 1;
-
 // POST /api/jobs - Create a new job posting (Admin only)
-router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/', checkRole([1]), async (req, res) => {
     const { title, description, location, salary_range, application_deadline } = req.body;
     const organization_id = req.user.organization_id;
 
@@ -63,7 +61,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/jobs/:id - Update a job posting (Admin only)
-router.put('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.put('/:id', checkRole([2]), async (req, res) => {
     const { id } = req.params;
     const organization_id = req.user.organization_id;
     const { title, description, location, salary_range, application_deadline } = req.body;
@@ -106,7 +104,7 @@ router.put('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
 });
 
 // DELETE /api/jobs/:id - Delete a job posting (Admin only)
-router.delete('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.delete('/:id', checkRole([3]), async (req, res) => {
     const { id } = req.params;
     const organization_id = req.user.organization_id;
 

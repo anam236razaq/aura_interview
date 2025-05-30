@@ -13,7 +13,10 @@ export default function UpcomingInterview({type}) {
     const[interviewList, setInterviewList] = useState([]);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
     const[selectedInterviewId, setSelectedInterviewId] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const[searchQuery, setSearchQuery] = useState('');
+    const[currentPage, setCurrentPage] = useState(1);
+    const[totalPages, setTotalPages] = useState(1);
+    const[totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
     const navigate = useNavigate();
     
@@ -21,30 +24,45 @@ export default function UpcomingInterview({type}) {
 
     //Fetching Interview List
     useEffect(() => {
-      const handleInterviewList = async () => {
-        try{
-          const token = localStorage.getItem('authToken');
-          const response = await axios.get(`${API_BASE_URL}/interviews?type=${type}`, {
-            headers: {
-              "Content-Type": 'application/json',
-              Authorization: `Bearer ${token}`
+        const delayDebounce = setTimeout(() => {
+          const fetchInterviews = async () => {
+            try {
+                  const token = localStorage.getItem('authToken');
+                  const params = new URLSearchParams({
+                      page: currentPage,
+                      limit: itemsPerPage
+                  });
+
+                  if (searchQuery.trim()) {
+                      params.append('search', searchQuery.trim());
+                  }
+
+                  if(type){
+                      params.append('type', type);
+                  }
+
+                  const endPoint = `${API_BASE_URL}/interviews?${params.toString()}`;
+
+                  const response = await axios.get(endPoint, {
+                    headers: {
+                          "Content-Type": 'application/json',
+                          Authorization: `Bearer ${token}`
+                    }
+                  });
+                console.log(response)
+                setInterviewList(response?.data?.interviews || []);
+                setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+                setTotalEntries(response?.data?.total)
+            } catch (error) {
+              console.error(error);
             }
-          });
-          setInterviewList(response?.data);
-          console.log(response);
+          };
 
-        }catch(error){
-          console.log(error);
-        }
-      }
-      handleInterviewList();
-    }, [type]);
+          fetchInterviews();
+        }, 500);
 
-    //Pagination
-    const totalPages = Math.ceil(interviewList.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const currentInterviewList = interviewList.slice(startIndex, endIndex)
+          return () => clearTimeout(delayDebounce);
+      }, [searchQuery, currentPage, type]); 
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -92,7 +110,8 @@ export default function UpcomingInterview({type}) {
             <div className='row my-0 justify-content-between'>
                 <div className='d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto'>
                     <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '1.5rem'}}>
-                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search Interview" aria-controls="DataTables_Table_0" />
+                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search Interview" 
+                        aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} />
                       <label htmlFor='dt-search-0'></label>
                     </div>
                     
@@ -193,7 +212,7 @@ export default function UpcomingInterview({type}) {
                               </tr>
                             </thead>
                             <tbody>
-                              {currentInterviewList.map((interview) => (
+                              {interviewList.map((interview) => (
                                   <tr key={interview.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className='text-black'>{interview.title}</td>
@@ -228,7 +247,7 @@ export default function UpcomingInterview({type}) {
                     </div>
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                  list ={interviewList} handlePageChange = {handlePageChange}
+                  totalEntries ={totalEntries} handlePageChange = {handlePageChange}
                   totalPages={totalPages}/>
             </div>
           </div>

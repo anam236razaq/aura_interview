@@ -8,8 +8,6 @@ const fs = require('fs').promises; // Use promise-based fs
 const axios = require('axios');
 const FormData = require('form-data'); // To send multipart/form-data
 
-const ADMIN_ROLE = 1;
-const USER_ROLE = 2;
 
 // --- Multer Configuration for CV Uploads ---
 const cvUploadDir = path.join(__dirname, '../uploads/cv_temp'); // Use a temporary sub-directory
@@ -39,7 +37,7 @@ const cvFileFilter = (req, file, cb) => {
 const uploadCv = multer({ storage: cvStorage, fileFilter: cvFileFilter, limits: { fileSize: 20 * 1024 * 1024 } }); // 20MB limit
 
 // POST /api/cv/upload - Upload CV, send to N8N (Admin only)
-router.post('/upload', checkRole([ADMIN_ROLE]), uploadCv.single('cvFile'), async (req, res) => {
+router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req, res) => {
     const organization_id = req.user.organization_id;
     const file = req.file;
 
@@ -365,17 +363,41 @@ router.post('/webhook', async (req, res) => {
 });
 
 // GET /api/cv - List CVs for the logged-in user's organization
-router.get('/', async (req, res) => {
+router.get('/', checkRole([1,2]), async (req, res) => {
     const organization_id = req.user.organization_id; // Get org ID from authenticated user
+    const {page = 1, limit = 10, search} = req.query;
+
+    let query = `FROM cvs WHERE organization_id = ?`;
+    let params =[organization_id];
+
+    if(search){
+      query+=` AND (
+          LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name"))) LIKE ?
+          OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email"))) LIKE ?
+      )`
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm);  
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
 
     try {
-        let query = 'SELECT id, organization_id, file_path, JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name")) AS name, JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email,  score, created_at FROM cvs WHERE organization_id = ?';
-        const params = [organization_id];
+        const [countResult] = await db.query(`SELECT COUNT(*) as total ${query}`, params);
+        const total = countResult[0].total;
 
-        query += ' ORDER BY created_at DESC';
-
-        const [cvs] = await db.query(query, params);
-        res.json(cvs);
+        const [cvs] = await db.query(
+          `SELECT id, organization_id, file_path, 
+          JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name")) AS name, 
+          JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email,  
+          score, created_at 
+          ${query} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
+    
+        res.json({
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          cvs,
+        });
 
     } catch (error) {
         console.error('Error fetching CVs:', error);
@@ -383,43 +405,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /api/cv/search
-router.get('/search', async (req, res) => {
-    const organization_id = req.user.organization_id;
-    const search = req.query.search?.trim().toLowerCase();
-
-    if (!search) {
-        return res.status(400).json({ message: 'Search query is required' });
-    }
-
-    try {
-        const query = `
-            SELECT id, organization_id, file_path, 
-                  JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name")) AS name, 
-                  JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email,  
-                  score, created_at 
-            FROM cvs 
-            WHERE organization_id = ?
-              AND (
-                  LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name"))) LIKE ?
-                  OR LOWER(JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email"))) LIKE ?
-              )
-            ORDER BY created_at DESC
-        `;
-
-        const searchPattern = `%${search}%`;
-        const params = [organization_id, searchPattern, searchPattern];
-
-        const [results] = await db.query(query, params);
-        res.json(results);
-    } catch (error) {
-        console.error('Error searching CVs:', error);
-        res.status(500).json({ message: 'Error searching CVs' });
-    }
-});
-
 // GET /api/cv/:id - Get full details for a specific CV (ensure it belongs to user's org)
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkRole([1,2]), async (req, res) => {
     const { id } = req.params;
     const organization_id = req.user.organization_id; // Get org ID from authenticated user
 
@@ -475,7 +462,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/cv/:id/notes - Add an internal note to a CV (ensure CV belongs to user's org)
-router.post('/:id/notes', async (req, res) => {
+router.post('/:id/notes', checkRole([1,2]), async (req, res) => {
     const { id } = req.params; // cv_id
     const { note, parent_note_id } = req.body;
     const user_id = req.user.id; // Get user ID from authenticated user
@@ -512,7 +499,7 @@ router.post('/:id/notes', async (req, res) => {
 });
 
 // DELETE /api/cv/:id endpoint (likely Admin only)
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', checkRole([1,2]),  async(req, res) => {
   const {id} = req.params;
   const organization_id = req.user.organization_id;
 

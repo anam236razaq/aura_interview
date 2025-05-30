@@ -12,16 +12,13 @@ const assignmentRoutes = require('./assignmentRoutes'); // Import assignment rou
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 const authMiddleware = require('../middleware/authMiddleware'); // Import auth middleware
 
-const ADMIN_ROLE = 1;
-const USER_ROLE = 2; // Assuming User role ID is 2
-
 // GET /api/interviews - Get all interviews for the logged-in user's organization
 router.get('/', async (req, res) => {
   const organization_id = req.user.organization_id;
-  const { type, page = 1, limit = 10 } = req.query; // Defaults: page 1, 10 items per page
+  const { type, page = 1, limit = 10, search } = req.query; // Defaults: page 1, 10 items per page
   const now = new Date();
 
-  let query = 'SELECT * FROM interviews WHERE organization_id = ?';
+  let query = 'FROM interviews WHERE organization_id = ?';
   let params = [organization_id];
 
   if (type === 'upcoming') {
@@ -32,52 +29,34 @@ router.get('/', async (req, res) => {
     params.push(now);
   }
 
+  //Search Logic
+  if(search){
+    query+= ' AND (title LIKE ? OR description LIKE ?)';
+    const searchTerm = `%${search}%`;
+    params.push(searchTerm, searchTerm);
+  }
+
   // Pagination logic
   const offset = (parseInt(page) - 1) * parseInt(limit);
-  query += ' ORDER BY expiry_date DESC LIMIT ? OFFSET ?';
-  params.push(parseInt(limit), offset);
 
   try {
-    const [interviews] = await db.query(query, params);
+    const [countResult] = await db.query(`SELECT COUNT(*) as total ${query}`, params);
+    const total = countResult[0].total;
+
+    const [interviews] = await db.query(
+        `SELECT * ${query} ORDER BY expiry_date DESC LIMIT ? OFFSET ?`, 
+        [...params, parseInt(limit), offset]
+    );
+    
     res.json({
       page: parseInt(page),
       limit: parseInt(limit),
       interviews,
+      total,
     });
   } catch (error) {
     console.error('Error fetching interviews:', error);
     res.status(500).json({ message: 'Error fetching interviews' });
-  }
-});
-
-
-// GET /api/interviews/search - search interviews
-router.get('/search', async (req, res) => {
-  const organization_id = req.user.organization_id;
-  const { search } = req.query;
-
-  if (!search) {
-    return res.status(400).json({ message: 'Search query is required' });
-  }
-
-  const searchTerm = `%${search}%`;
-
-  const query = `
-    SELECT * FROM interviews 
-    WHERE organization_id = ? 
-    AND (
-        title LIKE ? OR
-        description LIKE ?
-    )`;
-
-  const params = [organization_id, searchTerm, searchTerm];
-
-  try {
-    const [results] = await db.query(query, params);
-    res.json(results);
-  } catch (error) {
-    console.error('Error searching interviews:', error);
-    res.status(500).json({ message: 'Error searching interviews' });
   }
 });
 
@@ -115,7 +94,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/interviews - Create a new interview (uses user's org ID) - Only Admins
-router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/', checkRole([1, 2]), async (req, res) => {
     let { title, description, userId, jobId, companyId, introVideo, outroVideo, candidateIds, reviewers, expiry_date, questions, newUser, newJob } = req.body;
     const organization_id = req.user.organization_id; // Get org ID from authenticated user
 
@@ -230,7 +209,7 @@ router.post('/', checkRole([ADMIN_ROLE]), async (req, res) => {
 });
 
 // PUT /api/interviews/:id - Update an existing interview (ensure it belongs to the user's org) - Only Admins
-router.put('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.put('/:id', checkRole([1, 2]), async (req, res) => {
   const { id } = req.params;
   const { title, description, status, questions } = req.body;
   const organization_id = req.user.organization_id; // Get org ID from authenticated user
@@ -298,7 +277,7 @@ router.put('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
 });
 
 // DELETE /api/interviews/:id - Delete an interview (ensure it belongs to the user's org) - Only Admins
-router.delete('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.delete('/:id', checkRole([1, 2]), async (req, res) => {
   const { id } = req.params;
   const organization_id = req.user.organization_id; // Get org ID from authenticated user
 
@@ -319,7 +298,7 @@ router.delete('/:id', checkRole([ADMIN_ROLE]), async (req, res) => {
 });
 
 // PATCH /api/interviews/:id/status - Update only the status of an interview
-router.patch('/:id/status', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.patch('/:id/status', checkRole([1, 2]), async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const organization_id = req.user.organization_id;
@@ -351,7 +330,7 @@ router.patch('/:id/status', checkRole([ADMIN_ROLE]), async (req, res) => {
 });
 
 // GET /api/interviews/:id/invitation-token - Generates or retrieves an invitation token for the interview
-router.get('/:id/invitation-token', authMiddleware, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.get('/:id/invitation-token', authMiddleware, checkRole([1, 2]), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -500,7 +479,7 @@ router.get('/:interviewId/all-responses', async (req, res) => {
 });
 
 // PUT /api/interviews/bulk-update - Update status for multiple interviews
-router.post('/bulk-update', checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/bulk-update', checkRole([1]), async (req, res) => {
     const { ids, status } = req.body;
     const organization_id = req.user.organization_id;
 
@@ -565,7 +544,7 @@ const videoStorage = multer.diskStorage({
 
   const uploadVideo = multer({storage: videoStorage, fileFilter: videoFileFilter, limits: { fileSize: 50 * 1024 * 1024 }});
 
-  router.post('/upload', checkRole([ADMIN_ROLE]),  uploadVideo.single('videoFile'), async(req, res) => {
+  router.post('/upload', checkRole([1]),  uploadVideo.single('videoFile'), async(req, res) => {
     const organization_id = req.user.organization_id;
     const file = req.file;
 

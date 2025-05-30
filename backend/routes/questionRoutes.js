@@ -4,8 +4,6 @@ const router = express.Router({ mergeParams: true });
 const db = require('../config/db');
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 
-const ADMIN_ROLE = 1;
-
 // Middleware to check if the interview (from parent route) belongs to the user's organization
 // This assumes the route is nested under /interviews/:interviewId
 async function checkInterviewOwnership(req, res, next) {
@@ -43,7 +41,7 @@ router.get('/', checkInterviewOwnership, async (req, res) => {
 });
 
 // POST /api/interviews/:interviewId/questions - Add a new question to an interview (Admin only)
-router.post('/', checkInterviewOwnership, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
   const { interviewId } = req.params;
   const { text, type, time_limit, order } = req.body;
   // Ownership already checked
@@ -111,7 +109,7 @@ router.get('/:id', checkQuestionOwnership, async (req, res) => {
 });
 
 // PUT /api/questions/:id - Update a specific question (Admin only)
-router.put('/:id', checkQuestionOwnership, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.put('/:id', checkQuestionOwnership, checkRole([1]), async (req, res) => {
   const { id } = req.params;
   const { text, type, time_limit, order } = req.body;
   // Ownership checked
@@ -164,7 +162,7 @@ router.put('/:id', checkQuestionOwnership, checkRole([ADMIN_ROLE]), async (req, 
 });
 
 // DELETE /api/questions/:id - Delete a specific question (Admin only)
-router.delete('/:id', checkQuestionOwnership, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.delete('/:id', checkQuestionOwnership, checkRole([1]), async (req, res) => {
   const { id } = req.params;
   // Ownership checked
 

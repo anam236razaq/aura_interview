@@ -18,51 +18,56 @@ export default function CompanyDetails() {
     const[searchQuery, setSearchQuery] = useState('');
     const[companyList, setCompanyList] = useState([]);
     const[currentPage, setCurrentPage] = useState(1);
+    const[totalPages, setTotalPages] = useState(1);
+    const[totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
 
     const toggleDropdown = () => setOpen(!open);
-
-    //Pagination
-    const totalPages = Math.ceil(companyList.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const currentCompanyList = companyList.slice(startIndex, endIndex)
-
-    const handlePageChange = (page) => {
-      if(page >= 1 && page <= totalPages){
-        setCurrentPage(page);
-      }
-    }
 
     //Fetching Candidate List
     useEffect(() => {
     const delayDebounce = setTimeout(() => {
       const handleCompanyList = async () => {
         try {
-            const token = localStorage.getItem('authToken');
-            const endPoint = searchQuery.trim()
-              ? `${API_BASE_URL}/companies/search?search=${encodeURIComponent(searchQuery)}`
-              : `${API_BASE_URL}/companies`;
+              const token = localStorage.getItem('authToken');
+              const params = new URLSearchParams({
+                  page: currentPage,
+                  limit: itemsPerPage
+              });
 
-            const response = await axios.get(endPoint, {
-              headers: {
-                "Content-Type": 'application/json',
-                Authorization: `Bearer ${token}`
+              if (searchQuery.trim()) {
+                  params.append('search', searchQuery.trim());
               }
-            });
 
-            setCompanyList(response?.data);
-            setCurrentPage(1);
+              const endPoint = `${API_BASE_URL}/companies?${params.toString()}`;
+
+              const response = await axios.get(endPoint, {
+                  headers: {
+                      "Content-Type": 'application/json',
+                      Authorization: `Bearer ${token}`
+                  }
+              });
+              console.log(response)
+              setCompanyList(response?.data?.companies || []);
+              setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+              setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
           }
       };
 
       handleCompanyList();
-    }, 500);
+    }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
+  }, [searchQuery, currentPage]);
+
+  
+    const handlePageChange = (page) => {
+      if(page >= 1 && page <= totalPages){
+        setCurrentPage(page);
+      }
+    }
 
     //Add company
     const handleAddCompany = (newCompany) => {
@@ -215,7 +220,7 @@ export default function CompanyDetails() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {currentCompanyList.map((company) => (
+                                        {companyList.map((company) => (
                                             <tr key={company.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                 <td className="sorting_1 text-black">
@@ -259,7 +264,7 @@ export default function CompanyDetails() {
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                            list ={companyList} handlePageChange = {handlePageChange}
+                            totalEntries ={totalEntries} handlePageChange = {handlePageChange}
                             totalPages={totalPages}/>
                     </div>
                   </div>

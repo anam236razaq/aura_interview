@@ -17,6 +17,8 @@ export default function CandidateList() {
     const[searchQuery, setSearchQuery] = useState('');
     const[candidatesList, setCandidatesList] = useState([]);
     const[currentPage, setCurrentPage] = useState(1);
+    const[totalPages, setTotalPages] = useState(1);
+    const[totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
     const navigate = useNavigate();
     
@@ -28,35 +30,38 @@ export default function CandidateList() {
       const handleCandidateList = async () => {
         try {
             const token = localStorage.getItem('authToken');
-            const endPoint = searchQuery.trim()
-              ? `${API_BASE_URL}/cv/search?search=${encodeURIComponent(searchQuery)}`
-              : `${API_BASE_URL}/cv`;
+              const params = new URLSearchParams({
+                  page: currentPage,
+                  limit: itemsPerPage
+              });
 
-            const response = await axios.get(endPoint, {
-              headers: {
-                "Content-Type": 'application/json',
-                Authorization: `Bearer ${token}`
+              if (searchQuery.trim()) {
+                  params.append('search', searchQuery.trim());
               }
-            });
 
-            setCandidatesList(response?.data);
-            setCurrentPage(1);
+              const endPoint = `${API_BASE_URL}/cv?${params.toString()}`;
+
+              const response = await axios.get(endPoint, {
+                  headers: {
+                      "Content-Type": 'application/json',
+                      Authorization: `Bearer ${token}`
+                  }
+              });
+
+              console.log(response)
+              setCandidatesList(response?.data?.cvs || []);
+              setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+              setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
           }
       };
 
       handleCandidateList();
-    }, 500);
+    }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery]);
-
-    //Pagination
-    const totalPages = Math.ceil(candidatesList.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const currentCandidateList = candidatesList.slice(startIndex, endIndex)
+  }, [searchQuery, currentPage]);
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -255,7 +260,7 @@ export default function CandidateList() {
                               </tr>
                             </thead>
                             <tbody>
-                              {currentCandidateList.map((candidate) => (
+                              {candidatesList.map((candidate) => (
                                   <tr key={candidate.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className="sorting_1 text-black">
@@ -301,7 +306,7 @@ export default function CandidateList() {
                     </div>
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                  list ={candidatesList} handlePageChange = {handlePageChange}
+                  totalEntries={totalEntries} handlePageChange = {handlePageChange}
                   totalPages={totalPages}/>
             </div>
           </div>

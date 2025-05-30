@@ -8,7 +8,6 @@ const checkRole = require('../middleware/roleMiddleware'); // Import role checke
 const authMiddleware = require('../middleware/authMiddleware'); // Import auth middleware
 const reviewRoutes = require('./reviewRoutes'); // Import review routes
 
-const ADMIN_ROLE = 1;
 
 // --- Multer Configuration for File Uploads ---
 
@@ -61,7 +60,7 @@ async function checkResponseAccess(req, res, next) {
         const interviewId = invitations[0].interview_id;
 
         // 2. Check if user is an Admin
-        if (userRoleId === ADMIN_ROLE) {
+        if (userRoleId === 1) {
             return next(); // Admins have access
         }
 

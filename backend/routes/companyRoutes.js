@@ -4,6 +4,7 @@ const db = require('../config/db');
 const multer = require('multer');
 const fs = require('fs').promises; 
 const path = require('path');
+const checkRole = require('../middleware/roleMiddleware');
 
 
 // --- Multer Configuration for logo Uploads ---
@@ -35,7 +36,7 @@ const logoFileFilter = (req, file, cb) => {
 const uploadLogo = multer({storage: logoStorage, fileFilter: logoFileFilter, limits: { fileSize: 50 * 1024 * 1024 }})
 
 // POST /api/companies
-router.post('/', uploadLogo.single('logo'), async(req, res) => {
+router.post('/', uploadLogo.single('logo'), checkRole([1, 2]),  async(req, res) => {
     const organization_id = req.user.organization_id;
 
     const {company_name, email, address, city, country, phone_number, title, state} = req.body;
@@ -64,56 +65,46 @@ router.post('/', uploadLogo.single('logo'), async(req, res) => {
 })
 
 // GET /api/companies - List all companies for the organization (All authenticated users)
-router.get('/', async (req, res) => {
+router.get('/', checkRole([1, 2]), async (req, res) => {
     const organization_id = req.user.organization_id;
+    const {page = 1, limit = 10, search} = req.query;
+
+    let query = 'FROM companies WHERE organization_id = ?'
+    let params = [organization_id];
+
+    //Search Logic
+    if(search){
+        query+= ' AND (company_name LIKE ? OR email LIKE ? OR title LIKE ? OR country LIKE ? OR state LIKE ? OR city LIKE ?)';
+        const searchTerm = `%${search}%`;
+        params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    }
+
+    // Pagination logic
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
     try {
-        const [companies] = await db.query('SELECT * FROM companies WHERE organization_id = ? ORDER BY created_at DESC', [organization_id]);
-        res.json(companies);
+        const [countResult] = await db.query(`SELECT COUNT(*) as total ${query}`, params);
+        const total = countResult[0].total;
+
+        const [companies] = await db.query(
+            `SELECT * ${query} ORDER BY created_at DESC LIMIT ? OFFSET ?`, 
+            [...params, parseInt(limit), offset]);
+
+        res.json({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            companies,
+            total,
+        });
+
     } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error('Error fetching companies:', error);
         res.status(500).json({ message: 'Error fetching company list.' });
     }
 });
 
-// GET /api/companies/search - Search company
-router.get('/search', async (req, res) => {
-  const organization_id = req.user.organization_id;
-  const { search } = req.query;
-
-  if (!search) {
-    return res.status(400).json({ message: 'Search query is required' });
-  }
-
-  const searchTerm = `%${search}%`;
-
-  const query = `
-    SELECT * FROM companies 
-    WHERE organization_id = ? 
-    AND (
-      company_name LIKE ? OR
-      email LIKE ? OR
-      title LIKE ? OR
-      country LIKE ? OR
-      state LIKE ? OR
-      city LIKE ?
-    )
-    ORDER BY created_at DESC
-  `;
-
-  const params = [organization_id, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm];
-
-  try {
-    const [results] = await db.query(query, params);
-    res.json(results);
-  } catch (error) {
-    console.error('Error searching companies:', error);
-    res.status(500).json({ message: 'Error searching companies.' });
-  }
-});
-
-
 // PUT /api/companies/:id - Update a company for the organization (All authenticated users)
-router.put('/:id', uploadLogo.single('logo'),  async(req, res) => {
+router.put('/:id', uploadLogo.single('logo'), checkRole([1, 2]),  async(req, res) => {
     const {id} = req.params;
     const organization_id = req.user.organization_id;
 
@@ -152,7 +143,7 @@ router.put('/:id', uploadLogo.single('logo'),  async(req, res) => {
 })
 
 // DELETE /api/companies/:id - Delete a company for the organization (All authenticated users)
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', checkRole([1, 2]), async(req, res) => {
     const {id} = req.params;
     const organization_id = req.user.organization_id;
 
@@ -174,7 +165,6 @@ router.delete('/:id', async(req, res) => {
     }
 
 })
-
 
 
 module.exports = router;

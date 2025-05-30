@@ -4,8 +4,6 @@ const db = require('../config/db');
 const crypto = require('crypto');
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 
-const ADMIN_ROLE = 1;
-
 // Middleware to check if the interview (from parent route) belongs to the user's organization
 // Applied only to routes that manage invitations (POST /, GET /)
 async function checkInterviewOwnership(req, res, next) {
@@ -31,7 +29,7 @@ async function checkInterviewOwnership(req, res, next) {
 }
 
 // POST /api/interviews/:interviewId/invitations - Create a new invitation (Admin only)
-router.post('/', checkInterviewOwnership, checkRole([ADMIN_ROLE]), async (req, res) => {
+router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
   const { interviewId } = req.params;
   const { email, first_name, last_name, message, expires_at } = req.body;
   const organization_id = req.user.organization_id; // Use org ID from user

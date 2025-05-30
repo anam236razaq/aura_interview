@@ -16,6 +16,7 @@ export default function InterviewList() {
     const[searchQuery, setSearchQuery] = useState('');
     const[currentPage, setCurrentPage] = useState(1);
     const[totalPages, setTotalPages] = useState(1);
+    const[totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
     const navigate = useNavigate();
     
@@ -46,14 +47,15 @@ export default function InterviewList() {
         });
         console.log(response)
         setInterviewList(response?.data?.interviews || []);
-        setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); // optional if total count is returned
+        setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+        setTotalEntries(response?.data?.total)
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchInterviews();
-  }, 500);
+  }, 1000);
 
   return () => clearTimeout(delayDebounce);
 }, [searchQuery, currentPage]);
@@ -242,8 +244,8 @@ export default function InterviewList() {
                     </div>
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                  list ={interviewList} handlePageChange = {handlePageChange}
-                  totalPages={totalPages}/>
+                  handlePageChange = {handlePageChange} totalPages={totalPages} 
+                  totalEntries={totalEntries}/>
             </div>
           </div>
         </div>
