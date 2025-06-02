@@ -282,14 +282,15 @@ function AssignmentList({interviewId}){
                 axios.get(`${API_BASE_URL}/users`, config)
             ]);
             setAssignments(assignRes.data || []);
-            setAllUsers(usersRes.data || []);
-            if (usersRes.data && usersRes.data.length > 0) {
+            setAllUsers(usersRes.data.users || []);
+            if (usersRes.data.users && usersRes.data.users.length > 0) {
                 const assignedIds = new Set((assignRes.data || []).map(a => a.user_id));
-                const firstAvailable = usersRes.data.find(u => !assignedIds.has(u.id));
+                const firstAvailable = usersRes.data.users.find(u => !assignedIds.has(u.id));
                 setSelectedUserId(firstAvailable ? firstAvailable.id : '');
             } else {
                 setSelectedUserId('');
             }
+            console.log(assignRes, usersRes);
         } catch (err) {
             console.log('Failed to load assignment data. ' + (err.response?.data?.message || ''));
         } finally {
@@ -394,6 +395,8 @@ const InvitationList = ({ interviewId }) => {
     const [invitations, setInvitations] = useState([]);
     const [loadingInvites, setLoadingInvites] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
     
     const [showModal, setShowModal] = useState(false);
@@ -401,11 +404,21 @@ const InvitationList = ({ interviewId }) => {
     const fetchInvitations = async () => {
         setLoadingInvites(true);
         const token = localStorage.getItem('authToken');
+        const params = new URLSearchParams({
+          page: currentPage,
+          limit: itemsPerPage
+        });
+
+        const endPoint = `${API_BASE_URL}/interviews/${interviewId}/invitations?${params.toString()}`;
+        
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         try {
-            const response = await axios.get(`${API_BASE_URL}/interviews/${interviewId}/invitations`, config);
-            setInvitations(response.data || []);
+            const response = await axios.get(endPoint, config);
+            setInvitations(response.data.invitations || []);
+            setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+            setTotalEntries(response?.data?.total)
+            console.log(response)
         } catch (err) {
             console.log('Failed to load invitations. ' + (err.response?.data?.message || ''));
         } finally {
@@ -418,13 +431,6 @@ const InvitationList = ({ interviewId }) => {
     }, [interviewId]);
 
     if(loadingInvites) return;
-
-    
-    //Pagination
-    const totalPages = Math.ceil(invitations.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const currentInvitationList = invitations.slice(startIndex, endIndex)
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -477,7 +483,7 @@ const InvitationList = ({ interviewId }) => {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {currentInvitationList.map((inv) => (
+                                        {invitations.map((inv) => (
                                             <tr key={inv.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                  <td>{inv.email}</td>
@@ -491,7 +497,7 @@ const InvitationList = ({ interviewId }) => {
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
-                            list ={invitations} handlePageChange = {handlePageChange}
+                            totalEntries ={totalEntries} handlePageChange = {handlePageChange}
                             totalPages={totalPages}/>
                     </div>
                 </div>

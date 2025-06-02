@@ -84,8 +84,8 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                 // 1. Insert into cvs table
                 const personalInfo = cvData.personal_info || {};
                 const cvInsertResult = await connection.query(
-                    'INSERT INTO cvs (organization_id, file_path, personal_info, score) VALUES (?, ?, ?, ?)',
-                    [parseInt(organization_id), file.originalname, JSON.stringify(personalInfo), null] // Score is initially null
+                    'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
+                    [parseInt(organization_id), file.originalname, JSON.stringify(personalInfo), null, 'processing'] // Score is initially null
                 );
                 const cvId = cvInsertResult[0].insertId;
 
@@ -189,6 +189,8 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                     'INSERT INTO cvs_extra (cv_id, programming_languages, foreign_languages) VALUES (?, ?, ?)',
                     [cvId, JSON.stringify(programmingLanguages), JSON.stringify(foreignLanguages)]
                 );
+
+                await connection.query('UPDATE cvs SET status = ? WHERE id = ?' , ['processed', cvId]);
             }
 
             await connection.commit(); // Commit transaction
@@ -365,9 +367,9 @@ router.post('/webhook', async (req, res) => {
 // GET /api/cv - List CVs for the logged-in user's organization
 router.get('/', checkRole([1,2]), async (req, res) => {
     const organization_id = req.user.organization_id; // Get org ID from authenticated user
-    const {page = 1, limit = 10, search} = req.query;
+    const {page = 1, limit = 10, search, status, skills, shortlisted } = req.query;
 
-    let query = `FROM cvs WHERE organization_id = ?`;
+    let query = `FROM cvs LEFT JOIN cvs_shortlist ON cvs.id = cvs_shortlist.cv_id  WHERE cvs.organization_id = ?`;
     let params =[organization_id];
 
     if(search){
@@ -379,6 +381,30 @@ router.get('/', checkRole([1,2]), async (req, res) => {
       params.push(searchTerm, searchTerm);  
     }
 
+    // Status filter
+    if (status) {
+      query += ` AND cvs.status = ?`;
+      params.push(status);
+    }
+
+      // Shortlisted filter
+  if (shortlisted === 'true') {
+    query += ` AND cvs_shortlist.shortlisted = TRUE`;
+  } else if (shortlisted === 'false') {
+    query += ` AND (cvs_shortlist.shortlisted IS NULL OR cvs_shortlist.shortlisted = FALSE)`;
+  }
+
+  // Skills filter (comma-separated list)
+  if (skills) {
+    const skillsArray = skills.split(',').map(s => s.trim().toLowerCase());
+    for (const skill of skillsArray) {
+      query += ` AND EXISTS (
+        SELECT 1 FROM cvs_skills 
+        WHERE cvs_skills.cv_id = cvs.id AND LOWER(cvs_skills.skill) = ?
+      )`;
+      params.push(skill);
+    }
+  }
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     try {
@@ -386,10 +412,12 @@ router.get('/', checkRole([1,2]), async (req, res) => {
         const total = countResult[0].total;
 
         const [cvs] = await db.query(
-          `SELECT id, organization_id, file_path, 
+          `SELECT cvs.id, cvs.organization_id, cvs.file_path, cvs.status,
           JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.name")) AS name, 
-          JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email,  
-          score, created_at 
+          JSON_UNQUOTE(JSON_EXTRACT(personal_info, "$.email")) AS email, 
+          (SELECT GROUP_CONCAT(skill SEPARATOR ', ') FROM cvs_skills WHERE cvs_skills.cv_id = cvs.id) AS skills,
+          cvs.score, cvs.created_at ,
+          IF(cvs_shortlist.shortlisted = TRUE, TRUE, FALSE) AS shortlisted 
           ${query} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, parseInt(limit), offset]);
     
         res.json({
@@ -404,6 +432,34 @@ router.get('/', checkRole([1,2]), async (req, res) => {
         res.status(500).json({ message: 'Error fetching CVs' });
     }
 });
+
+// POST /api/cv/:id/shortlist - Toggle shortlist status for a CV
+router.post('/:id/shortlist', checkRole([1, 2]), async (req, res) => {
+  const { id } = req.params; // CV ID
+  const { shortlisted } = req.body; // Boolean: true or false
+
+  try {
+    if (shortlisted) {
+      // Add to shortlist
+      await db.query(
+        'INSERT INTO cvs_shortlist (cv_id, shortlisted) VALUES (?, TRUE) ON DUPLICATE KEY UPDATE shortlisted = TRUE',
+        [id]
+      );
+    } else {
+      // Remove from shortlist
+      await db.query(
+        'DELETE FROM cvs_shortlist WHERE cv_id = ?',
+        [id]
+      );
+    }
+
+    res.json({ message: 'Shortlist status updated successfully' });
+  } catch (error) {
+    console.error('Error updating shortlist status:', error);
+    res.status(500).json({ message: 'Error updating shortlist status' });
+  }
+});
+
 
 // GET /api/cv/:id - Get full details for a specific CV (ensure it belongs to user's org)
 router.get('/:id', checkRole([1,2]), async (req, res) => {

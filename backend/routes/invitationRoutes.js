@@ -66,15 +66,34 @@ router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
 // GET /api/interviews/:interviewId/invitations - List invitations for an interview
 router.get('/', checkInterviewOwnership, async (req, res) => {
     const { interviewId } = req.params;
+    const { page = 1, limit = 10} = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let baseQuery = 'FROM invitations WHERE interview_id = ?';
+    let params = [interviewId];
     // Ownership already checked by middleware
     try {
-        const [invitations] = await db.query('SELECT id, email, first_name, last_name, status, created_at, expires_at FROM invitations WHERE interview_id = ?', [interviewId]);
-        res.json(invitations);
+        const [countResult] = await db.query(`SELECT COUNT(*) as total ${baseQuery}`, params);
+        const total = countResult[0].total;
+
+        const [invitations] = await db.query(
+            `SELECT id, email, first_name, last_name, status, created_at, expires_at ${baseQuery} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+            [...params, parseInt(limit), offset]
+        );
+
+        res.json({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+            invitations
+        });
+
     } catch (error) {
         console.error('Error fetching invitations:', error);
         res.status(500).json({ message: 'Error fetching invitations' });
     }
-});
+}); 
 
 // --- Routes for candidates accessing via token (mounted separately) ---
 

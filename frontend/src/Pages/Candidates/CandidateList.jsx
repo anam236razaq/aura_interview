@@ -8,6 +8,7 @@ import { API_BASE_URL } from '../../utils/Constants';
 import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
+import Select from 'react-select';
 
 export default function CandidateList() {
     const[open, setOpen] = useState(false);
@@ -19,6 +20,10 @@ export default function CandidateList() {
     const[currentPage, setCurrentPage] = useState(1);
     const[totalPages, setTotalPages] = useState(1);
     const[totalEntries, setTotalEntries] = useState(0);
+    const[skills, setSkills] = useState([]);
+    const[selectedSkill, setSelectedSkill] = useState([]);
+    const [shortlisted, setShortlisted] = useState('');
+    const [status, setStatus] = useState('');
     const itemsPerPage = 10;
     const navigate = useNavigate();
     
@@ -32,7 +37,10 @@ export default function CandidateList() {
             const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
                   page: currentPage,
-                  limit: itemsPerPage
+                  limit: itemsPerPage,
+                  status,
+                  shortlisted,
+                  skills: selectedSkill.join(','),
               });
 
               if (searchQuery.trim()) {
@@ -93,7 +101,63 @@ export default function CandidateList() {
       }
     }
 
+    //Toggle shortlist candidate
+    const handleShortlistToggle = async (cvId, currentlyShortlisted) => {
+  try {
+    const updatedShortlisted = currentlyShortlisted === 1 ? 0 : 1;
+    const token = localStorage.getItem('authToken');
+
+    const response = await axios.post(`${API_BASE_URL}/cv/${cvId}/shortlist`, 
+      { shortlisted: updatedShortlisted },
+      {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+    });
+    console.log(response);
+      // Ideally, update the local state to reflect change
+      setCandidatesList(prev =>
+        prev.map(c =>
+          c.id === cvId ? { ...c, shortlisted: updatedShortlisted } : c
+        )
+      );
+ 
+  } catch (err) {
+    console.error('Error toggling shortlist:', err);
+  }
+};
+
+    useEffect(()=> {
+        const skillQuery = selectedSkill.length > 0? selectedSkill.join(',') : "";
+
+        const fetchSkills = async () => {
+        try{
+          const token = localStorage.getItem('authToken');
+          const response = await axios.get(API_BASE_URL+ '/skills', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": 'application/json'
+            },
+            params: {
+                skills: skillQuery
+
+            }
+          })
+          setSkills(response?.data);
+          console.log(response);
+        }catch(error){
+          console.log(error);
+        }
+    }
+
+    fetchSkills();
+
+    }, [selectedSkill]);
+
+
   return (
+    
     <>
     <Toaster reverseOrder={false} position='top-center' />
     <div className="content-wrapper">
@@ -107,28 +171,27 @@ export default function CandidateList() {
           <h5 className="card-title mb-0">Filters</h5>
           <div className="d-flex justify-content-between align-items-center row pt-4 gap-4 gap-md-0">
             <div className="col-md-4 user_status">
-                <select id="FilterTransaction" className='form-select text-capitalize'>
+                <select id="FilterTransaction" className='form-select text-capitalize' 
+                    value={status} onChange={(e) => setStatus(e.target.value)}>
                     <option value>Select Status</option>
-                    <option value= 'Inactive' className='text-capitalize'>Inactive</option>
-                    <option value= 'Draft' className='text-capitalize'>Draft</option>
                     <option value= 'Processed' className='text-capitalize'>Processed</option>
                     <option value= 'Processing' className='text-capitalize'>Processing</option>
                 </select>
               </div>
               <div className="col-md-4 user_role">
-                <select id="Skills" className='form-select text-capitalize'>
-                    <option value>Select Skills</option>
-                    <option value= 'Laravel' className='text-capitalize'>Laravel</option>
-                    <option value= 'PHP' className='text-capitalize'>PHP</option>
-                    <option value= 'React Js' className='text-capitalize'>React Js</option>
-                    <option value= 'HTML' className='text-capitalize'>HTML</option>
-                    <option value= 'Designer' className='text-capitalize'>Designer</option>
-                    <option value= 'Vue Js' className='text-capitalize'>Vue Js</option>
-                    <option value= 'Devops' className='text-capitalize'>Devops</option>
-                </select>
+                
+                  <Select options={skills?.skills?.map(skill => ({ label: skill, value: skill }))}
+                      isMulti name="skills" className="basic-multi-select" classNamePrefix="select skills"
+                        value={skills?.skills?.map(skill => ({ label: skill, value: skill }))
+                          .filter(option => selectedSkill.includes(option.value))}
+                              onChange={(selectedOptions) =>{
+                                const selectedValues= selectedOptions.map(option => option.value);
+                                    setSelectedSkill(selectedValues);
+                  }}/>
               </div>
               <div className="col-md-4 user_role">
-                <select id="Shortlist" className='form-select text-capitalize'>
+                <select id="Shortlist" className='form-select text-capitalize' 
+                  value={shortlisted} onChange={(e) => setShortlisted(e.target.value)}>
                     <option value>Select Shortlist</option>
                     <option value= 'Active' className='text-capitalize'>Active</option>
                     <option value= 'Deactive' className='text-capitalize'>Deactive</option>
@@ -236,12 +299,10 @@ export default function CandidateList() {
                             <colgroup>
                                 <col data-dt-column="0" style={{width: '10%'}} />
                                 <col data-dt-column="1" style={{width: '15%'}} />
-                                <col data-dt-column="2" style={{width: '18%'}} />
-                                <col data-dt-column="3" style={{width: '12%'}} />
-                                <col data-dt-column="4" style={{width: '10%'}} />
-                                <col data-dt-column="5" style={{width: '15%'}} />
-                                <col data-dt-column="6" style={{width: '10%'}} />
-                                <col data-dt-column="7" style={{width: '10%'}} />
+                                <col data-dt-column="2" style={{width: '32%'}} />
+                                <col data-dt-column="3" style={{width: '8%'}} />
+                                <col data-dt-column="4" style={{width: '12%'}} />
+                                <col data-dt-column="5" style={{width: '13%'}} />
                             </colgroup>
                             <thead className="border-top">
                               <tr>
@@ -250,9 +311,8 @@ export default function CandidateList() {
                                   <input className="form-check-input custom-checkbox" type="checkbox" />
                                 </th>
                                 {[{columnName: 'CANDIDATE NAME', dtColumn: '1'}, {columnName: 'SKILLS', dtColumn: '2'},
-                                  {columnName: 'SHORTLIST', dtColumn: '3'}, {columnName: 'CODE', dtColumn: '4'},
-                                  {columnName: 'INTERVIEW', dtColumn: '5'}, {columnName: 'STATUS', dtColumn: '6'},
-                                  {columnName: 'ACTIONS', dtColumn: '7'}].map((column, index) => (
+                                  {columnName: 'SHORTLIST', dtColumn: '3'}, {columnName: 'STATUS', dtColumn: '4'},
+                                  {columnName: 'ACTIONS', dtColumn: '5'}].map((column, index) => (
                                     <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                         <span className="dt-column-title">{column.columnName}</span>
                                     </th>
@@ -269,16 +329,15 @@ export default function CandidateList() {
                                         <small>{candidate.email}</small>
                                     </div>
                                   </td>
-                                  <td className='text-black'>Laravel, PHP</td>
+                                  <td className='text-black'>{candidate.skills}</td>
                                   <td>
                                     <div className="form-check form-switch m-0">
-                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
+                                          checked={candidate.shortlisted === 1} onChange={() => handleShortlistToggle(candidate.id, candidate.shortlisted)}/>
                                     </div>
                                   </td>
-                                  <td>238474</td>
-                                  <td style={{color: '#5232C2B2', fontWeight: '600'}}>20-10-2024</td>
                                 <td>
-                                  <span className="badge bg-label-success">Processed</span>
+                                  <span className="badge bg-label-success">{candidate.status}</span>
                                 </td>
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
