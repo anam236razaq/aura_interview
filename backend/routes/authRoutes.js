@@ -89,6 +89,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials.' }); // User not found
         }
         const user = users[0];
+        
 
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password_hash);
@@ -100,7 +101,7 @@ router.post('/login', async (req, res) => {
         const payload = { user: { id: user.id, role_id: user.role_id, organization_id: user.organization_id } };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
 
-        res.json({ token, userId: user.id, email: email, organization_id: user.organization_id });
+        res.json({ token, userId: user.id, email: email, organization_id: user.organization_id,  role_id: user.role_id,});
 
     } catch (error) {
         console.error('Error during login:', error);

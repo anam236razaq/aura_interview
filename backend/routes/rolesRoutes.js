@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // GET /api/roles - List all roles
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware,  async (req, res) => {
     try {
         const [roles] = await db.query('SELECT * FROM roles',);
         res.json(roles);

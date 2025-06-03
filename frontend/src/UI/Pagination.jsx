@@ -1,5 +1,6 @@
 
-export default function Pagination({currentPage, itemsPerPage, handlePageChange, totalPages, totalEntries}) {
+export default function Pagination({list, currentPage, itemsPerPage, handlePageChange, totalPages, totalEntries}) {
+    if(list.length === 0) return null;
 
   return (
     <div className="row mx-3 justify-content-between">

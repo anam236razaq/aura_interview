@@ -19,6 +19,9 @@ export default function UserList() {
   const [currentPage, setCurrentPage] = useState(1);
   const[totalPages, setTotalPages] = useState(1);
   const[totalEntries, setTotalEntries] = useState(0);
+  const[userType, setUserType] = useState('');
+  const[status, setStatus] = useState('');
+  const[allRoles, setAllRoles] = useState([]);
   const itemsPerPage = 10;
 
   const toggleDropdown = () => setOpen(!open);
@@ -36,6 +39,14 @@ export default function UserList() {
 
             if (searchQuery.trim()) {
               params.append('search', searchQuery.trim());
+            }
+
+            if (userType) {
+              params.append('type', userType);
+            }
+
+            if (status) {
+              params.append('status', status);
             }
 
             const endPoint = `${API_BASE_URL}/users?${params.toString()}`;
@@ -60,7 +71,7 @@ export default function UserList() {
     }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery, currentPage]);
+  }, [searchQuery, currentPage, status, userType]);
 
 
     const handlePageChange = (page) => {
@@ -96,6 +107,42 @@ export default function UserList() {
       setUserList(prev => [newUser, ...prev]);
     }
 
+    const handleStatusToggle = async (userId, currentStatus) => {
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.put(`${API_BASE_URL}/users/${userId}/status`, {status: newStatus}, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        console.log(response);
+        setUserList((prevList) => 
+          prevList.map((user) => user.id === userId ? {...user, status: newStatus} : user)
+        )
+
+      }catch(error){
+        console.log(error);
+      }
+    }
+
+    useEffect(() => {
+      const fetchRoles = async () => {
+        try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get(`${API_BASE_URL}/roles`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setAllRoles(response?.data);
+        }catch(error){
+          console.log(error);
+        }
+      }
+      fetchRoles();
+    }, [])
+
   return (
     <>
      <Toaster reverseOrder={false} position='top-center' />
@@ -110,17 +157,20 @@ export default function UserList() {
                   <h5 className="card-title mb-0">Filters</h5>
                   <div className="d-flex justify-content-between align-items-center row pt-4 gap-4 gap-md-0">
                     <div className="col-md-6 user_status">
-                        <select id="FilterTransaction" className='form-select text-capitalize'>
-                            <option value>Select Status</option>
+                        <select id="FilterTransaction" className='form-select text-capitalize' value={status}
+                            onChange={(e)=> setStatus(e.target.value)}>
+                            <option value = "">Select Status</option>
                             <option value= 'Active' className='text-capitalize'>Active</option>
-                            <option value= 'Deactive' className='text-capitalize'>Deactive</option>
+                            <option value= 'Inactive' className='text-capitalize'>Inactive</option>
                         </select>
                       </div>
                       <div className="col-md-6 user_role">
-                        <select id="UserRole" className='form-select text-capitalize'>
-                            <option value>User Type</option>
-                            <option value= 'User' className='text-capitalize'>User</option>
-                            <option value= 'Owner' className='text-capitalize'>Owner</option>
+                        <select id="UserRole" className='form-select text-capitalize' value={userType} 
+                          onChange={(e)=>setUserType(e.target.value)}>
+                            <option value ="">User Type</option>
+                            {allRoles.map((role) => (
+                                <option key={role.id} value= {role.name} >{role.name}</option>
+                            ))}
                         </select>
                       </div>
                   
@@ -212,12 +262,11 @@ export default function UserList() {
                                 aria-describedby="DataTables_Table_0_info" style={{width: '100%'}}>
                                     <colgroup>
                                         <col data-dt-column="0" style={{width: '10%'}} />
-                                        <col data-dt-column="1" style={{width: '15%'}} />
-                                        <col data-dt-column="2" style={{width: '15%'}} />
-                                        <col data-dt-column="3" style={{width: '15%'}} />
-                                        <col data-dt-column="4" style={{width: '18%'}} />
-                                        <col data-dt-column="5" style={{width: '12%'}} />
-                                        <col data-dt-column="6" style={{width: '15%'}} />
+                                        <col data-dt-column="1" style={{width: '20%'}} />
+                                        <col data-dt-column="2" style={{width: '20%'}} />
+                                        <col data-dt-column="3" style={{width: '18%'}} />
+                                        <col data-dt-column="4" style={{width: '12%'}} />
+                                        <col data-dt-column="5" style={{width: '20%'}} />
                                     </colgroup>
                                     <thead className="border-top"> 
                                       <tr>
@@ -227,8 +276,8 @@ export default function UserList() {
                                         </th>
 
                                         {[{columnName: 'Full name', dtColumn: '1'}, {columnName: 'email', dtColumn: '2'},
-                                          {columnName: 'active/deactive', dtColumn: '3'}, {columnName: 'register date', dtColumn: '4'},
-                                          {columnName: 'type', dtColumn: '5'}, {columnName: 'ACTIONS', dtColumn: '6'}].map((column, index) => (
+                                          {columnName: 'active/deactive', dtColumn: '3'},
+                                          {columnName: 'type', dtColumn: '4'}, {columnName: 'ACTIONS', dtColumn: '5'}].map((column, index) => (
                                             <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                               <span className="dt-column-title">{column.columnName}</span>
                                             </th>
@@ -236,17 +285,18 @@ export default function UserList() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {userList.map((user) => (
+                                      {userList.length > 0 ? (
+                                        userList.map((user) => (
                                       <tr key={user.id}>
                                         <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                         <td className="sorting_1 text-black">{user.first_name} {user.last_name}</td>
                                         <td className='text-black'>{user.email}</td>
                                         <td>
                                           <div className="form-check form-switch m-0">
-                                            <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" />
+                                            <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
+                                              checked={user.status === 'active'} onChange={()=>handleStatusToggle(user.id, user.status)}/>
                                           </div>
                                         </td>
-                                        <td style={{color: '#5232C2B2'}}>20-10-2024</td>
                                         <td>
                                           <span className="badge bg-label-success text-capitalize">{user.role_name}</span>
                                         </td>
@@ -268,7 +318,11 @@ export default function UserList() {
                                           </div>
                                         </td>
                                       </tr>
-                                      ))}
+                                      ))) : (
+                                        <tr>
+                                            <td colSpan="6" className="text-center">No users found</td>
+                                        </tr>
+                                      )}
                                   </tbody>
                               </table>
                               {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
@@ -276,7 +330,7 @@ export default function UserList() {
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                           totalEntries ={totalEntries} handlePageChange = {handlePageChange}
-                          totalPages={totalPages}/>
+                          totalPages={totalPages} list={userList}/>
                     </div>
                   </div>
                 </div>

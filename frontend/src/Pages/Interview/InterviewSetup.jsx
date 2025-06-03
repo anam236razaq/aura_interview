@@ -54,7 +54,7 @@ export default function InterviewSetup() {
                         "Content-Type": 'application/json'
                     }
                 })
-                setUsers(response.data);
+                setUsers(response.data.users);
                 console.log(response.data);
             }catch(error){
                 console.log(error);
@@ -87,7 +87,7 @@ export default function InterviewSetup() {
               Authorization: `Bearer ${token}`
             }
           });
-          setCompanies(response?.data);
+          setCompanies(response?.data.companies);
           console.log(response?.data);
 
         }catch(error){
@@ -281,6 +281,11 @@ export default function InterviewSetup() {
                                         </button>
                                         <button className="btn btn-primary btn-next waves-effect waves-light" onClick={async(e) => {
                                             e.preventDefault();
+
+                                            if(users.length === 0){
+                                                toast.error("Please add at least one user to create interview.");
+                                                return
+                                            }
 
                                             let isValid = false;
                                             if(selectedInterviewer){

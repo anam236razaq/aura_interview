@@ -27,7 +27,8 @@ export default function Login({onLogin}) {
                 }
             )
             const token = response?.data?.token;
-
+            localStorage.setItem('roleId', response?.data?.role_id);
+            console.log(response);
             toast.success("Login successful");
             onLogin(token);
 

@@ -212,7 +212,8 @@ export default function UpcomingInterview({type}) {
                               </tr>
                             </thead>
                             <tbody>
-                              {interviewList.map((interview) => (
+                              {interviewList.length > 0 ? (
+                                interviewList.map((interview) => (
                                   <tr key={interview.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className='text-black'>{interview.title}</td>
@@ -240,7 +241,11 @@ export default function UpcomingInterview({type}) {
                                     </div>
                                   </td>
                                 </tr>
-                              ))}
+                              ))) : (
+                                 <tr>
+                                      <td colSpan="6" className="text-center">No upcoming interviews found</td>
+                                </tr>
+                              )}
                           </tbody>
                       </table>
                       {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
@@ -248,7 +253,7 @@ export default function UpcomingInterview({type}) {
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                   totalEntries ={totalEntries} handlePageChange = {handlePageChange}
-                  totalPages={totalPages}/>
+                  totalPages={totalPages} list={interviewList}/>
             </div>
           </div>
         </div>

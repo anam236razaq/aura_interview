@@ -483,7 +483,8 @@ const InvitationList = ({ interviewId }) => {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {invitations.map((inv) => (
+                                        {invitations.length > 0 ? (
+                                            invitations.map((inv) => (
                                             <tr key={inv.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                  <td>{inv.email}</td>
@@ -491,14 +492,18 @@ const InvitationList = ({ interviewId }) => {
                                                 <td>{inv.status}</td>
                                                 <td>{new Date(inv.created_at).toLocaleString()}</td>
                                             </tr>
-                                        ))}
+                                        ))) : (
+                                            <tr>
+                                                <td colSpan="6" className="text-center">No invitations found</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                             totalEntries ={totalEntries} handlePageChange = {handlePageChange}
-                            totalPages={totalPages}/>
+                            totalPages={totalPages} list={invitations}/>
                     </div>
                 </div>
             </div>

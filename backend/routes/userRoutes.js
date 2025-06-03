@@ -14,7 +14,7 @@ const USER_ROLE = 2; // Assuming User role ID is 2
 // GET /api/users - List users within the admin's organization (Admin only)
 router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
   const organization_id = req.user.organization_id;
-  const { page = 1, limit = 10, search } = req.query;
+  const { page = 1, limit = 10, search, status, type } = req.query;
 
   let query = `
     FROM users
@@ -34,6 +34,16 @@ router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
     params.push(searchTerm, searchTerm, searchTerm, searchTerm);
   }
 
+  if(status){
+    query+= ` AND users.status = ?`;
+    params.push(status)
+  }
+
+  if(type){
+    query+= ` AND roles.name = ?`;
+    params.push(type)
+  }
+
   const offset = (parseInt(page) - 1) * parseInt(limit);
 
   try {
@@ -49,7 +59,8 @@ router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
         users.first_name, 
         users.last_name, 
         users.role_id, 
-        roles.name AS role_name 
+        roles.name AS role_name,
+        users.status
         ${query}
         ORDER BY users.created_at DESC 
         LIMIT ? OFFSET ?`,
@@ -67,6 +78,20 @@ router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
     res.status(500).json({ message: 'Error fetching users.' });
   }
 });
+
+//Update the status
+router.put('/:id/status', authMiddleware, checkRole([1]), async(req, res) => {
+    const {id} = req.params;
+    const {status} = req.body;
+
+    try{
+        await db.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+        res.json({message: 'Status updated successfully'})
+    }catch(error){
+        console.error('Error updating status:', error);
+        res.status(500).json({ message: 'Error updating user status.' });
+    }
+})
 
 // POST /api/users/invite - Invite/Create a new user within the organization (Admin only)
 router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {

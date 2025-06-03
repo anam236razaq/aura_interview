@@ -33,6 +33,8 @@ import { useState } from "react"
 import { useEffect } from "react"
 import UpcomingInterview from "./Pages/Interview/UpcomingInterview"
 import ExpiredInterview from "./Pages/Interview/ExpiredInterview"
+import ShortListedCandidates from "./Pages/Candidates/ShortListedCandidates"
+import BlackListedCandidates from "./Pages/Candidates/BlackListedCandidates"
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -66,6 +68,15 @@ export default function App() {
       return isAuthenticated? <Navigate to ='/' replace/> : children;
     }
 
+    const RoleBasedRoute = ({children, allowedRoles}) => {
+      const roleId = parseInt(localStorage.getItem('roleId'), 10);
+
+      if(!allowedRoles.includes(roleId)){
+        return <Navigate to="/not-authorized" replace />
+      }
+
+      return children;
+    }
 
   return (
     <SidebarProvider>
@@ -74,12 +85,24 @@ export default function App() {
         <Route path='/' element ={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
             <Route index element ={<DashboardContent />} />
             <Route path='users/create-user' element={<CreateUser />} />
-            <Route path='users/user-list' element={<UserList />} />
-            <Route path='candidates/candidate-list' element={<CandidateList />} />
-            <Route path='candidates/cv-import' element={<BulkImportCv />} />
+            <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1]}>
+                  <UserList />
+              </RoleBasedRoute>} />
+            <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2]}>
+                < CandidateList  />
+            </RoleBasedRoute>} />
+            <Route path='candidates/cv-import' element={<RoleBasedRoute allowedRoles={[1,2]}><BulkImportCv /></RoleBasedRoute>} />
             <Route path='candidates/draft-cvs' element={<CVDetails />} />
             <Route path='candidates/:id' element={<CVDetails />} />
-            <Route path='/interviewed/create-interview' element={<InterviewSetup />} />
+            <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2]}>
+                  <ShortListedCandidates />
+              </RoleBasedRoute>} />
+            <Route path="candidates/blacklisted" element={<RoleBasedRoute allowedRoles={[1,2]}>
+                  <BlackListedCandidates />
+              </RoleBasedRoute>} />
+            <Route path='/interviewed/create-interview' element={<RoleBasedRoute allowedRoles={[1,2]}>
+                  <InterviewSetup/>
+              </RoleBasedRoute>} />
             <Route path='/interviewed/interview-list' element={<InterviewList />} />
             <Route path='/interviewed/upcoming-interview' element={<UpcomingInterview type="upcoming"/>} />
             <Route path='/interviewed/expired-interview' element={<ExpiredInterview  type="expired" />} />
@@ -90,7 +113,7 @@ export default function App() {
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />
             <Route path='/support' element={<Support />} />
-            <Route path='/company' element={<CompanyDetails />} />
+            <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2]}><CompanyDetails /></RoleBasedRoute>} />
         </Route>
         <Route path='register' element={<PublicRoute><Register /></PublicRoute>} />
         <Route path='login' element={<PublicRoute><Login onLogin = {handleLogin}/></PublicRoute>} />

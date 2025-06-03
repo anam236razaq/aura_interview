@@ -211,10 +211,10 @@ router.post('/', checkRole([1, 2]), async (req, res) => {
 // PUT /api/interviews/:id - Update an existing interview (ensure it belongs to the user's org) - Only Admins
 router.put('/:id', checkRole([1, 2]), async (req, res) => {
   const { id } = req.params;
-  const { title, description, status, questions } = req.body;
+  const { title, description, expiry_date, questions } = req.body;
   const organization_id = req.user.organization_id; // Get org ID from authenticated user
 
-  if (!title && !description && !status && !questions) {
+  if (!title && !description && !expiry_date && !questions) {
     return res.status(400).json({ message: 'No update fields provided' });
   }
 
@@ -236,9 +236,9 @@ router.put('/:id', checkRole([1, 2]), async (req, res) => {
       query += 'description = ?, ';
       params.push(description);
     }
-    if (status) {
-      query += 'status = ?, ';
-      params.push(status);
+    if (expiry_date) {
+      query += 'expiry_date = ?, ';
+      params.push(expiry_date);
     }
     query = query.slice(0, -2); // Remove trailing comma and space
     query += ' WHERE id = ? AND organization_id = ?';

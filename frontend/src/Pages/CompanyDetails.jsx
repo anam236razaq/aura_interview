@@ -220,7 +220,8 @@ export default function CompanyDetails() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {companyList.map((company) => (
+                                        {companyList.length > 0 ? (
+                                          companyList.map((company) => (
                                             <tr key={company.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                 <td className="sorting_1 text-black">
@@ -254,7 +255,11 @@ export default function CompanyDetails() {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))}
+                                        ))) : (
+                                          <tr>
+                                            <td colSpan="6" className="text-center">No Companies found</td>
+                                          </tr>
+                                        )}
                                     </tbody>
                                 </table>
                                 {showEditModal && <AddCompanyModal setShowModal={setShowEditModal} onAddedCompany={(updatedCompany) => {
@@ -265,7 +270,7 @@ export default function CompanyDetails() {
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                             totalEntries ={totalEntries} handlePageChange = {handlePageChange}
-                            totalPages={totalPages}/>
+                            totalPages={totalPages} list={companyList}/>
                     </div>
                   </div>
                 </div>

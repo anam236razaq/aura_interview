@@ -9,6 +9,7 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
+import NotAuthorized from '../../UI/NotAuthorized';
 
 export default function CandidateList() {
     const[open, setOpen] = useState(false);
@@ -26,7 +27,7 @@ export default function CandidateList() {
     const [status, setStatus] = useState('');
     const itemsPerPage = 10;
     const navigate = useNavigate();
-    
+
     const toggleDropdown = () => setOpen(!open);
 
     //Fetching Candidate List
@@ -56,7 +57,6 @@ export default function CandidateList() {
                   }
               });
 
-              console.log(response)
               setCandidatesList(response?.data?.cvs || []);
               setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
               setTotalEntries(response?.data?.total)
@@ -69,7 +69,7 @@ export default function CandidateList() {
     }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery, currentPage]);
+  }, [searchQuery, currentPage, status, shortlisted, selectedSkill]);
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -107,7 +107,7 @@ export default function CandidateList() {
     const updatedShortlisted = currentlyShortlisted === 1 ? 0 : 1;
     const token = localStorage.getItem('authToken');
 
-    const response = await axios.post(`${API_BASE_URL}/cv/${cvId}/shortlist`, 
+    await axios.post(`${API_BASE_URL}/cv/${cvId}/shortlist`, 
       { shortlisted: updatedShortlisted },
       {
       headers: {
@@ -115,7 +115,6 @@ export default function CandidateList() {
         Authorization: `Bearer ${token}`
       },
     });
-    console.log(response);
       // Ideally, update the local state to reflect change
       setCandidatesList(prev =>
         prev.map(c =>
@@ -145,7 +144,6 @@ export default function CandidateList() {
             }
           })
           setSkills(response?.data);
-          console.log(response);
         }catch(error){
           console.log(error);
         }
@@ -154,7 +152,6 @@ export default function CandidateList() {
     fetchSkills();
 
     }, [selectedSkill]);
-
 
   return (
     
@@ -173,7 +170,7 @@ export default function CandidateList() {
             <div className="col-md-4 user_status">
                 <select id="FilterTransaction" className='form-select text-capitalize' 
                     value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value>Select Status</option>
+                    <option value="">Select Status</option>
                     <option value= 'Processed' className='text-capitalize'>Processed</option>
                     <option value= 'Processing' className='text-capitalize'>Processing</option>
                 </select>
@@ -192,9 +189,9 @@ export default function CandidateList() {
               <div className="col-md-4 user_role">
                 <select id="Shortlist" className='form-select text-capitalize' 
                   value={shortlisted} onChange={(e) => setShortlisted(e.target.value)}>
-                    <option value>Select Shortlist</option>
-                    <option value= 'Active' className='text-capitalize'>Active</option>
-                    <option value= 'Deactive' className='text-capitalize'>Deactive</option>
+                    <option value="">Select Shortlist</option>
+                    <option value= 'true' className='text-capitalize'>Active</option>
+                    <option value= 'false' className='text-capitalize'>Deactive</option>
                 </select>
               </div>
           </div>
@@ -320,7 +317,8 @@ export default function CandidateList() {
                               </tr>
                             </thead>
                             <tbody>
-                              {candidatesList.map((candidate) => (
+                              {candidatesList.length > 0 ? (
+                                candidatesList.map((candidate) => (
                                   <tr key={candidate.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className="sorting_1 text-black">
@@ -358,7 +356,11 @@ export default function CandidateList() {
                                     </div>
                                   </td>
                                 </tr>
-                              ))}
+                                ))) : (
+                                <tr>
+                                      <td colSpan="6" className="text-center">No Candidates found</td>
+                                </tr>
+                                )}
                           </tbody>
                       </table>
                       {showDeleteModal && <DeleteModal confirmDelete ={confirmDelete} setShowDeleteModal= {setShowDeleteModal} />}
@@ -366,7 +368,7 @@ export default function CandidateList() {
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                   totalEntries={totalEntries} handlePageChange = {handlePageChange}
-                  totalPages={totalPages}/>
+                  totalPages={totalPages} list ={candidatesList}/>
             </div>
           </div>
         </div>
