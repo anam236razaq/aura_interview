@@ -1,7 +1,9 @@
-import React from 'react';
+import { useContext } from 'react';
 import { Link} from 'react-router-dom';
+import { SidebarContext } from '../Contexts/SidebarContext';
 
 export default function Navbar() {
+  const{ toggleExpandedSidebar } = useContext(SidebarContext);
 
   return (
   <>
@@ -9,7 +11,7 @@ export default function Navbar() {
             className="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
             <div className="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-              <Link className="nav-item nav-link px-0 me-xl-6" to="#">
+              <Link className="nav-item nav-link px-0 me-xl-6" onClick={toggleExpandedSidebar}>
                 <i className="icon-base ti tabler-menu-2 icon-md"></i>
               </Link>
             </div>

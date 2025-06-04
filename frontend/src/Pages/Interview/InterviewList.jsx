@@ -48,7 +48,6 @@ export default function InterviewList() {
             Authorization: `Bearer ${token}`
           }
         });
-        console.log(response)
         setInterviewList(response?.data?.interviews || []);
         setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
         setTotalEntries(response?.data?.total)
@@ -87,11 +86,9 @@ export default function InterviewList() {
         setShowDeleteModal(false);
         setInterviewList(prevList => prevList.filter(company => company.id !== selectedInterviewId))
         toast.success(response.data.message);
-        console.log(response);
 
       }catch(error){
           toast.error(error.response?.data?.message || 'An unexpected error occured');
-          console.log(error);
       }
     }
 
@@ -248,7 +245,9 @@ export default function InterviewList() {
                               )}
                           </tbody>
                       </table>
-                      {updateInterviewModal && <UpdateInterview setShowModal={setUpdateInterviewModal} interviewId = {selectedInterviewId} />}
+                      {updateInterviewModal && <UpdateInterview setShowModal={setUpdateInterviewModal} interviewId = {selectedInterviewId} 
+                        onAddedInterview = {(updatedInterview) => {setInterviewList((prevInterviews) =>
+                          prevInterviews.map(interview => interview.id === updatedInterview.id ? updatedInterview : interview))}}/>}
                       {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
                     </div>
                 </div>

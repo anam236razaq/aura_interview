@@ -5,6 +5,8 @@ export const SidebarContext = createContext();
 export const SidebarProvider = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Update the <html> tag classes based on the sidebar state
   const updateHtmlClasses = () => {
@@ -26,11 +28,33 @@ export const SidebarProvider = ({ children }) => {
     } else {
       htmlElement.classList.remove('layout-menu-hover');
     }
+
+    //Handle expand state
+    if(isExpanded){
+      htmlElement.classList.add('layout-menu-expanded');
+    }else{
+      htmlElement.classList.remove('layout-menu-expanded');
+    }
+
+    //Handle transition here
+    if (isTransitioning) {
+      htmlElement.classList.add('layout-transitioning');
+    } else {
+      htmlElement.classList.remove('layout-transitioning');
+    }
+
+  };
+
+  const startTransition = () => {
+    setIsTransitioning(true);
+    setTimeout(() => setIsTransitioning(false), 300); // Match your CSS transition time
   };
 
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
+    setIsExpanded(false);
+    startTransition();
   };
 
   // Handle mouse enter (hover)
@@ -47,10 +71,15 @@ export const SidebarProvider = ({ children }) => {
     }
   };
 
+  const toggleExpandedSidebar = () => {
+    setIsExpanded(prev => !prev);
+    startTransition();
+  }
+
   // Update HTML classes whenever state changes
   useEffect(() => {
     updateHtmlClasses();
-  }, [isCollapsed, isHovered]);
+  }, [isCollapsed, isHovered, isExpanded]);
 
   return (
     <SidebarContext.Provider
@@ -59,6 +88,8 @@ export const SidebarProvider = ({ children }) => {
         toggleSidebar,
         handleMouseEnter,
         handleMouseLeave,
+        toggleExpandedSidebar,
+        isExpanded
       }}
     >
       {children}

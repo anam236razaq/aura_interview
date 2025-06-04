@@ -55,7 +55,6 @@ export default function InterviewSetup() {
                     }
                 })
                 setUsers(response.data.users);
-                console.log(response.data);
             }catch(error){
                 console.log(error);
             }
@@ -72,7 +71,6 @@ export default function InterviewSetup() {
                     }
                 })
                 setJobs(response.data);
-                console.log(response.data);
             }catch(error){
                 console.log(error);
             }
@@ -88,7 +86,6 @@ export default function InterviewSetup() {
             }
           });
           setCompanies(response?.data.companies);
-          console.log(response?.data);
 
         }catch(error){
           console.log(error);
@@ -117,7 +114,6 @@ export default function InterviewSetup() {
             }
           })
           setSkills(response?.data);
-          console.log(response);
         }catch(error){
           console.log(error);
         }
@@ -173,16 +169,14 @@ export default function InterviewSetup() {
             outroVideo: outroVideoPath,
             candidateIds: skills.matchedCandidates
         }
-            console.log(payload);
         try{
             const token = localStorage.getItem('authToken');
-            const response = await axios.post(API_BASE_URL+'/interviews', payload, {
+            await axios.post(API_BASE_URL+'/interviews', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": 'application/json'
                 }
             })
-            console.log(response);
         }catch(error){
             console.log(error);
         }
@@ -470,9 +464,9 @@ export default function InterviewSetup() {
                                                         newQuestions[index].type = e.target.value;
                                                         setQuestions(newQuestions)
                                                     }}>
-                                                        <option value="video recording">Video Recording</option>
-                                                        <option value="text question">Text Questions</option>
-                                                        <option value="file upload">File Upload</option>
+                                                        <option value="video">Video Recording</option>
+                                                        <option value="text">Text Questions</option>
+                                                        <option value="file">File Upload</option>
                                                     </select>
                                                 </div>
                                                 <div className='d-flex align-items-center'  style={{borderLeft: '1px dashed black'}}>

@@ -4,20 +4,40 @@ import { API_BASE_URL } from '../utils/Constants';
 import {toast} from 'react-hot-toast'
 
 
-export default function UpdateInterview({setShowModal, interviewId}) {
-    const[questions, setQuestions] = useState([]);
-     const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [expiryDate, setExpiryDate] = useState('');
+export default function UpdateInterview({setShowModal, interviewId, onAddedInterview}) {
+    const[questions, setQuestions] = useState([{ type: 'Text Question', text: '', time_limit: 2 }]);
+    const[title, setTitle] = useState('');
+    const[description, setDescription] = useState('');
+    const[expiryDate, setExpiryDate] = useState('');
 
     useEffect(() => {
             document.body.style.overflow='hidden';
+
+            const fetchInterviewDetails = async () => {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const response =await axios.get(`${API_BASE_URL}/interviews/${interviewId}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    })
+                    console.log(response)
+                    const {title, description, expiry_date, questions} = response.data;
+                    setTitle(title || '');
+                    setDescription(description || '');
+                    setExpiryDate(expiry_date ? new Date(expiry_date).toISOString().slice(0, 16) : '');
+                    setQuestions(questions || []);
+                }catch(error){
+                    console.log(error);
+                }
+            };
+
+            if(interviewId){
+                    fetchInterviewDetails();
+            }
+
             return () => { document.body.style.overflow='auto'; }
-        }, []);
-    
-        const addQuestions = () => {
-            setQuestions([...questions, {text: '', type: 'video', time_limit: 60}])
-        }
+        }, [interviewId]);
 
     const handleUpdateInterview = async (e) => {
         e.preventDefault();
@@ -38,6 +58,7 @@ export default function UpdateInterview({setShowModal, interviewId}) {
                 }
             });
             console.log(response)
+            onAddedInterview(response.data)
             toast.success('Interview updated successfully');
             setShowModal(false);
         } catch (error) {
@@ -66,9 +87,9 @@ export default function UpdateInterview({setShowModal, interviewId}) {
                         </div>
                         <div className='col-12 mb-3'>
                             {questions.map((question, index) => (
-                                    <div style={{border: '1px solid gray', borderRadius: '6px'}} key={index}>
+                                    <div className='mb-3' style={{border: '1px solid gray', borderRadius: '6px'}} key={index}>
                                         <div className='d-flex align-items-center justify-content-between'>
-                                            <h4 className='mt-3 mb-3'>{index+1}.</h4>
+                                            <h4 className='mt-3 mb-3 ms-3'>{index+1}.</h4>
                                             <div className='d-flex'>
                                                 <div className='d-flex align-items-center me-2'>
                                                     <select className='question-selection' value={question.type} onChange={(e) => {
@@ -76,9 +97,9 @@ export default function UpdateInterview({setShowModal, interviewId}) {
                                                         newQuestions[index].type = e.target.value;
                                                         setQuestions(newQuestions)
                                                     }}>
-                                                        <option value="video recording">Video Recording</option>
-                                                        <option value="text question">Text Questions</option>
-                                                        <option value="file upload">File Upload</option>
+                                                        <option value="video">Video Recording</option>
+                                                        <option value="text">Text Questions</option>
+                                                        <option value="file">File Upload</option>
                                                     </select>
                                                 </div>
                                                 <div className='d-flex align-items-center'  style={{borderLeft: '1px dashed black'}}>
@@ -113,7 +134,7 @@ export default function UpdateInterview({setShowModal, interviewId}) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className='d-flex align-items-center mb-3'>
+                                        <div className='d-flex align-items-center mb-3 ms-3'>
                                             <input className='form-control me-2 px-2 pt-1 mt-2' placeholder='Question Text' value={question.text}
                                             style={{border: '1px solid gray', borderRadius: '6px', width: '95%', paddingBottom: '5rem'}} 
                                             onChange={(e)=> {

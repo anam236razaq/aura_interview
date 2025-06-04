@@ -240,6 +240,8 @@ router.put('/:id', checkRole([1, 2]), async (req, res) => {
       query += 'expiry_date = ?, ';
       params.push(expiry_date);
     }
+
+    if(params.length > 0) {
     query = query.slice(0, -2); // Remove trailing comma and space
     query += ' WHERE id = ? AND organization_id = ?';
     params.push(id, organization_id);
@@ -249,6 +251,7 @@ router.put('/:id', checkRole([1, 2]), async (req, res) => {
     if (result.affectedRows === 0) {
       // Should not happen due to the check above, but good practice
       return res.status(404).json({ message: 'Interview not found' });
+    }
     }
 
     // Update questions

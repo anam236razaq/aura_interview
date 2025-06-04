@@ -24,6 +24,9 @@ export default function Dashboard() {
                 </div>
             </div>
         </div>
+        <div className="layout-overlay layout-menu-toggle"></div>
+        <div className="drag-target"   style={{touchAction: 'pan-y', userSelect: 'none',
+            WebkitUserDrag: 'none', WebkitTapHighlightColor: 'rgba(0, 0, 0, 0)'}}></div>
       </div>
     </>
   )
