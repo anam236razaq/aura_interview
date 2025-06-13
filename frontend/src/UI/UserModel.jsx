@@ -17,8 +17,10 @@ export default function UserModel({setShowModal, onAddedUser}) {
     useEffect(() => {
         const fetchRoles = async () => {
             try{
+                const token = localStorage.getItem('authToken');
                 const response = await axios.get(`${API_BASE_URL}/roles`, {
                 headers: {
+                    Authorization: `Bearer ${token}`,
                     "Content-Type": 'application/json'
                 }
             });
@@ -113,7 +115,7 @@ export default function UserModel({setShowModal, onAddedUser}) {
                             <button type="submit" className="btn btn-primary">Invite User</button>
                         </div>
                     </form>
-                </div>
+                </div> 
             </div>
         </div>
     </div>

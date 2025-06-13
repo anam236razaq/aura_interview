@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { SidebarContext } from '../Contexts/SidebarContext';
 
 export default function Sidebar() {
@@ -176,7 +176,7 @@ export default function Sidebar() {
                   <path d="M8.25 11.9167H13.75" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M11.9166 15.5833H13.75" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <div data-i18n="Interviewed">Interviewed</div>
+              <div data-i18n="Interview">Interview</div>
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
@@ -197,6 +197,11 @@ export default function Sidebar() {
             <li className="menu-item">
               <Link to="/interviewed/expired-interview" className={`menu-link ${location.pathname === '/interviewed/expired-interview' ? 'active-links' : ''}`}>
                 <div data-i18n="Expired Interview">Expired Interview</div>
+              </Link>
+            </li>
+            <li className="menu-item">
+              <Link to="/interviewed/draft-interviews" className={`menu-link ${location.pathname === '/interviewed/draft-interviews' ? 'active-links' : ''}`}>
+                <div data-i18n="Draft Interviews">Draft Interviews</div>
               </Link>
             </li>
           </ul>

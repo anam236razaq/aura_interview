@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
@@ -13,28 +13,50 @@ export default function InterviewResponses() {
     const [responsesData, setResponsesData] = useState(null);
     const [interviewTitle, setInterviewTitle] = useState('');
     const [loading, setLoading] = useState(true);
+    const[searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const[totalPages, setTotalPages] = useState(1);
+    const[totalEntries, setTotalEntries] = useState(0);
     const itemsPerPage = 10;
     
     const toggleDropdown = () => setOpen(!open);
+    const navigate = useNavigate();
 
     //Fetching Candidates List who responded to the interview
     useEffect(() => {
+        const delayDebounce = setTimeout(() => {
         const fetchResponses = async () => {
             setLoading(true);
 
+            try {
             const token = localStorage.getItem('authToken');
+            const params = new URLSearchParams({
+                page: currentPage,
+                limit: itemsPerPage
+            });
+
+            if (searchQuery.trim()) {
+                params.append('search', searchQuery.trim());
+            }
+
             if (!token) {
                 toast.error('Authentication token not found.');
                 setLoading(false);
                 return;
             }
-            const config = { headers: { Authorization: `Bearer ${token}` } };
 
-            try {
-                const response = await axios.get(`${API_BASE_URL}/interviews/${interviewId}/all-responses`, config);
-                setInterviewTitle(response.data.interviewTitle || 'Interview Responses');
-                setResponsesData(response.data.candidates || []);
+            const endPoint = `${API_BASE_URL}/interviews/${interviewId}/all-responses?${params.toString()}`;
+
+            const response = await axios.get(endPoint, {
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+            });
+
+            setInterviewTitle(response.data.interviewTitle || 'Interview Responses');
+            setResponsesData(response.data.candidates || []);
+            setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
+            setTotalEntries(response?.data?.total)
 
             } catch (err) {
                 console.error('Error fetching responses:', err);
@@ -45,15 +67,12 @@ export default function InterviewResponses() {
         };
 
         fetchResponses();
-    }, [interviewId]);
+    }, 1000)
+    
+    return () => clearTimeout(delayDebounce);
+    }, [interviewId, currentPage, searchQuery]);
 
     if(loading) return
-
-    //Pagination
-    const totalPages = Math.ceil(responsesData.length/itemsPerPage);
-    const endIndex = currentPage * itemsPerPage;
-    const startIndex = endIndex - itemsPerPage;
-    const CandidatesList = responsesData.slice(startIndex, endIndex)
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -76,22 +95,13 @@ export default function InterviewResponses() {
             <div className='row my-0 justify-content-between'>
                 <div className='d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto'>
                     <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '1.5rem'}}>
-                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search User" aria-controls="DataTables_Table_0" />
+                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search User" 
+                          aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)}/>
                       <label htmlFor='dt-search-0'></label>
                     </div>
                     
                 </div>
                 <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                    <div className='dt-length mt-m0 mt-md-5'>
-                        <select name='DataTables_Table_0_length' aria-controls="DataTables_Table_0" className="form-select ms-0"
-                          id="dt-length-0">
-                              <option value= '10'>10</option>
-                              <option value= '25'>25</option>
-                              <option value= '50'>50</option>
-                              <option value= '100'>100</option>
-                          </select>
-                          <label htmlFor='dt-length-0'></label>
-                    </div>
                   <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                       <div className="btn-group">
                           <button className="btn buttons-collection btn-label-secondary dropdown-toggle me-5" tabIndex="0"  onClick={toggleDropdown}
@@ -176,39 +186,45 @@ export default function InterviewResponses() {
                               </tr>
                             </thead>
                             <tbody>
-                              {CandidatesList.map((candidate) => (
-                                <tr key={candidate.cvId}>
-                                    <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
+                              {responsesData.length > 0 ? (
+                                responsesData.map((candidate) => (
+                                <tr key={candidate.cvId} onClick={() => navigate(`/interview/${interviewId}/responses/${candidate.cvId}`)} style={{cursor: 'pointer'}}>
+                                    <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
+                                        type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                     <td className='text-black'>{candidate.name}</td>
                                     <td className='text-black'>{candidate.email}</td>
 
                                     <td className="dtr-hidden">
                                         <div className="d-flex align-items-center">
-                                            <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
+                                            <Link to="#" onClick={(e) => e.stopPropagation()} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
                                                     <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                     <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                     <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </Link>
-                                            <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                            <Link to="#" onClick={(e) => e.stopPropagation()} className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                                 <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                             </Link>
-                                            <div className="dropdown-menu dropdown-menu-end m-0">
+                                            <div className="dropdown-menu dropdown-menu-end m-0" onClick={(e)=>e.stopPropagation()}>
                                                 <Link to={`/interview/${interviewId}/responses/${candidate.cvId}`} 
                                                     className="dropdown-item" state={{candidate}}>View</Link>
                                             </div>
                                         </div>
                                     </td>
                                     </tr>
-                                ))}
+                                ))) : (
+                                    <tr>
+                                        <td colSpan="6" className="text-center">No responses found</td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 
                   list ={responsesData} handlePageChange = {handlePageChange}
-                  totalPages={totalPages}/>
+                  totalPages={totalPages} totalEntries={totalEntries}/>
             </div>
           </div>
         </div>

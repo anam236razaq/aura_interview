@@ -7,11 +7,13 @@ import Footer from '../../UI/Footer';
 import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
+import UpdateInterview from '../../UI/UpdateInterview';
 
 export default function ExpiredInterview({type}) {
     const[open, setOpen] = useState(false);
     const [interviewList, setInterviewList] = useState([]);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[updateInterviewModal, setUpdateInterviewModal] = useState(false);
     const[selectedInterviewId, setSelectedInterviewId] = useState(null);
     const[searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -214,8 +216,9 @@ export default function ExpiredInterview({type}) {
                             <tbody>
                               {interviewList.length > 0 ? (
                                 interviewList.map((interview) => (
-                                  <tr key={interview.id}>
-                                  <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
+                                  <tr key={interview.id} onClick={()=> navigate(`/interviewed/interview-list/${interview.id}`)} style={{cursor: 'pointer'}}>
+                                  <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
+                                      type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                   <td className='text-black'>{interview.title}</td>
                                   <td>{interview.description}</td>
                                   <td style={{color: '#5232C2B2', fontWeight: '600'}}>{interview.status}</td>
@@ -224,19 +227,20 @@ export default function ExpiredInterview({type}) {
                                 </td>
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
-                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
+                                        <button onClick={(e)=>{e.stopPropagation(); setSelectedInterviewId(interview.id); setUpdateInterviewModal(true)}} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
                                                 <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                             </svg>
-                                        </Link>
-                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        </button>
+                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" 
+                                          data-bs-toggle="dropdown" onClick={(e)=>e.stopPropagation()}>
                                           <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                         </Link>
-                                        <div className="dropdown-menu dropdown-menu-end m-0">
+                                        <div className="dropdown-menu dropdown-menu-end m-0" onClick={(e)=>e.stopPropagation()}>
                                             <Link to={`/interviewed/interview-list/${interview.id}`} className="dropdown-item">View</Link>
-                                            <button onClick = {()=> handleDeleteClick(interview.id)} className="dropdown-item">Delete</button>
+                                            <button onClick = {(e)=>{ e.stopPropagation(); handleDeleteClick(interview.id)}} className="dropdown-item">Delete</button>
                                         </div>
                                     </div>
                                   </td>
@@ -248,6 +252,9 @@ export default function ExpiredInterview({type}) {
                               )}
                           </tbody>
                       </table>
+                      {updateInterviewModal && <UpdateInterview setShowModal={setUpdateInterviewModal} interviewId = {selectedInterviewId} 
+                          onAddedInterview = {(updatedInterview) => {setInterviewList((prevInterviews) =>
+                          prevInterviews.map(interview => interview.id === updatedInterview.id ? updatedInterview : interview))}}/>}
                       {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
                     </div>
                 </div>

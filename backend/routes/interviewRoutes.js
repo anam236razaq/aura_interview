@@ -15,11 +15,16 @@ const authMiddleware = require('../middleware/authMiddleware'); // Import auth m
 // GET /api/interviews - Get all interviews for the logged-in user's organization
 router.get('/', async (req, res) => {
   const organization_id = req.user.organization_id;
-  const { type, page = 1, limit = 10, search } = req.query; // Defaults: page 1, 10 items per page
+  const { type, page = 1, limit = 10, search, status } = req.query; // Defaults: page 1, 10 items per page
   const now = new Date();
 
   let query = 'FROM interviews WHERE organization_id = ?';
   let params = [organization_id];
+
+  if(status){
+    query += ' AND status = ?';
+    params.push(status);
+  }
 
   if (type === 'upcoming') {
     query += ' AND expiry_date > ?';
@@ -408,6 +413,7 @@ router.get('/invitation/:interviewId/:token' ,  async (req, res) => {
 // GET /api/interviews/:interviewId/all-responses - Get all responses for an interview, grouped by candidate
 router.get('/:interviewId/all-responses', async (req, res) => {
     const { interviewId } = req.params;
+    const { page = 1, limit = 10, search } = req.query;
     const organization_id = req.user.organization_id;
 
     try {
@@ -421,8 +427,49 @@ router.get('/:interviewId/all-responses', async (req, res) => {
         }
         const interviewTitle = interviews[0].title;
 
+        //Query with optional search on name/email
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        const searchClause = search
+            ? `AND (JSON_UNQUOTE(JSON_EXTRACT(cv.personal_info, '$.name')) LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(cv.personal_info, '$.email')) LIKE ?)`
+            : '';
+        
+        const searchParams = search ? [`%${search}%`, `%${search}%`] : [];
+
+        //Count total candidates
+        const [countResult] = await db.query(
+            `SELECT COUNT(DISTINCT r.cv_id) as total
+                FROM responses r
+                JOIN cvs cv ON r.cv_id = cv.id
+                WHERE r.interview_id = ? 
+                ${searchClause}`, [interviewId, ...searchParams]
+        )
+        const total = countResult[0].total;
+
+         // 3. Get paginated CV IDs
+        const [cvRows] = await db.query(
+            `SELECT DISTINCT r.cv_id, cv.personal_info
+            FROM responses r
+            JOIN cvs cv ON r.cv_id = cv.id
+            WHERE r.interview_id = ?
+            ${searchClause}
+            ORDER BY r.cv_id
+            LIMIT ? OFFSET ?`,
+            [interviewId, ...searchParams, parseInt(limit), offset]
+        );
+
+        const cvIds = cvRows.map(row => row.cv_id);
+        if (cvIds.length === 0) {
+            return res.json({
+                interviewTitle,
+                candidates: [],
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total
+            });
+        }
+
         // 2. Fetch all responses with related data
-        const [rows] = await db.query(`
+            const [rows] = await db.query(`
             SELECT 
                 r.id as response_id, r.cv_id, r.question_id, r.response_type,
                 q.text as question_text,
@@ -436,16 +483,16 @@ router.get('/:interviewId/all-responses', async (req, res) => {
             LEFT JOIN text_responses tr ON r.id = tr.response_id AND r.response_type = 'text'
             LEFT JOIN video_responses vr ON r.id = vr.response_id AND r.response_type = 'video'
             LEFT JOIN file_responses fr ON r.id = fr.response_id AND r.response_type = 'file'
-            WHERE r.interview_id = ?
-            ORDER BY r.cv_id, q.order; -- Order by candidate, then question order
-        `, [interviewId]);
+            WHERE r.interview_id = ? AND r.cv_id IN (?)
+            ORDER BY r.cv_id, q.order
+        `, [interviewId, cvIds]);
 
         // 3. Group responses by candidate
         const candidatesMap = new Map();
         rows.forEach(row => {
             const cvId = row.cv_id;
             if (!candidatesMap.has(cvId)) {
-                const personalInfo = row.personal_info || {};
+                const personalInfo = JSON.parse(row.personal_info || '{}');
                 candidatesMap.set(cvId, {
                     cvId: cvId,
                     name: personalInfo.name || 'N/A',
@@ -463,7 +510,7 @@ router.get('/:interviewId/all-responses', async (req, res) => {
                 questionId: row.question_id,
                 questionText: row.question_text,
                 type: row.response_type,
-                content: content
+                content
             });
         });
 
@@ -471,8 +518,12 @@ router.get('/:interviewId/all-responses', async (req, res) => {
 
         // 4. Return the structured data
         res.json({
-            interviewTitle: interviewTitle,
-            candidates: candidatesArray
+            interviewTitle,
+            candidates: candidatesArray,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total,
+
         });
 
     } catch (error) {

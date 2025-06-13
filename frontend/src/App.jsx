@@ -35,6 +35,8 @@ import UpcomingInterview from "./Pages/Interview/UpcomingInterview"
 import ExpiredInterview from "./Pages/Interview/ExpiredInterview"
 import ShortListedCandidates from "./Pages/Candidates/ShortListedCandidates"
 import BlackListedCandidates from "./Pages/Candidates/BlackListedCandidates"
+import DraftInterviews from "./Pages/Interview/DraftInterviews"
+import DraftCv from "./Pages/Candidates/DraftCv"
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -92,7 +94,7 @@ export default function App() {
                 < CandidateList  />
             </RoleBasedRoute>} />
             <Route path='candidates/cv-import' element={<RoleBasedRoute allowedRoles={[1,2]}><BulkImportCv /></RoleBasedRoute>} />
-            <Route path='candidates/draft-cvs' element={<CVDetails />} />
+            <Route path='candidates/draft-cvs' element={<DraftCv />} />
             <Route path='candidates/:id' element={<CVDetails />} />
             <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2]}>
                   <ShortListedCandidates />
@@ -109,6 +111,7 @@ export default function App() {
             <Route path='/interviewed/interview-list/:id' element={<InterviewDetails />} />
             <Route path="/interviewed/interview/:interviewId/responses" element={<InterviewResponses />} />
             <Route path="/interview/:interviewId/responses/:cvId" element={<ViewResponse />} />
+            <Route path="/interviewed/draft-interviews" element={<DraftInterviews />} />
             <Route path='/accounts/account-settings' element={<AccountSettings />} />
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />

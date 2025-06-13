@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Link} from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import { useEffect } from 'react';
@@ -21,11 +21,7 @@ export default function ShortlistedCandidates() {
   
     const itemsPerPage = 10;
 
-    //Fetching Candidate List
-    useEffect(() => {
-    setShortlistedFilter(true)
-    const delayDebounce = setTimeout(() => {
-      const handleCandidateList = async () => {
+    const handleCandidateList = useCallback(async () => {
         try {
             const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
@@ -56,13 +52,17 @@ export default function ShortlistedCandidates() {
           } catch (error) {
             console.log(error);
           }
-      };
+      }, [currentPage, searchQuery, shortlistedFilter]);
 
-      handleCandidateList();
+    //Fetching Candidate List
+    useEffect(() => {
+    setShortlistedFilter(true)
+    const delayDebounce = setTimeout(() => {
+        handleCandidateList();
     }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery, currentPage, shortlistedFilter]);
+  }, [searchQuery, currentPage, shortlistedFilter, handleCandidateList]);
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -94,6 +94,29 @@ export default function ShortlistedCandidates() {
       }
     }
 
+     //Toggle shortlist candidate
+    const handleShortlistToggle = async (cvId, currentlyShortlisted) => {
+        try {
+            const updatedShortlisted = currentlyShortlisted === 1 ? 0 : 1;
+            const token = localStorage.getItem('authToken');
+
+            await axios.post(`${API_BASE_URL}/cv/${cvId}/shortlist`, 
+                { shortlisted: updatedShortlisted },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                  },
+            });
+
+            // Ideally, update the local state to reflect change
+            handleCandidateList(currentPage);
+ 
+          } catch (err) {
+              console.error('Error toggling shortlist:', err);
+          }
+        };
+
   return (
     
     <>
@@ -123,8 +146,9 @@ export default function ShortlistedCandidates() {
                                 <col data-dt-column="0" style={{width: '10%'}} />
                                 <col data-dt-column="1" style={{width: '15%'}} />
                                 <col data-dt-column="2" style={{width: '32%'}} />
-                                <col data-dt-column="3" style={{width: '20%'}} />
-                                <col data-dt-column="4" style={{width: '13%'}} />
+                                <col data-dt-column="3" style={{width: '8%'}} />
+                                <col data-dt-column="4" style={{width: '12%'}} />
+                                <col data-dt-column="5" style={{width: '13%'}} />
                             </colgroup>
                             <thead className="border-top">
                               <tr>
@@ -133,8 +157,8 @@ export default function ShortlistedCandidates() {
                                   <input className="form-check-input custom-checkbox" type="checkbox" />
                                 </th>
                                 {[{columnName: 'CANDIDATE NAME', dtColumn: '1'}, {columnName: 'SKILLS', dtColumn: '2'},
-                                  {columnName: 'STATUS', dtColumn: '3'},
-                                  {columnName: 'ACTIONS', dtColumn: '4'}].map((column, index) => (
+                                  {columnName: 'SHORTLIST', dtColumn: '3'}, {columnName: 'STATUS', dtColumn: '4'},
+                                  {columnName: 'ACTIONS', dtColumn: '5'}].map((column, index) => (
                                     <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                         <span className="dt-column-title">{column.columnName}</span>
                                     </th>
@@ -153,6 +177,12 @@ export default function ShortlistedCandidates() {
                                     </div>
                                   </td>
                                   <td className='text-black'>{candidate.skills}</td>
+                                  <td>
+                                    <div className="form-check form-switch m-0">
+                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
+                                          checked={candidate.shortlisted === 1} onChange={() => handleShortlistToggle(candidate.id, candidate.shortlisted)}/>
+                                    </div>
+                                  </td>
                                 <td>
                                   <span className="badge bg-label-success">{candidate.status}</span>
                                 </td>

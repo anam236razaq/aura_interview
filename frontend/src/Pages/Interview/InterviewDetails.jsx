@@ -14,6 +14,7 @@ export default function InterviewDetails() {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [invitationToken, setInvitationToken] = useState('');
+    const [responsesData, setResponsesData] = useState(null);
     const [newStatus, setNewStatus] = useState('');
     const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
     const {id} = useParams();
@@ -69,6 +70,34 @@ export default function InterviewDetails() {
             fetchInterviewData();
     }, [id]);
 
+    //Fetching number of Candidates List
+    useEffect(() => {
+        const fetchResponses = async () => {
+            setLoading(true);
+
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                toast.error('Authentication token not found.');
+                setLoading(false);
+                return;
+            }
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            try {
+                const response = await axios.get(`${API_BASE_URL}/interviews/${id}/all-responses`, config);
+                setResponsesData(response.data.candidates || []);
+
+            } catch (err) {
+                console.error('Error fetching responses:', err);
+                toast.error('Failed to load responses. ' + (err.response?.data?.message || ''));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResponses();
+    }, [id]);
+
     //Updating Status of interviews
     const handleUpdateStatus = async () => {
         setStatusUpdateLoading(true);
@@ -105,7 +134,7 @@ export default function InterviewDetails() {
             <h4 className='text-black'>{interview?.title}</h4>
             <div>
                 <Link to="/interviewed/interview-list" className="btn py-3" style={{backgroundColor: 'rgba(115, 103, 240, 0.24)', color: '#646cff'}}>Back to Interview List</Link>
-                <Link to={`/interviewed/interview/${id}/responses`} className="btn ms-2 text-white py-3" style={{backgroundColor: '#646cff'}}>View Responses</Link>
+                <Link to={`/interviewed/interview/${id}/responses`} className="btn ms-2 text-white py-3" style={{backgroundColor: '#646cff'}}>View Responses ({responsesData?.length})</Link>
             </div>
         </div> 
         <div className="row mt-4">
@@ -139,6 +168,7 @@ export default function InterviewDetails() {
                         <div className="d-flex justify-content-start flex-column mb-4">
                             <div className="d-flex flex-column">
                                 <p><strong>Description:</strong> {interview?.description || 'N/A'}</p>
+                                <p><strong>Responded Candidates:</strong> {responsesData?.length}</p>
                                 <p><strong>Status:</strong> {interview?.status}</p>
                             </div>
                             <div className="mt-1 mb-3 d-flex flex-column justify-conten-start">
@@ -235,7 +265,7 @@ function QuestionList({ questions, interviewId, onQuestionAdded }){
                                           <input className="form-check-input custom-checkbox" type="checkbox" />
                                         </th>
                                         {[{columnName: 'QUESTIONS', dtColumn: '1'}, {columnName: 'TYPE', dtColumn: '2'},
-                                            {columnName: 'TIME LIMIT(Sec)', dtColumn: '3'}].map((column, index) => (
+                                            {columnName: 'TIME LIMIT(Mins)', dtColumn: '3'}].map((column, index) => (
                                                 <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                                     <span className="dt-column-title">{column.columnName}</span>
                                                 </th>
@@ -243,14 +273,19 @@ function QuestionList({ questions, interviewId, onQuestionAdded }){
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {questions.map((question) => (
+                                        {questions.length > 0 ? (
+                                            questions.map((question) => (
                                             <tr key={question.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                                 <td>{question.text}</td>
                                                 <td>{question.type}</td>
                                                 <td>{question.time_limit}</td>
                                             </tr>
-                                        ))}
+                                        ))) : (
+                                        <tr>
+                                            <td colSpan="6" className="text-center">No questions found</td>
+                                        </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

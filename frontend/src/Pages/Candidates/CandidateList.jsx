@@ -9,7 +9,6 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
-import NotAuthorized from '../../UI/NotAuthorized';
 
 export default function CandidateList() {
     const[open, setOpen] = useState(false);
@@ -146,7 +145,7 @@ export default function CandidateList() {
           setSkills(response?.data);
         }catch(error){
           console.log(error);
-        }
+        } 
     }
 
     fetchSkills();
