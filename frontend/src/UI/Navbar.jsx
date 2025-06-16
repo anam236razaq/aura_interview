@@ -1,9 +1,32 @@
 import { useContext } from 'react';
 import { Link} from 'react-router-dom';
 import { SidebarContext } from '../Contexts/SidebarContext';
+import { API_BASE_URL } from '../utils/Constants';
+import axios from 'axios';
 
 export default function Navbar() {
   const{ toggleExpandedSidebar } = useContext(SidebarContext);
+
+  const handleLogout = async () => {
+      const token = localStorage.getItem('authToken');
+
+      try {
+          await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Remove token on frontend
+    localStorage.removeItem('authToken');
+
+    // Redirect to login or homepage
+    window.location.href = '/login';
+  } catch (err) {
+    console.error('Logout failed:', err);
+  }
+};
+
 
   return (
   <>
@@ -469,7 +492,7 @@ export default function Navbar() {
                     </li>
                     <li>
                       <div className="d-grid px-2 pt-2 pb-1">
-                        <Link className="btn btn-sm btn-danger d-flex" to="auth-login-cover.html" target="_blank">
+                        <Link onClick={handleLogout}  className="btn btn-sm btn-danger d-flex">
                           <small className="align-middle">Logout</small>
                           <i className="icon-base ti tabler-logout ms-2 icon-14px"></i>
                         </Link>

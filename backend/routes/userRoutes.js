@@ -9,7 +9,6 @@ const authMiddleware = require('../middleware/authMiddleware');
 const axios = require('axios');
 const FormData = require('form-data');
 
-const USER_ROLE = 2; // Assuming User role ID is 2
 
 // GET /api/users - List users within the admin's organization (Admin only)
 router.get('/', authMiddleware, checkRole([1]), async (req, res) => {

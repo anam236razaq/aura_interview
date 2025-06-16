@@ -116,11 +116,6 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
-              <Link to="/users/create-user" className={`menu-link ${location.pathname === '/users/create-user' ? 'active-links' : ''}`}>
-                <div data-i18n="Create User">Create User</div>
-              </Link>
-            </li>
-            <li className="menu-item">
               <Link to="/users/user-list" className={`menu-link ${location.pathname === '/users/user-list' ? 'active-links' : ''}`}>
                 <div data-i18n="Users List">Users List</div>
               </Link>

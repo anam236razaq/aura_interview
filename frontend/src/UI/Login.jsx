@@ -37,6 +37,7 @@ export default function Login({onLogin}) {
             }, 3000)
 
         }catch(error){
+            console.log(error);
             toast.error(error?.response?.data?.message || 'Login Failed. Please try again');
         }finally{
             setIsLoading(false);

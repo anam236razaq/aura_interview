@@ -5,17 +5,15 @@ import UserModel from '../../UI/UserModel';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 
 export default function UserList() {
   const[open, setOpen] = useState(false);
   const[showModal, setShowModal] = useState(false);
-  const[showDeleteModal, setShowDeleteModal] = useState(false);
   const[userList, setUserList] = useState([]);
   const[searchQuery, setSearchQuery] = useState('');
-  const[selectedUserId, setSelectedUserId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const[totalPages, setTotalPages] = useState(1);
   const[totalEntries, setTotalEntries] = useState(0);
@@ -77,29 +75,6 @@ export default function UserList() {
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
         setCurrentPage(page);
-      }
-    }
-
-    const handleDeleteClick = (id) => {
-      setSelectedUserId(id);
-      setShowDeleteModal(true);
-    }
-
-    const confirmDelete = async ()=> {
-      try{
-        const token = localStorage.getItem('authToken');
-        const response = await axios.delete(`${API_BASE_URL}/users/${selectedUserId}`, {
-          headers: {
-            "Content-Type": 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setShowDeleteModal(false);
-        setUserList(prevList => prevList.filter(company => company.id !== selectedUserId))
-        toast.success(response.data.message);
-
-      }catch(error){
-          toast.error(error.response?.data?.message || 'An unexpected error occured');
       }
     }
 
@@ -312,9 +287,6 @@ export default function UserList() {
                                               <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                                 <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                               </Link>
-                                              <div className="dropdown-menu dropdown-menu-end m-0">
-                                                  <button onClick= {()=> handleDeleteClick(user.id)} className="dropdown-item">Delete</button>
-                                              </div>
                                           </div>
                                         </td>
                                       </tr>
@@ -325,7 +297,6 @@ export default function UserList() {
                                       )}
                                   </tbody>
                               </table>
-                              {showDeleteModal && <DeleteModal confirmDelete={confirmDelete} setShowDeleteModal={setShowDeleteModal} />}
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 

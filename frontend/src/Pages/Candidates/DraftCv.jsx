@@ -33,6 +33,7 @@ export default function DraftCv() {
               const params = new URLSearchParams({
                   page: currentPage,
                   limit: itemsPerPage,
+                  status: 'draft',
               });
 
               if (searchQuery.trim()) {
@@ -89,6 +90,22 @@ export default function DraftCv() {
 
       }catch(error){
         toast.error(error.response?.data?.message || 'An unexpected error occured');
+      }
+    }
+
+    const handleReprocess = async () =>  {
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.post(`${API_BASE_URL}/cv/reprocess`, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        })
+        console.log(response);
+        toast.success(response.data.message || 'Reprocessing completed');
+      }catch(error){
+        console.log(error);
+        toast.error(error.response?.data?.message || 'Error reprocessing CVs');
       }
     }
 
@@ -200,7 +217,7 @@ export default function DraftCv() {
                                   <span className="dt-column-title"></span>
                                   <input className="form-check-input custom-checkbox" type="checkbox" />
                                 </th>
-                                {[{columnName: 'CANDIDATE NAME', dtColumn: '1'}, {columnName: 'Date', dtColumn: '2'},
+                                {[{columnName: 'FILE NAME', dtColumn: '1'}, {columnName: 'Date', dtColumn: '2'},
                                 {columnName: 'STATUS', dtColumn: '3'},
                                   {columnName: 'ACTIONS', dtColumn: '4'}].map((column, index) => (
                                     <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
@@ -212,23 +229,14 @@ export default function DraftCv() {
                             <tbody>
                               {candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
-                                  <tr key={candidate.id}>
+                                <tr key={candidate.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
-                                  <td className="sorting_1 text-black">
-                                    <div className='d-flex flex-column'>
-                                        <span>{candidate.name}</span>
-                                        <small>{candidate.email}</small>
-                                    </div>
-                                  </td>
-                                <td>
-                                    <span>10/4/2025</span>
-                                </td>
-                                <td>
-                                  <span className="badge bg-label-success">{candidate.status}</span>
-                                </td>
+                                  <td className="sorting_1 text-black">{candidate.file_path}</td>
+                                  <td>{new Date(candidate.created_at).toISOString().split('T')[0]}</td>
+                                  <td><span className="badge bg-label-success">{candidate.status}</span></td>
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
-                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
+                                        <Link onClick={handleReprocess} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none">
                                                 <path d="M4 18L14 8L12 6L2 16L4 18" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M10 8L12 10" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

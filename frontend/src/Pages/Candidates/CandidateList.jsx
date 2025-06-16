@@ -23,7 +23,6 @@ export default function CandidateList() {
     const[skills, setSkills] = useState([]);
     const[selectedSkill, setSelectedSkill] = useState([]);
     const [shortlisted, setShortlisted] = useState('');
-    const [status, setStatus] = useState('');
     const itemsPerPage = 10;
     const navigate = useNavigate();
 
@@ -38,7 +37,7 @@ export default function CandidateList() {
               const params = new URLSearchParams({
                   page: currentPage,
                   limit: itemsPerPage,
-                  status,
+                  status: 'processed',
                   shortlisted,
                   skills: selectedSkill.join(','),
               });
@@ -68,7 +67,7 @@ export default function CandidateList() {
     }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery, currentPage, status, shortlisted, selectedSkill]);
+  }, [searchQuery, currentPage, shortlisted, selectedSkill]);
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -166,15 +165,7 @@ export default function CandidateList() {
         <div className="card-header border-bottom">
           <h5 className="card-title mb-0">Filters</h5>
           <div className="d-flex justify-content-between align-items-center row pt-4 gap-4 gap-md-0">
-            <div className="col-md-4 user_status">
-                <select id="FilterTransaction" className='form-select text-capitalize' 
-                    value={status} onChange={(e) => setStatus(e.target.value)}>
-                    <option value="">Select Status</option>
-                    <option value= 'Processed' className='text-capitalize'>Processed</option>
-                    <option value= 'Processing' className='text-capitalize'>Processing</option>
-                </select>
-              </div>
-              <div className="col-md-4 user_role">
+              <div className="col-md-6 user_role">
                 
                   <Select options={skills?.skills?.map(skill => ({ label: skill, value: skill }))}
                       isMulti name="skills" className="basic-multi-select" classNamePrefix="select skills"
@@ -185,7 +176,7 @@ export default function CandidateList() {
                                     setSelectedSkill(selectedValues);
                   }}/>
               </div>
-              <div className="col-md-4 user_role">
+              <div className="col-md-6 user_role">
                 <select id="Shortlist" className='form-select text-capitalize' 
                   value={shortlisted} onChange={(e) => setShortlisted(e.target.value)}>
                     <option value="">Select Shortlist</option>
@@ -318,7 +309,7 @@ export default function CandidateList() {
                             <tbody>
                               {candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
-                                  <tr key={candidate.id}>
+                                  <tr key={candidate.id} onClick={()=>navigate(`/candidates/${candidate.id}`)} style={{cursor: 'pointer'}}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className="sorting_1 text-black">
                                     <div className='d-flex flex-column'>

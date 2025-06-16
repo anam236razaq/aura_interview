@@ -2,7 +2,6 @@ import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom
 import { SidebarProvider } from './Contexts/SidebarContext'
 import Dashboard from './Pages/Dashboard'
 import DashboardContent from './Pages/DashboardContent'
-import CreateUser from './Pages/Users/CreateUser'
 import UserList from './Pages/Users/UserList'
 import Register from './UI/Register'
 import Login from './UI/Login'
@@ -86,7 +85,6 @@ export default function App() {
       <Routes>
         <Route path='/' element ={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
             <Route index element ={<DashboardContent />} />
-            <Route path='users/create-user' element={<CreateUser />} />
             <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1]}>
                   <UserList />
               </RoleBasedRoute>} />

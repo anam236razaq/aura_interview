@@ -84,12 +84,15 @@ router.post('/login', async (req, res) => {
 
     try {
         // Find user by email
-        const [users] = await db.query('SELECT id, password_hash, role_id, organization_id FROM users WHERE email = ?', [email]);
+        const [users] = await db.query('SELECT id, password_hash, role_id, organization_id, status FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
             return res.status(401).json({ message: 'Invalid credentials.' }); // User not found
         }
         const user = users[0];
         
+        if (user.status !== 'active') {
+            return res.status(403).json({ message: 'Account is inactive. Please contact support.' });
+        }
 
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password_hash);
@@ -107,6 +110,25 @@ router.post('/login', async (req, res) => {
         console.error('Error during login:', error);
         res.status(500).json({ message: 'Server error during login.' });
     }
+});
+
+// Logging out the user
+const blacklistedTokens = new Set();
+
+router.post('/logout', (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(400).json({ message: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Optionally blacklist the token here (e.g., add to Redis or memory)
+    blacklistedTokens.add(token);
+
+    // Send success response
+    res.status(200).json({ message: 'Logged out successfully' });
 });
 
 module.exports = router;

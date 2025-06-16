@@ -5,6 +5,7 @@ const checkRole = require('../middleware/roleMiddleware'); // Import role checke
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises; // Use promise-based fs
+const fsSync = require('fs'); // for using fsSync.existsSync()
 const axios = require('axios');
 const FormData = require('form-data'); // To send multipart/form-data
 
@@ -85,7 +86,7 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                 const personalInfo = cvData.personal_info || {};
                 const cvInsertResult = await connection.query(
                     'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
-                    [parseInt(organization_id), file.originalname, JSON.stringify(personalInfo), null, 'processing'] // Score is initially null
+                    [parseInt(organization_id), file.originalname, JSON.stringify(personalInfo), null, 'processed'] // Score is initially null
                 );
                 const cvId = cvInsertResult[0].insertId;
 
@@ -190,7 +191,18 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                     [cvId, JSON.stringify(programmingLanguages), JSON.stringify(foreignLanguages)]
                 );
 
-                await connection.query('UPDATE cvs SET status = ? WHERE id = ?' , ['processed', cvId]);
+                let finalStatus = 'processed';
+                if (
+                    (!personalInfo || Object.keys(personalInfo).length === 0) ||
+                    (
+                        (!cvData.education || cvData.education.length === 0) &&
+                        (!cvData.employment_history || cvData.employment_history.length === 0)
+                    )
+                ) {
+                    finalStatus = 'draft';
+                }
+
+                await connection.query('UPDATE cvs SET status = ? WHERE id = ?' , [finalStatus, cvId]);
             }
 
             await connection.commit(); // Commit transaction
@@ -214,7 +226,7 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
             fileStream.close();
         }
         // Clean up the temporary file regardless of success or failure
-        await fs.unlink(file.path).catch(err => console.error(`Error deleting temp CV file ${file.path}:`, err));
+        // await fs.unlink(file.path).catch(err => console.error(`Error deleting temp CV file ${file.path}:`, err));
     }
 });
 
@@ -362,6 +374,174 @@ router.post('/webhook', async (req, res) => {
   } finally {
     connection.release(); // Release connection back to the pool
   }
+});
+
+// POST /api/cv - Reprocess draft cvs
+router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
+    const connection = await db.getConnection();
+    const n8nWebhookUrl = 'https://social.keydevsdemo.com/webhook/0bc2284e-f2c2-427f-b11e-78fa8fad4aea';
+
+    try {
+        const [draftCvs] = await connection.query('SELECT * FROM cvs WHERE status = "draft"');
+
+        for (const cv of draftCvs) {
+            const filePath = path.join(__dirname, '..', 'uploads', cv.file_path);
+            if (!fsSync.existsSync(filePath)) {
+                console.error(`File not found for CV ID ${cv.id}`);
+                continue;
+            }
+
+            const formData = new FormData();
+            const fileStream = fsSync.createReadStream(filePath);
+            formData.append('file', fileStream, cv.file_path);
+
+            const n8nResponse = await axios.post(n8nWebhookUrl, formData, {
+                headers: {
+                    ...formData.getHeaders(),
+                },
+            });
+
+            const cvDataArray = n8nResponse.data;
+
+            await connection.beginTransaction();
+
+            for (const cvData of cvDataArray) {
+                const cvId = cv.id;
+
+                // Delete existing related data
+                await connection.query('DELETE FROM cvs_experience WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_education WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_projects WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_volunteer WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_skills WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_achievements WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_certifications WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_publications WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_references WHERE cv_id = ?', [cvId]);
+                await connection.query('DELETE FROM cvs_extra WHERE cv_id = ?', [cvId]);
+
+                const personalInfo = cvData.personal_info || {};
+
+                await connection.query(
+                    'UPDATE cvs SET personal_info = ?, score = ?, status = ? WHERE id = ?',
+                    [JSON.stringify(personalInfo), null, 'processed', cvId]
+                );
+
+                if (cvData.employment_history) {
+                    for (const exp of cvData.employment_history) {
+                        await connection.query(
+                            'INSERT INTO cvs_experience (cv_id, position, company, duration, responsibilities, location) VALUES (?, ?, ?, ?, ?, ?)',
+                            [cvId, exp.position, exp.company, exp.duration, JSON.stringify(exp.responsibilities || []), exp.location]
+                        );
+                    }
+                }
+
+                if (cvData.education) {
+                    for (const edu of cvData.education) {
+                        await connection.query(
+                            'INSERT INTO cvs_education (cv_id, institution, start_year, end_year, qualification, major, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                            [cvId, edu.institution, edu.start_year, edu.end_year, edu.degree, edu.major, edu.gpa]
+                        );
+                    }
+                }
+
+                if (cvData.projects) {
+                    for (const proj of cvData.projects) {
+                        await connection.query(
+                            'INSERT INTO cvs_projects (cv_id, name, year, description, technologies, url) VALUES (?, ?, ?, ?, ?, ?)',
+                            [cvId, proj.name, proj.year, proj.description, JSON.stringify(proj.technologies || []), proj.url]
+                        );
+                    }
+                }
+
+                if (cvData.volunteering) {
+                    for (const vol of cvData.volunteering) {
+                        await connection.query(
+                            'INSERT INTO cvs_volunteer (cv_id, activity, location, date, description, organization) VALUES (?, ?, ?, ?, ?, ?)',
+                            [cvId, vol.activity, vol.location, vol.date, vol.description, vol.organization]
+                        );
+                    }
+                }
+
+                if (cvData.skills) {
+                    for (const skill of cvData.skills) {
+                        await connection.query(
+                            'INSERT INTO cvs_skills (cv_id, skill, level) VALUES (?, ?, ?)',
+                            [cvId, skill.skill, skill.level]
+                        );
+                    }
+                }
+
+                if (cvData.achievements) {
+                    for (const ach of cvData.achievements) {
+                        const achievementDate = ach.achievement_date ? `${ach.achievement_date}-01-01` : null;
+                        await connection.query(
+                            'INSERT INTO cvs_achievements (cv_id, achievement, achievement_date) VALUES (?, ?, ?)',
+                            [cvId, ach.achievement, achievementDate]
+                        );
+                    }
+                }
+
+                if (cvData.certifications) {
+                    for (const cert of cvData.certifications) {
+                        await connection.query(
+                            'INSERT INTO cvs_certifications (cv_id, certification_name, issuing_organization, issue_date, expiration_date) VALUES (?, ?, ?, ?, ?)',
+                            [cvId, cert.certification_name, cert.issuing_organization, cert.issue_date, cert.expiration_date]
+                        );
+                    }
+                }
+
+                if (cvData.publications) {
+                    for (const pub of cvData.publications) {
+                        await connection.query(
+                            'INSERT INTO cvs_publications (cv_id, title, journal, publication_date, url) VALUES (?, ?, ?, ?, ?)',
+                            [cvId, pub.title, pub.journal, pub.publication_date, pub.url]
+                        );
+                    }
+                }
+
+                if (cvData.references) {
+                    for (const ref of cvData.references) {
+                        await connection.query(
+                            'INSERT INTO cvs_references (cv_id, name, position, contact_info) VALUES (?, ?, ?, ?)',
+                            [cvId, ref.name, ref.position, ref.contact_info]
+                        );
+                    }
+                }
+
+                const programmingLanguages = cvData.programming_languages || {};
+                const foreignLanguages = cvData.foreign_languages || [];
+                await connection.query(
+                    'INSERT INTO cvs_extra (cv_id, programming_languages, foreign_languages) VALUES (?, ?, ?)',
+                    [cvId, JSON.stringify(programmingLanguages), JSON.stringify(foreignLanguages)]
+                );
+
+                // Determine final status
+                let finalStatus = 'processed';
+                if (
+                    (!personalInfo || Object.keys(personalInfo).length === 0) ||
+                    (
+                        (!cvData.education || cvData.education.length === 0) &&
+                        (!cvData.employment_history || cvData.employment_history.length === 0)
+                    )
+                ) {
+                    finalStatus = 'draft';
+                }
+
+                await connection.query('UPDATE cvs SET status = ? WHERE id = ?', [finalStatus, cvId]);
+            }
+
+            await connection.commit();
+        }
+        res.json({message: 'Reprocessing completed.'});
+
+    } catch (err) {
+        await connection.rollback();
+        console.error('Error reprocessing CVs:', err);
+        res.status(500).json({ message: 'Error reprocessing CVs', error: err.message });
+    } finally {
+        connection.release();
+    }
 });
 
 // GET /api/cv - List CVs for the logged-in user's organization

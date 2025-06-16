@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Link} from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import { useEffect } from 'react';
 import axios from 'axios';
@@ -17,7 +17,7 @@ export default function ShortlistedCandidates() {
     const[totalPages, setTotalPages] = useState(1);
     const[totalEntries, setTotalEntries] = useState(0);
     const[shortlistedFilter, setShortlistedFilter] = useState(false)
-
+    const navigate = useNavigate();
   
     const itemsPerPage = 10;
 
@@ -27,6 +27,7 @@ export default function ShortlistedCandidates() {
               const params = new URLSearchParams({
                   page: currentPage,
                   limit: itemsPerPage,
+                  status:'processed'
               });
 
               if (searchQuery.trim()) {
@@ -168,7 +169,7 @@ export default function ShortlistedCandidates() {
                             <tbody>
                               {candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
-                                  <tr key={candidate.id}>
+                                  <tr key={candidate.id} onClick={()=>navigate(`/candidates/${candidate.id}`)} style={{cursor: 'pointer'}}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                   <td className="sorting_1 text-black">
                                     <div className='d-flex flex-column'>

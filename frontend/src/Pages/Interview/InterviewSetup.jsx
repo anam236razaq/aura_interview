@@ -9,6 +9,7 @@ import InputField from '../../UI/InputField';
 import InterviewVideo from '../../UI/InterviewVideo';
 import Select from 'react-select';
 import toast, { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export default function InterviewSetup() {
     const{register, handleSubmit, formState: {errors}, trigger, clearErrors, reset, setValue, control} = useForm({mode: 'onChange'});
@@ -26,6 +27,7 @@ export default function InterviewSetup() {
     const[questions, setQuestions] = useState([]);
     const[skills, setSkills] = useState([]);
     const[step, setStep] = useState(1);
+    const navigate = useNavigate();
 
     const nextStep = () => {
         setStep((prev) => prev + 1);
@@ -177,6 +179,7 @@ export default function InterviewSetup() {
                     "Content-Type": 'application/json'
                 }
             })
+            navigate('/interviewed/interview-list');
         }catch(error){
             console.log(error);
         }
@@ -222,7 +225,7 @@ export default function InterviewSetup() {
                                                         }
                                                         }}>
                                                     <option value="">Select</option>
-                                                    {users.map((user)=> (
+                                                    {users.filter(user => user.status === 'active').map((user)=> (
                                                         <option key={user.id} value={user.id}>
                                                             {user.first_name} {user.last_name} ({user.email})
                                                         </option>
@@ -556,7 +559,7 @@ export default function InterviewSetup() {
                                         <span style={{fontSize: '13px'}} className='me-5'>Email</span>
                                     </div>
 
-                                    {users.map((user) => 
+                                    {users.filter(user => user.status === 'active').map((user) => 
                                         <div className='d-flex align-items-center justify-content-between py-1' key={user.id}>
                                             <div>
                                                 <input className="form-check-input custom-checkbox me-2 ms-5" type="checkbox" value={user.id} 
