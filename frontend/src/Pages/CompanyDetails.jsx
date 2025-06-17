@@ -7,11 +7,13 @@ import { API_BASE_URL } from '../utils/Constants';
 import AddCompanyModal from '../UI/addCompanyModal';
 import DeleteModal from '../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
+import Loader from '../UI/Loader';
 
 export default function CompanyDetails() {
     const[open, setOpen] = useState(false);
     const[showModal, setShowModal] = useState(false);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[loading, setLoading] = useState(true);
     const[showEditModal, setShowEditModal] = useState(false);
     const[selectedCompanyId, setSelectedCompanyId] = useState(null);
     const[companyToEdit, setCompanyToEdit] = useState(null);
@@ -29,6 +31,7 @@ export default function CompanyDetails() {
     const delayDebounce = setTimeout(() => {
       const handleCompanyList = async () => {
         try {
+              setLoading(true);
               const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
                   page: currentPage,
@@ -53,6 +56,8 @@ export default function CompanyDetails() {
               setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
+          }finally{
+            setLoading(false);
           }
       };
 
@@ -220,7 +225,13 @@ export default function CompanyDetails() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                        {companyList.length > 0 ? (
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan="6" className="text-center py-5">
+                                                    <Loader /> 
+                                                </td>
+                                            </tr>
+                                          ) :companyList.length > 0 ? (
                                           companyList.map((company) => (
                                             <tr key={company.id}>
                                                 <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>

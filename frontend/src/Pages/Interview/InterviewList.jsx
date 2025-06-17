@@ -8,11 +8,13 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 import UpdateInterview from '../../UI/UpdateInterview';
+import Loader from '../../UI/Loader';
 
 export default function InterviewList() {
     const[open, setOpen] = useState(false);
     const[interviewList, setInterviewList] = useState([]);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[loading, setLoading] = useState(true);
     const[updateInterviewModal, setUpdateInterviewModal] = useState(false);
     const[selectedInterviewId, setSelectedInterviewId] = useState(null);
     const[searchQuery, setSearchQuery] = useState('');
@@ -30,6 +32,7 @@ export default function InterviewList() {
   const delayDebounce = setTimeout(() => {
     const fetchInterviews = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams({
           page: currentPage,
@@ -48,11 +51,14 @@ export default function InterviewList() {
             Authorization: `Bearer ${token}`
           }
         });
+        console.log(response);
         setInterviewList(response?.data?.interviews || []);
         setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
         setTotalEntries(response?.data?.total)
       } catch (error) {
         console.error(error);
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -209,14 +215,32 @@ export default function InterviewList() {
                               </tr>
                             </thead>
                             <tbody>
-                              {interviewList.length > 0 ? (
+                              {loading ? (
+                                  <tr>
+                                    <td colSpan="6" className="text-center py-5">
+                                      <Loader /> 
+                                    </td>
+                                  </tr>
+                              ) : interviewList.length > 0 ? (
                                 interviewList.map((interview) => (
                                   <tr key={interview.id} onClick={()=> navigate(`/interviewed/interview-list/${interview.id}`)} style={{cursor: 'pointer'}}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
                                       type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                   <td className='text-black'>{interview.title}</td>
                                   <td>{interview.description}</td>
-                                  <td style={{color: '#5232C2B2', fontWeight: '600'}}>{interview.status}</td>
+                                  <td>
+                                      <span className={`badge text-capitalize fw-semibold ${
+                                          interview.status === 'active'
+                                          ? 'bg-success text-white'
+                                          : interview.status === 'draft'
+                                          ? 'bg-warning text-white'
+                                          : interview.status === 'completed'
+                                          ? 'bg-primary text-white'
+                                          : interview.status === 'archived'
+                                          ? 'bg-dark text-white'
+                                          : 'bg-primary text-white' }`}>{interview.status}
+                                      </span>
+                                  </td>
                                 <td>
                                   <span className="text-black">{new Date(interview.expiry_date).toLocaleDateString()}</span>
                                 </td>

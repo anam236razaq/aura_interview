@@ -1,8 +1,35 @@
-import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom"
-import { SidebarProvider } from './Contexts/SidebarContext'
-import Dashboard from './Pages/Dashboard'
-import DashboardContent from './Pages/DashboardContent'
-import UserList from './Pages/Users/UserList'
+import {BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
+import { SidebarProvider } from './Contexts/SidebarContext';
+import { lazy, Suspense } from 'react';
+import { useState } from "react";
+import { useEffect } from "react";
+
+const Dashboard = lazy(() => import('./Pages/Dashboard'));
+const DashboardContent = lazy(() => import('./Pages/DashboardContent'));
+const UserList = lazy(() => import('./Pages/Users/UserList'));
+const CandidateList = lazy(() => import('./Pages/Candidates/CandidateList'));
+const InterviewSetup = lazy(() => import('./Pages/Interview/InterviewSetup'));
+const AccountSettings = lazy(() => import('./Pages/Accounts/AccountSettings'));
+const AccountSecurity = lazy(() => import('./Pages/Accounts/AccountSecurity'));
+const BulkImportCv = lazy(() => import('./Pages/Candidates/BulkImportCv'));
+const CVDetails = lazy(() => import('./Pages/Candidates/CVDetails'));
+const Documentation = lazy(() => import('./Pages/Documentation'));
+const Support = lazy(() => import('./Pages/Support'));
+const CompanyDetails = lazy(() => import('./Pages/CompanyDetails'));
+const InterviewList = lazy(() => import('./Pages/Interview/InterviewList'));
+const InterviewDetails = lazy(() => import('./Pages/Interview/InterviewDetails'));
+const InterviewResponses = lazy(() => import('./Pages/Interview/InterviewResponses'));
+const ViewResponse = lazy(() => import('./Pages/Interview/ViewResponse'));
+const CandidatePublicInterview = lazy(() => import('./Pages/Interview/CandidatePublicInterview'));
+const InterviewInvitation = lazy(() => import('./Pages/Interview/InterviewInvitation'));
+const UpcomingInterview = lazy(() => import('./Pages/Interview/UpcomingInterview'));
+const ExpiredInterview = lazy(() => import('./Pages/Interview/ExpiredInterview'));
+const ShortListedCandidates = lazy(() => import('./Pages/Candidates/ShortListedCandidates'));
+const BlackListedCandidates = lazy(() => import('./Pages/Candidates/BlackListedCandidates'));
+const DraftInterviews = lazy(() => import('./Pages/Interview/DraftInterviews'));
+const DraftCv = lazy(() => import('./Pages/Candidates/DraftCv'));
+
+
 import Register from './UI/Register'
 import Login from './UI/Login'
 import ResetPassword from './UI/ResetPassword'
@@ -13,29 +40,7 @@ import NotFoundPage from './UI/NotFoundPage'
 import NotAuthorized from './UI/NotAuthorized'
 import ComingSoon from './UI/ComingSoon'
 import UnderMaintenance from './UI/UnderMaintenance'
-import CandidateList from './Pages/Candidates/CandidateList'
-import InterviewSetup from './Pages/Interview/InterviewSetup'
-import AccountSettings from './Pages/Accounts/AccountSettings'
-import AccountSecurity from './Pages/Accounts/AccountSecurity'
-import BulkImportCv from './Pages/Candidates/BulkImportCv'
-import CVDetails from './Pages/Candidates/CVDetails'
-import Documentation from './Pages/Documentation'
-import Support from './Pages/Support'
-import CompanyDetails from './Pages/CompanyDetails'
-import InterviewList from './Pages/Interview/InterviewList'
-import InterviewDetails from './Pages/Interview/InterviewDetails'
-import InterviewResponses from "./Pages/Interview/InterviewResponses"
-import ViewResponse from "./Pages/Interview/ViewResponse"
-import CandidatePublicInterview from "./Pages/Interview/CandidatePublicInterview"
-import InterviewInvitation from "./Pages/Interview/InterviewInvitation"
-import { useState } from "react"
-import { useEffect } from "react"
-import UpcomingInterview from "./Pages/Interview/UpcomingInterview"
-import ExpiredInterview from "./Pages/Interview/ExpiredInterview"
-import ShortListedCandidates from "./Pages/Candidates/ShortListedCandidates"
-import BlackListedCandidates from "./Pages/Candidates/BlackListedCandidates"
-import DraftInterviews from "./Pages/Interview/DraftInterviews"
-import DraftCv from "./Pages/Candidates/DraftCv"
+import Loader from "./UI/Loader";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -82,6 +87,7 @@ export default function App() {
   return (
     <SidebarProvider>
     <Router>
+      <Suspense fallback={<Loader />}>
       <Routes>
         <Route path='/' element ={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
             <Route index element ={<DashboardContent />} />
@@ -129,6 +135,7 @@ export default function App() {
         <Route path='coming-soon' element={<ComingSoon />} />
         <Route path='under-maintenance' element={<UnderMaintenance />} />
       </Routes>
+      </Suspense>
     </Router>
     </SidebarProvider>
   )

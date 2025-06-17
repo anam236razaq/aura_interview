@@ -9,11 +9,12 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
+import Loader from '../../UI/Loader';
 
 export default function CandidateList() {
     const[open, setOpen] = useState(false);
-    const[showModal, setShowModal] = useState(false);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[loading, setLoading] = useState(true);
     const[selectedCandidateId, setSelectedCandidateId] = useState(null);
     const[searchQuery, setSearchQuery] = useState('');
     const[candidatesList, setCandidatesList] = useState([]);
@@ -33,6 +34,7 @@ export default function CandidateList() {
     const delayDebounce = setTimeout(() => {
       const handleCandidateList = async () => {
         try {
+            setLoading(true);
             const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
                   page: currentPage,
@@ -60,6 +62,8 @@ export default function CandidateList() {
               setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
+          }finally{
+            setLoading(false);
           }
       };
 
@@ -254,20 +258,6 @@ export default function CandidateList() {
                                   </Link>
                               </div>
                           </div>
-                          <button className="btn add-new btn-primary ms-4 override-radius" tabIndex="0" aria-controls="DataTables_Table_0" onClick={()=>setShowModal(true)} type="button" style={{backgroundColor: '#7367F03D', border: 'none'}}>
-                            <span>
-                              <span className="d-flex align-items-center gap-2">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none">
-                                      <path d="M4 18L14 8L12 6L2 16L4 18" stroke="#7367F0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                      <path d="M10 8L12 10" stroke="#7367F0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                      <path d="M5.99996 6C5.99996 6.73638 6.59691 7.33333 7.33329 7.33333C6.59691 7.33333 5.99996 7.93029 5.99996 8.66667C5.99996 7.93029 5.40301 7.33333 4.66663 7.33333C5.40301 7.33333 5.99996 6.73638 5.99996 6" stroke="#7367F0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                      <path d="M12.6667 12.6665C12.6667 13.4029 13.2637 13.9998 14 13.9998C13.2637 13.9998 12.6667 14.5968 12.6667 15.3332C12.6667 14.5968 12.0698 13.9998 11.3334 13.9998C12.0698 13.9998 12.6667 13.4029 12.6667 12.6665" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
-                                  <span className="d-none d-sm-inline-block" style={{color: '#7367F0'}}>AI Reprocess</span>
-                              </span>
-                            </span>
-                          </button>
-                          {showModal && <AIReprocessModal setShowModal={setShowModal}/>}
                           <button className="btn add-new btn-primary ms-4 override-radius" onClick={()=>navigate('/candidates/cv-import')} tabIndex="0" aria-controls="DataTables_Table_0" type="button" style={{marginRight: '1.5rem',}}>
                             <span>
                               <span className="d-flex align-items-center gap-2">
@@ -307,10 +297,17 @@ export default function CandidateList() {
                               </tr>
                             </thead>
                             <tbody>
-                              {candidatesList.length > 0 ? (
+                              {loading? (
+                                  <tr>
+                                      <td colSpan="6" className="text-center py-5">
+                                          <Loader /> 
+                                      </td>
+                                  </tr>
+                                ) : candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
                                   <tr key={candidate.id} onClick={()=>navigate(`/candidates/${candidate.id}`)} style={{cursor: 'pointer'}}>
-                                  <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
+                                  <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
+                                      type="checkbox" onClick={(e)=>e.stopPropagation()} /></td>
                                   <td className="sorting_1 text-black">
                                     <div className='d-flex flex-column'>
                                         <span>{candidate.name}</span>
@@ -320,7 +317,7 @@ export default function CandidateList() {
                                   <td className='text-black'>{candidate.skills}</td>
                                   <td>
                                     <div className="form-check form-switch m-0">
-                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
+                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" onClick={(e)=>e.stopPropagation()}
                                           checked={candidate.shortlisted === 1} onChange={() => handleShortlistToggle(candidate.id, candidate.shortlisted)}/>
                                     </div>
                                   </td>
@@ -329,14 +326,7 @@ export default function CandidateList() {
                                 </td>
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
-                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
-                                                <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        </Link>
-                                        <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        <Link to="#" onClick={(e)=>e.stopPropagation()} className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                           <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                         </Link>
                                         <div className="dropdown-menu dropdown-menu-end m-0">

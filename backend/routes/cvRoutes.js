@@ -21,9 +21,13 @@ const cvStorage = multer.diskStorage({
     cb(null, cvUploadDir);
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'cv-' + uniqueSuffix + path.extname(file.originalname));
+    const nameWithoutExt = path.parse(file.originalname).name.replace(/\s+/g, '-').replace(/[^\w\-]/g, '');
+    const uniqueSuffix = Date.now();
+    const ext = path.extname(file.originalname);
+    const finalName = `${nameWithoutExt}-${uniqueSuffix}${ext}`;
+    cb(null, finalName);
   }
+
 });
 
 const cvFileFilter = (req, file, cb) => {
@@ -86,7 +90,7 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                 const personalInfo = cvData.personal_info || {};
                 const cvInsertResult = await connection.query(
                     'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
-                    [parseInt(organization_id), file.originalname, JSON.stringify(personalInfo), null, 'processed'] // Score is initially null
+                    [parseInt(organization_id), file.filename, JSON.stringify(personalInfo), null, 'processed'] // Score is initially null
                 );
                 const cvId = cvInsertResult[0].insertId;
 
@@ -199,7 +203,7 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                         (!cvData.employment_history || cvData.employment_history.length === 0)
                     )
                 ) {
-                    finalStatus = 'draft';
+                    finalStatus = 'invalid';
                 }
 
                 await connection.query('UPDATE cvs SET status = ? WHERE id = ?' , [finalStatus, cvId]);
@@ -219,6 +223,18 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
 
     } catch (error) {
         console.error('Error sending CV to N8N:', error.response ? error.response.data : error.message);
+
+        try{
+          const connection = await db.getConnection();
+          await connection.query(
+                'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
+                [parseInt(organization_id), file.filename, '{}', null, 'draft'] // ← Save as draft on N8N failure
+            );
+          connection.release();
+
+        }catch(error){
+          console.error('Failed to save draft CV:', error);
+        }
         res.status(500).json({ message: 'Error sending CV for processing.', error: error.message });
     } finally {
         // Ensure the file stream is closed if it was opened
@@ -376,49 +392,55 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// POST /api/cv - Reprocess draft cvs
-router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
+// POST /api/cv/reprocess/:id - Reprocess specific CV by ID
+router.post('/reprocess/:id', checkRole([1, 2]), async (req, res) => {
     const connection = await db.getConnection();
+    const cvId = req.params.id;
     const n8nWebhookUrl = 'https://social.keydevsdemo.com/webhook/0bc2284e-f2c2-427f-b11e-78fa8fad4aea';
 
     try {
-        const [draftCvs] = await connection.query('SELECT * FROM cvs WHERE status = "draft"');
+        // Step 1: Fetch CV by ID
+        const [cvs] = await connection.query('SELECT * FROM cvs WHERE id = ?', [cvId]);
+        if (cvs.length === 0) {
+            return res.status(404).json({ message: `CV with ID ${cvId} not found.` });
+        }
 
-        for (const cv of draftCvs) {
-            const filePath = path.join(__dirname, '..', 'uploads', cv.file_path);
-            if (!fsSync.existsSync(filePath)) {
-                console.error(`File not found for CV ID ${cv.id}`);
-                continue;
-            }
+        const cv = cvs[0];
+        const filePath = path.join(__dirname, '..', 'uploads', 'cv_temp', cv.file_path);
 
-            const formData = new FormData();
-            const fileStream = fsSync.createReadStream(filePath);
-            formData.append('file', fileStream, cv.file_path);
+        if (!fsSync.existsSync(filePath)) {
+            return res.status(400).json({ message: `CV file ${cv.file_path} is not a valid file.` });
+        }
 
-            const n8nResponse = await axios.post(n8nWebhookUrl, formData, {
-                headers: {
-                    ...formData.getHeaders(),
-                },
+        const formData = new FormData();
+        const fileStream = fsSync.createReadStream(filePath);
+        formData.append('file', fileStream, cv.file_path);
+
+        let n8nResponse;
+        try {
+            n8nResponse = await axios.post(n8nWebhookUrl, formData, {
+                headers: formData.getHeaders(),
             });
+        } catch (error) {
+            return res.status(500).json({ message: `N8N processing failed: ${error.message}` });
+        }
 
-            const cvDataArray = n8nResponse.data;
+        const cvDataArray = Array.isArray(n8nResponse.data) ? n8nResponse.data : [n8nResponse.data];
 
-            await connection.beginTransaction();
+        await connection.beginTransaction();
 
+        try {
             for (const cvData of cvDataArray) {
-                const cvId = cv.id;
+                // Delete old data
+                const deleteTables = [
+                    'cvs_experience', 'cvs_education', 'cvs_projects', 'cvs_volunteer',
+                    'cvs_skills', 'cvs_achievements', 'cvs_certifications',
+                    'cvs_publications', 'cvs_references', 'cvs_extra'
+                ];
 
-                // Delete existing related data
-                await connection.query('DELETE FROM cvs_experience WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_education WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_projects WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_volunteer WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_skills WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_achievements WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_certifications WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_publications WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_references WHERE cv_id = ?', [cvId]);
-                await connection.query('DELETE FROM cvs_extra WHERE cv_id = ?', [cvId]);
+                for (const table of deleteTables) {
+                    await connection.query(`DELETE FROM ${table} WHERE cv_id = ?`, [cvId]);
+                }
 
                 const personalInfo = cvData.personal_info || {};
 
@@ -427,9 +449,11 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
                     [JSON.stringify(personalInfo), null, 'processed', cvId]
                 );
 
+                const insert = async (query, values) => await connection.query(query, values);
+
                 if (cvData.employment_history) {
                     for (const exp of cvData.employment_history) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_experience (cv_id, position, company, duration, responsibilities, location) VALUES (?, ?, ?, ?, ?, ?)',
                             [cvId, exp.position, exp.company, exp.duration, JSON.stringify(exp.responsibilities || []), exp.location]
                         );
@@ -438,7 +462,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.education) {
                     for (const edu of cvData.education) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_education (cv_id, institution, start_year, end_year, qualification, major, gpa) VALUES (?, ?, ?, ?, ?, ?, ?)',
                             [cvId, edu.institution, edu.start_year, edu.end_year, edu.degree, edu.major, edu.gpa]
                         );
@@ -447,7 +471,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.projects) {
                     for (const proj of cvData.projects) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_projects (cv_id, name, year, description, technologies, url) VALUES (?, ?, ?, ?, ?, ?)',
                             [cvId, proj.name, proj.year, proj.description, JSON.stringify(proj.technologies || []), proj.url]
                         );
@@ -456,7 +480,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.volunteering) {
                     for (const vol of cvData.volunteering) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_volunteer (cv_id, activity, location, date, description, organization) VALUES (?, ?, ?, ?, ?, ?)',
                             [cvId, vol.activity, vol.location, vol.date, vol.description, vol.organization]
                         );
@@ -465,7 +489,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.skills) {
                     for (const skill of cvData.skills) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_skills (cv_id, skill, level) VALUES (?, ?, ?)',
                             [cvId, skill.skill, skill.level]
                         );
@@ -474,17 +498,17 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.achievements) {
                     for (const ach of cvData.achievements) {
-                        const achievementDate = ach.achievement_date ? `${ach.achievement_date}-01-01` : null;
-                        await connection.query(
+                        const date = ach.achievement_date ? `${ach.achievement_date}-01-01` : null;
+                        await insert(
                             'INSERT INTO cvs_achievements (cv_id, achievement, achievement_date) VALUES (?, ?, ?)',
-                            [cvId, ach.achievement, achievementDate]
+                            [cvId, ach.achievement, date]
                         );
                     }
                 }
 
                 if (cvData.certifications) {
                     for (const cert of cvData.certifications) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_certifications (cv_id, certification_name, issuing_organization, issue_date, expiration_date) VALUES (?, ?, ?, ?, ?)',
                             [cvId, cert.certification_name, cert.issuing_organization, cert.issue_date, cert.expiration_date]
                         );
@@ -493,7 +517,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.publications) {
                     for (const pub of cvData.publications) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_publications (cv_id, title, journal, publication_date, url) VALUES (?, ?, ?, ?, ?)',
                             [cvId, pub.title, pub.journal, pub.publication_date, pub.url]
                         );
@@ -502,7 +526,7 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 if (cvData.references) {
                     for (const ref of cvData.references) {
-                        await connection.query(
+                        await insert(
                             'INSERT INTO cvs_references (cv_id, name, position, contact_info) VALUES (?, ?, ?, ?)',
                             [cvId, ref.name, ref.position, ref.contact_info]
                         );
@@ -511,12 +535,13 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
 
                 const programmingLanguages = cvData.programming_languages || {};
                 const foreignLanguages = cvData.foreign_languages || [];
-                await connection.query(
+
+                await insert(
                     'INSERT INTO cvs_extra (cv_id, programming_languages, foreign_languages) VALUES (?, ?, ?)',
                     [cvId, JSON.stringify(programmingLanguages), JSON.stringify(foreignLanguages)]
                 );
 
-                // Determine final status
+                // Final status check
                 let finalStatus = 'processed';
                 if (
                     (!personalInfo || Object.keys(personalInfo).length === 0) ||
@@ -525,24 +550,35 @@ router.post('/reprocess', checkRole([1, 2]), async (req, res) => {
                         (!cvData.employment_history || cvData.employment_history.length === 0)
                     )
                 ) {
-                    finalStatus = 'draft';
+                    finalStatus = 'invalid';
                 }
 
                 await connection.query('UPDATE cvs SET status = ? WHERE id = ?', [finalStatus, cvId]);
+
+                if (finalStatus === 'invalid') {
+                    return res.status(400).json({ message: `CV file ${cv.file_path} is invalid. Cannot reprocess.` });
+                }
             }
 
             await connection.commit();
+            return res.status(200).json({
+                message: `Reprocessing of ${cv.file_path} completed.`,
+            });
+
+        } catch (err) {
+            await connection.rollback();
+            console.error(`Error processing CV ID ${cvId}:`, err);
+            return res.status(500).json({ message: `Failed to process CV ID ${cvId}`, error: err.message });
         }
-        res.json({message: 'Reprocessing completed.'});
 
     } catch (err) {
-        await connection.rollback();
-        console.error('Error reprocessing CVs:', err);
-        res.status(500).json({ message: 'Error reprocessing CVs', error: err.message });
+        console.error('Unexpected error:', err);
+        return res.status(500).json({ message: 'Server error', error: err.message });
     } finally {
         connection.release();
     }
 });
+
 
 // GET /api/cv - List CVs for the logged-in user's organization
 router.get('/', checkRole([1,2]), async (req, res) => {
@@ -562,9 +598,11 @@ router.get('/', checkRole([1,2]), async (req, res) => {
     }
 
     // Status filter
-    if (status) {
-      query += ` AND cvs.status = ?`;
-      params.push(status);
+      if (status) {
+        const statusArray = Array.isArray(status) ? status : [status];
+        const placeholders = statusArray.map(() => '?').join(', ');
+        query += ` AND cvs.status IN (${placeholders})`;
+        params.push(...statusArray);
     }
 
       // Shortlisted filter

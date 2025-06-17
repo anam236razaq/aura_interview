@@ -9,10 +9,13 @@ import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
 import toast, { Toaster } from 'react-hot-toast';
 import Select from 'react-select';
+import { useCallback } from 'react';
+import Loader from '../../UI/Loader';
 
 export default function DraftCv() {
     const[open, setOpen] = useState(false);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
+    const[loading, setLoading] = useState(true);
     const[selectedCandidateId, setSelectedCandidateId] = useState(null);
     const[searchQuery, setSearchQuery] = useState('');
     const[candidatesList, setCandidatesList] = useState([]);
@@ -25,20 +28,21 @@ export default function DraftCv() {
     const toggleDropdown = () => setOpen(!open);
 
     //Fetching Candidate List
-    useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      const handleCandidateList = async () => {
+    const handleCandidateList = useCallback(async () => {
         try {
+            setLoading(true);
             const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
                   page: currentPage,
                   limit: itemsPerPage,
-                  status: 'draft',
               });
 
               if (searchQuery.trim()) {
                   params.append('search', searchQuery.trim());
               }
+
+              const statusFilters = ['draft', 'invalid'];
+              statusFilters.forEach(status => params.append('status', status));
 
               const endPoint = `${API_BASE_URL}/cv?${params.toString()}`;
 
@@ -54,14 +58,18 @@ export default function DraftCv() {
               setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
+          }finally{
+            setLoading(false);
           }
-      };
+      }, [currentPage, searchQuery]);
 
+    useEffect(() => {
+    const delayDebounce = setTimeout(() => {
       handleCandidateList();
     }, 1000);
 
       return () => clearTimeout(delayDebounce);
-  }, [searchQuery, currentPage]);
+  }, [searchQuery, currentPage,handleCandidateList]);
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
@@ -93,21 +101,27 @@ export default function DraftCv() {
       }
     }
 
-    const handleReprocess = async () =>  {
-      try{
+  const handleReprocess = async (cvId) => {
+    try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.post(`${API_BASE_URL}/cv/reprocess`, {}, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        })
-        console.log(response);
+        const response = await axios.post(`${API_BASE_URL}/cv/reprocess/${cvId}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        await handleCandidateList();
+
+        // Show success toast with returned message
         toast.success(response.data.message || 'Reprocessing completed');
-      }catch(error){
-        console.log(error);
-        toast.error(error.response?.data?.message || 'Error reprocessing CVs');
-      }
+        console.log(response);
+
+    } catch (error) {
+        console.error(error);
+        toast.error(error.response?.data?.message || 'Error reprocessing CV');
     }
+};
+
 
   return (
     
@@ -227,7 +241,13 @@ export default function DraftCv() {
                               </tr>
                             </thead>
                             <tbody>
-                              {candidatesList.length > 0 ? (
+                              {loading? (
+                                  <tr>
+                                      <td colSpan="6" className="text-center py-5">
+                                            <Loader /> 
+                                      </td>
+                                  </tr>
+                              ) : candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
                                 <tr key={candidate.id}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
@@ -236,7 +256,7 @@ export default function DraftCv() {
                                   <td><span className="badge bg-label-success">{candidate.status}</span></td>
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
-                                        <Link onClick={handleReprocess} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
+                                        <Link onClick={()=>handleReprocess(candidate.id)} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none">
                                                 <path d="M4 18L14 8L12 6L2 16L4 18" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M10 8L12 10" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>

@@ -8,11 +8,13 @@ import { API_BASE_URL } from '../../utils/Constants';
 import { Toaster } from 'react-hot-toast';
 import Pagination from '../../UI/Pagination';
 import DeleteModal from '../../UI/DeleteModal';
+import Loader from '../../UI/Loader';
 
 export default function UserList() {
   const[open, setOpen] = useState(false);
   const[showModal, setShowModal] = useState(false);
   const[userList, setUserList] = useState([]);
+  const[loading, setLoading] = useState(true);
   const[searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const[totalPages, setTotalPages] = useState(1);
@@ -29,6 +31,7 @@ export default function UserList() {
     const delayDebounce = setTimeout(() => {
       const handleUserList = async () => {
         try {
+              setLoading(true);
               const token = localStorage.getItem('authToken');
               const params = new URLSearchParams({
                 page: currentPage,
@@ -62,6 +65,8 @@ export default function UserList() {
             setTotalEntries(response?.data?.total)
           } catch (error) {
             console.log(error);
+          }finally{
+            setLoading(false);
           }
       };
 
@@ -120,7 +125,7 @@ export default function UserList() {
 
   return (
     <>
-     <Toaster reverseOrder={false} position='top-center' />
+    <Toaster reverseOrder={false} position='top-center' />
     <div className="content-wrapper">
             <div className="container-xxl flex-grow-1 container-p-y">
               <div className='mb-4'>
@@ -260,7 +265,13 @@ export default function UserList() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {userList.length > 0 ? (
+                                      {loading ? (
+                                          <tr>
+                                            <td colSpan="6" className="text-center py-5">
+                                                <Loader /> 
+                                            </td>
+                                          </tr>
+                                      ) : userList.length > 0 ? (
                                         userList.map((user) => (
                                       <tr key={user.id}>
                                         <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
@@ -273,7 +284,8 @@ export default function UserList() {
                                           </div>
                                         </td>
                                         <td>
-                                          <span className="badge bg-label-success text-capitalize">{user.role_name}</span>
+                                          <span className={`badge text-capitalize ${user.status === 'active' ? 'bg-label-success' : 'bg-label-danger'
+                                                  }`}>{user.role_name}</span>
                                         </td>
                                         <td className="dtr-hidden">
                                           <div className="d-flex align-items-center">
@@ -283,9 +295,6 @@ export default function UserList() {
                                                       <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                       <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                   </svg>
-                                              </Link>
-                                              <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                                <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                               </Link>
                                           </div>
                                         </td>

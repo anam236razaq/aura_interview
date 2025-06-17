@@ -79,14 +79,14 @@ export default function Login({onLogin}) {
                                       <div className='mt-3 d-flex align-items-center justify-content-between'>
                                         <div className='form-check'>
                                             <input type='checkbox' className='form-check-input custom-checkbox me-2' style={{borderColor: '#7367F0', marginTop: '0.1rem'}} id="Check" 
-                                            {...register('terms', {required: true})} onChange={(e)=>setIsChecked(e.target.checked)}/>
+                                            {...register('terms')} onChange={(e)=>setIsChecked(e.target.checked)} checked={isChecked}/>
                                             <label className="form-check-label" htmlFor="Check" style={{fontWeight: '500'}}>Remember Me</label>
                                         </div>
                                         <Link>Forgot Password?</Link>
                                       </div>
         
                                     <div className="mt-3 d-flex justify-content-center align-items-center">
-                                        <button type='submit' className="btn btnTheme1 fw-bold px-4 py-2 w-100" style={{backgroundColor: '#7367F0', color: 'white'}} disabled={ !isChecked || isLoading}>
+                                        <button type='submit' className="btn btnTheme1 fw-bold px-4 py-2 w-100" style={{backgroundColor: '#7367F0', color: 'white'}} disabled={isLoading}>
                                             {isLoading ? (
                                               <div className="spinner-border text-light"></div>
                                               ) : (
