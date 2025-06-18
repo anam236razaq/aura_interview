@@ -223,7 +223,8 @@ export default function InterviewList() {
                                   </tr>
                               ) : interviewList.length > 0 ? (
                                 interviewList.map((interview) => (
-                                  <tr key={interview.id} onClick={()=> navigate(`/interviewed/interview-list/${interview.id}`)} style={{cursor: 'pointer'}}>
+                                  <tr key={interview.id} onClick={()=>{navigate(`/interviewed/interview-list/${interview.id}?from=interviewlist`);
+                                    localStorage.setItem('interviewFrom', 'interviewlist');}} style={{cursor: 'pointer'}}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
                                       type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                   <td className='text-black'>{interview.title}</td>
@@ -257,7 +258,11 @@ export default function InterviewList() {
                                           <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                         </Link>
                                         <div className="dropdown-menu dropdown-menu-end m-0" onClick={(e)=>e.stopPropagation()}>
-                                            <Link to={`/interviewed/interview-list/${interview.id}`} className="dropdown-item">View</Link>
+                                            <button className="dropdown-item"
+                                              onClick={() => {
+                                                  localStorage.setItem('interviewFrom', 'interviewlist');
+                                                  navigate(`/interviewed/interview-list/${interview.id}?from=interviewlist`);}}>View
+                                            </button>
                                             <button onClick = {()=> handleDeleteClick(interview.id)} className="dropdown-item">Delete</button>
                                         </div>
                                     </div>

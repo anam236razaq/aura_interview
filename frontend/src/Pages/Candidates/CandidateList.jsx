@@ -305,7 +305,7 @@ export default function CandidateList() {
                                   </tr>
                                 ) : candidatesList.length > 0 ? (
                                 candidatesList.map((candidate) => (
-                                  <tr key={candidate.id} onClick={()=>navigate(`/candidates/${candidate.id}`)} style={{cursor: 'pointer'}}>
+                                  <tr key={candidate.id} onClick={()=>{navigate(`/candidates/${candidate.id}?from=list`); localStorage.setItem('candidateFrom', 'list');}} style={{cursor: 'pointer'}}>
                                   <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
                                       type="checkbox" onClick={(e)=>e.stopPropagation()} /></td>
                                   <td className="sorting_1 text-black">
@@ -329,8 +329,12 @@ export default function CandidateList() {
                                         <Link to="#" onClick={(e)=>e.stopPropagation()} className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                           <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
                                         </Link>
-                                        <div className="dropdown-menu dropdown-menu-end m-0">
-                                            <Link to={`/candidates/${candidate.id}`} className="dropdown-item">View</Link>
+                                        <div className="dropdown-menu dropdown-menu-end m-0" onClick={(e)=>e.stopPropagation()}>
+                                            <button className="dropdown-item"
+                                              onClick={() => {
+                                                  localStorage.setItem('candidateFrom', 'list');
+                                                  navigate(`/candidates/${candidate.id}?from=list`);}}>View
+                                            </button>
                                             <button onClick={()=> handleDeleteClick(candidate.id)} className="dropdown-item">Delete</button>
                                         </div>
                                     </div>

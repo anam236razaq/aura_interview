@@ -171,6 +171,28 @@ router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
     }
 });
 
+// GET /api/users/:id - Get user by ID within the same organization (Admin only)
+router.get('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const organization_id = req.user.organization_id;
+
+    try {
+        const [userRows] = await db.query(
+            'SELECT id, email, first_name, last_name, role_id FROM users WHERE id = ? AND organization_id = ?',
+            [userId, organization_id]
+        );
+
+        if (userRows.length === 0) {
+            return res.status(404).json({ message: 'User not found or access denied.' });
+        }
+
+        res.status(200).json(userRows[0]);
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+});
+
 
 // GET /api/candidates - Search for candidates (Admin only)
 router.get('/candidates', authMiddleware, checkRole([1]), async (req, res) => {
@@ -416,6 +438,54 @@ router.post('/upload', fileUpload(), async (req, res) => {
 });
 
 // TODO: Add PUT /api/users/:id for updating user details (e.g., name, role - maybe restrict role changes)
+// PUT /api/users/:id - Update a user within the organization (Admin only)
+router.put('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { email, first_name, last_name, role_id } = req.body;
+    const organization_id = req.user.organization_id;
+
+    if (!email || !first_name || !last_name || !role_id) {
+        return res.status(400).json({ message: 'Email, first name, last name, and role ID are required.' });
+    }
+
+    if (parseInt(role_id) === 1) {
+        return res.status(400).json({ message: 'Cannot assign admin role through this route.' });
+    }
+
+    try {
+        // Check if the user exists and belongs to the same organization
+        const [existingUser] = await db.query(
+            'SELECT * FROM users WHERE id = ? AND organization_id = ?',
+            [userId, organization_id]
+        );
+
+        if (existingUser.length === 0) {
+            return res.status(404).json({ message: 'User not found or access denied.' });
+        }
+
+        // Check if the email is taken by another user
+        const [emailUsers] = await db.query(
+            'SELECT id FROM users WHERE email = ? AND id != ?',
+            [email, userId]
+        );
+        if (emailUsers.length > 0) {
+            return res.status(409).json({ message: 'Email is already used by another user.' });
+        }
+
+        // Update the user
+        await db.query(
+            `UPDATE users SET email = ?, first_name = ?, last_name = ?, role_id = ? 
+             WHERE id = ? AND organization_id = ?`,
+            [email, first_name, last_name, role_id, userId, organization_id]
+        );
+
+        res.status(200).json({ message: 'User updated successfully.' });
+
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Error updating user.' });
+    }
+});
 
 module.exports = router;
  

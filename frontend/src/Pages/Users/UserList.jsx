@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import UserModel from '../../UI/UserModel';
@@ -7,16 +7,18 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
 import { Toaster } from 'react-hot-toast';
 import Pagination from '../../UI/Pagination';
-import DeleteModal from '../../UI/DeleteModal';
 import Loader from '../../UI/Loader';
+import UpdateUser from '../../UI/UpdateUser';
 
 export default function UserList() {
   const[open, setOpen] = useState(false);
   const[showModal, setShowModal] = useState(false);
+  const[showUpdateModal, setShowUpdateModal] = useState(false);
+  const[selectedUserId, setSelectedUserId] = useState(null);
   const[userList, setUserList] = useState([]);
   const[loading, setLoading] = useState(true);
   const[searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const[currentPage, setCurrentPage] = useState(1);
   const[totalPages, setTotalPages] = useState(1);
   const[totalEntries, setTotalEntries] = useState(0);
   const[userType, setUserType] = useState('');
@@ -289,13 +291,13 @@ export default function UserList() {
                                         </td>
                                         <td className="dtr-hidden">
                                           <div className="d-flex align-items-center">
-                                              <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
+                                              <button onClick={()=>{setSelectedUserId(user.id);setShowUpdateModal(true);}} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
                                                       <path d="M16.25 14.4167H13.5C12.4874 14.4167 11.6666 15.2375 11.6666 16.25V24.5C11.6666 25.5125 12.4874 26.3334 13.5 26.3334H21.75C22.7625 26.3334 23.5833 25.5125 23.5833 24.5V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                       <path d="M16.25 21.75H19L26.7917 13.9583C27.5511 13.1989 27.5511 11.9677 26.7917 11.2083C26.0323 10.4489 24.8011 10.4489 24.0417 11.2083L16.25 19V21.75" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                       <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                   </svg>
-                                              </Link>
+                                              </button>
                                           </div>
                                         </td>
                                       </tr>
@@ -306,6 +308,9 @@ export default function UserList() {
                                       )}
                                   </tbody>
                               </table>
+                              {showUpdateModal && <UpdateUser setShowModal={setShowUpdateModal} userId={selectedUserId} 
+                                onAddedUser = {(updatedUser) => {setUserList((prevUser) =>
+                                  prevUser.map((user) => user.id === updatedUser.id ? updatedUser : user))}}/>}
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 

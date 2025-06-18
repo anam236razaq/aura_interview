@@ -16,6 +16,7 @@ export default function DraftCv() {
     const[open, setOpen] = useState(false);
     const[showDeleteModal, setShowDeleteModal] = useState(false);
     const[loading, setLoading] = useState(true);
+    const[reprocessingId, setReprocessingId] = useState(null);
     const[selectedCandidateId, setSelectedCandidateId] = useState(null);
     const[searchQuery, setSearchQuery] = useState('');
     const[candidatesList, setCandidatesList] = useState([]);
@@ -103,6 +104,7 @@ export default function DraftCv() {
 
   const handleReprocess = async (cvId) => {
     try {
+        setReprocessingId(cvId);
         const token = localStorage.getItem('authToken');
         const response = await axios.post(`${API_BASE_URL}/cv/reprocess/${cvId}`, {}, {
             headers: {
@@ -119,6 +121,8 @@ export default function DraftCv() {
     } catch (error) {
         console.error(error);
         toast.error(error.response?.data?.message || 'Error reprocessing CV');
+    } finally {
+      setReprocessingId(null);
     }
 };
 
@@ -257,12 +261,16 @@ export default function DraftCv() {
                                 <td className="dtr-hidden">
                                     <div className="d-flex align-items-center">
                                         <Link onClick={()=>handleReprocess(candidate.id)} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none">
+                                            {reprocessingId === candidate.id ? (
+                                              <span className="spinner-border spinner-border-sm text-primary" role="status" />
+                                              ) : (
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="17" height="20" viewBox="0 0 17 20" fill="none">
                                                 <path d="M4 18L14 8L12 6L2 16L4 18" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M10 8L12 10" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M5.99996 6C5.99996 6.73638 6.59691 7.33333 7.33329 7.33333C6.59691 7.33333 5.99996 7.93029 5.99996 8.66667C5.99996 7.93029 5.40301 7.33333 4.66663 7.33333C5.40301 7.33333 5.99996 6.73638 5.99996 6" stroke="#2F2B3D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 <path d="M12.6667 12.6665C12.6667 13.4029 13.2637 13.9998 14 13.9998C13.2637 13.9998 12.6667 14.5968 12.6667 15.3332C12.6667 14.5968 12.0698 13.9998 11.3334 13.9998C12.0698 13.9998 12.6667 13.4029 12.6667 12.6665" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                             </svg>
+                                              )}
                                         </Link>
                                         <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                             <i className="icon-base ti tabler-dots-vertical icon-22px"></i>

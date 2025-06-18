@@ -19,6 +19,14 @@ export default function InterviewDetails() {
     const [statusUpdateLoading, setStatusUpdateLoading] = useState(false);
     const {id} = useParams();
 
+    useEffect(() => {
+      const queryParams = new URLSearchParams(location.search);
+      const from = queryParams.get('from');
+      if (from) {
+        localStorage.setItem('interviewFrom', from);
+      }
+    }, []);
+
      // Callback function to update questions list when a new one is added
     const handleQuestionAdded = (newQuestion) => {
         setQuestions(prevQuestions => [...prevQuestions, newQuestion].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))); // Add and re-sort

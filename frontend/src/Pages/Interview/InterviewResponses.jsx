@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../../utils/Constants';
 import Footer from '../../UI/Footer';
 import Pagination from '../../UI/Pagination';
 import toast, { Toaster } from 'react-hot-toast';
+import Loader from '../../UI/Loader';
 
 export default function InterviewResponses() {
     const { interviewId } = useParams();
@@ -26,9 +27,8 @@ export default function InterviewResponses() {
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
         const fetchResponses = async () => {
-            setLoading(true);
-
             try {
+            setLoading(true);
             const token = localStorage.getItem('authToken');
             const params = new URLSearchParams({
                 page: currentPage,
@@ -67,7 +67,7 @@ export default function InterviewResponses() {
         };
 
         fetchResponses();
-    }, 1000)
+    }, 500)
     
     return () => clearTimeout(delayDebounce);
     }, [interviewId, currentPage, searchQuery]);
@@ -186,9 +186,15 @@ export default function InterviewResponses() {
                               </tr>
                             </thead>
                             <tbody>
-                              {responsesData.length > 0 ? (
+                            {loading ? (
+                                    <tr>
+                                        <td colSpan="6" className="text-center py-5">
+                                            <Loader /> 
+                                        </td>
+                                    </tr>
+                                ) : responsesData?.length > 0 ? (
                                 responsesData.map((candidate) => (
-                                <tr key={candidate.cvId} onClick={() => navigate(`/interview/${interviewId}/responses/${candidate.cvId}`)} style={{cursor: 'pointer'}}>
+                                <tr key={candidate.cvId} onClick={() => navigate(`/interview/${interviewId}/responses/${candidate.cvId}`, {state: {candidate}})} style={{cursor: 'pointer'}}>
                                     <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" 
                                         type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                     <td className='text-black'>{candidate.name}</td>

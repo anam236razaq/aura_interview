@@ -9,7 +9,7 @@ export default function UpdateInterview({setShowModal, interviewId, onAddedInter
     const[title, setTitle] = useState('');
     const[description, setDescription] = useState('');
     const[expiryDate, setExpiryDate] = useState('');
-
+ 
     useEffect(() => {
             document.body.style.overflow='hidden';
 

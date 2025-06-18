@@ -7,11 +7,18 @@ import { API_BASE_URL } from '../../utils/Constants';
 import { useParams } from 'react-router-dom';
 import NotesEditor from '../../UI/NotesEditor';
 
-
 export default function CVDetails() {
   const[showModal, setShowModal] = useState(false);
   const[cvDetails, setCvDetails] = useState([]);
   const {id} = useParams();
+
+  useEffect(() => {
+  const queryParams = new URLSearchParams(location.search);
+  const from = queryParams.get('from');
+  if (from) {
+    localStorage.setItem('candidateFrom', from);
+  }
+}, []);
 
   //Getting details for specific CV
   useEffect(()=> {
