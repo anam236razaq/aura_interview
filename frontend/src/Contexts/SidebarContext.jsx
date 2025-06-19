@@ -76,6 +76,12 @@ export const SidebarProvider = ({ children }) => {
     startTransition();
   }
 
+  const handleLinkClick = () => {
+  if (window.innerWidth < 992) {
+    toggleSidebar(); // Collapse sidebar if on small screen
+  }
+};
+
   // Update HTML classes whenever state changes
   useEffect(() => {
     updateHtmlClasses();
@@ -85,11 +91,13 @@ export const SidebarProvider = ({ children }) => {
     <SidebarContext.Provider
       value={{
         isCollapsed,
+        setIsCollapsed,
         toggleSidebar,
         handleMouseEnter,
         handleMouseLeave,
         toggleExpandedSidebar,
-        isExpanded
+        isExpanded,
+        handleLinkClick
       }}
     >
       {children}

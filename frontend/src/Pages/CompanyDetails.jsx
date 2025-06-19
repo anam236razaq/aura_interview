@@ -50,7 +50,6 @@ export default function CompanyDetails() {
                       Authorization: `Bearer ${token}`
                   }
               });
-              console.log(response)
               setCompanyList(response?.data?.companies || []);
               setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
               setTotalEntries(response?.data?.total)

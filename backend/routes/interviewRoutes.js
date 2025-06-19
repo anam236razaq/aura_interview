@@ -11,6 +11,7 @@ const invitationRoutes = require('./invitationRoutes'); // Import invitation rou
 const assignmentRoutes = require('./assignmentRoutes'); // Import assignment routes
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 const authMiddleware = require('../middleware/authMiddleware'); // Import auth middleware
+const invitationQueue = require('../Queues/invitationQueue');
 
 // GET /api/interviews - Get all interviews for the logged-in user's organization
 router.get('/', async (req, res) => {
@@ -330,6 +331,23 @@ router.patch('/:id/status', checkRole([1, 2]), async (req, res) => {
             return res.status(404).json({ message: 'Interview not found or you do not have permission to update it.' });
         }
 
+        //If status is set to 'active', process unsent invitations
+        if(status === 'active'){
+            const [invitations] = await db.query( 'SELECT * FROM invitations WHERE interview_id = ? AND status = "unsent"',
+            [interviewId]);
+
+            for(const invite of invitations){
+                await db.query('UPDATE invitations SET status = "sent" WHERE id = ?', [invite.id]);
+                await invitationQueue.add('sendEmail', {
+                    email: invite.email,
+                    token: invite.token,
+                    first_name: invite.first_name,
+                    last_name: invite.last_name,
+                    message: invite.message,
+                })
+            }
+        }
+
         res.json({ message: 'Interview status updated successfully.', status: status });
     } catch (error) {
         console.error('Error updating interview status:', error);
@@ -338,7 +356,7 @@ router.patch('/:id/status', checkRole([1, 2]), async (req, res) => {
 });
 
 // GET /api/interviews/:id/invitation-token - Generates or retrieves an invitation token for the interview
-router.get('/:id/invitation-token', authMiddleware, checkRole([1, 2]), async (req, res) => {
+router.get('/:id/invitation-token', authMiddleware,  async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -598,7 +616,7 @@ const videoStorage = multer.diskStorage({
 
   const uploadVideo = multer({storage: videoStorage, fileFilter: videoFileFilter, limits: { fileSize: 50 * 1024 * 1024 }});
 
-  router.post('/upload', checkRole([1]),  uploadVideo.single('videoFile'), async(req, res) => {
+  router.post('/upload', checkRole([1,2]),  uploadVideo.single('videoFile'), async(req, res) => {
     const organization_id = req.user.organization_id;
     const file = req.file;
 

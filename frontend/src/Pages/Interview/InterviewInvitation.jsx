@@ -173,8 +173,6 @@ const InterviewInvitation = () => {
             console.warn('No questions available to submit.');
             return;
         }
-        console.log('Submitting response for question:', questions);
-
         const questionId = questions[currentQuestionIndex].id;
         const questionType = questions[currentQuestionIndex].type;
 
@@ -244,7 +242,6 @@ const InterviewInvitation = () => {
                 Authorization: `Bearer ${authToken}`
             }
         });
-        console.log(res);
         setCandidate(res.data);
       } catch (err) {
         console.log(err.response?.data?.message || 'Something went wrong');
@@ -266,7 +263,6 @@ const InterviewInvitation = () => {
 
 
     const handleDevicesSelected = (devices) => {
-        console.log('Devices selected:', devices);
         setSelectedDevices(devices);
         setCurrentStep(3); //
     };

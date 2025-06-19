@@ -181,7 +181,6 @@ export default function CandidatePublicInterview() {
             console.warn('No questions available to submit.');
             return;
         }
-        console.log('Submitting response for question:', questions);
 
         const questionId = questions[currentQuestionIndex].id;
         const questionType = questions[currentQuestionIndex].type;
@@ -275,7 +274,6 @@ export default function CandidatePublicInterview() {
                 },
             });
 
-            console.log('CV uploaded successfully. CV ID:', response.data.cvId);
             setCvId(response.data.cvId);
             setCurrentStep(3);
         } catch (error) {
@@ -287,7 +285,6 @@ export default function CandidatePublicInterview() {
     };
 
     const handleDevicesSelected = (devices) => {
-        console.log('Devices selected:', devices);
         setSelectedDevices(devices);
         setCurrentStep(4); // Move to Step 3: Questions
     };

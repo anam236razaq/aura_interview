@@ -138,9 +138,9 @@ export default function InterviewDetails() {
     <Toaster position="top-center" reverseOrder={false} />
     <div className="content-wrapper">
     <div className="container-xxl flex-grow-1 container-p-y">
-        <div className='d-flex justify-content-between'>
+        <div className='d-flex flex-column align-items-start align-items-md-center flex-md-row justify-content-between'>
             <h4 className='text-black'>{interview?.title}</h4>
-            <div>
+            <div className="d-flex gap-2">
                 <Link to="/interviewed/interview-list" className="btn py-3" style={{backgroundColor: 'rgba(115, 103, 240, 0.24)', color: '#646cff'}}>Back to Interview List</Link>
                 <Link to={`/interviewed/interview/${id}/responses`} className="btn ms-2 text-white py-3" style={{backgroundColor: '#646cff'}}>View Responses ({responsesData?.length})</Link>
             </div>
@@ -242,10 +242,10 @@ function QuestionList({ questions, interviewId, onQuestionAdded }){
             <div className="card-datatable">
                 <div id="DataTables_Table_0_wrapper" className="dt-container dt-bootstrap5 dt-empty-footer">
                     <div className="row card-header border-bottom mx-0 px-3">
-                        <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+                        <div className="d-flex justify-content-between align-items-center dt-layout-start col-auto me-auto">
                             <h5 className="card-title mb-0">Questions</h5>
                         </div>
-                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-auto ms-auto">
                             <button className="btn text-white" style={{backgroundColor: '#646cff'}} onClick={()=> setShowModal(true)}>
                                 <span className="d-flex align-items-center gap-2">
                                     <i className="icon-base ti tabler-plus icon-xs"></i>
@@ -333,7 +333,6 @@ function AssignmentList({interviewId}){
             } else {
                 setSelectedUserId('');
             }
-            console.log(assignRes, usersRes);
         } catch (err) {
             console.log('Failed to load assignment data. ' + (err.response?.data?.message || ''));
         } finally {
@@ -461,7 +460,6 @@ const InvitationList = ({ interviewId }) => {
             setInvitations(response.data.invitations || []);
             setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
             setTotalEntries(response?.data?.total)
-            console.log(response)
         } catch (err) {
             console.log('Failed to load invitations. ' + (err.response?.data?.message || ''));
         } finally {
@@ -486,10 +484,10 @@ const InvitationList = ({ interviewId }) => {
             <div className="card-datatable">
                 <div id="DataTables_Table_0_wrapper" className="dt-container dt-bootstrap5 dt-empty-footer">
                     <div className="row card-header border-bottom mx-0 px-3">
-                        <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-start col-auto me-auto">
                             <h5 className="card-title mb-0">Candidate Invitations</h5>
                         </div>
-                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto">
+                        <div className="d-md-flex justify-content-between align-items-center dt-layout-end col-auto ms-auto">
                             <button className="btn text-white" style={{backgroundColor: '#646cff'}} onClick={()=> setShowModal(true)}>
                                 <span className="d-flex align-items-center gap-2">
                                     <i className="icon-base ti tabler-plus icon-xs"></i>

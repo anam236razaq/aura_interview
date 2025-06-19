@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { SidebarContext } from '../Contexts/SidebarContext';
 
 export default function Sidebar() {
-  const { toggleSidebar, handleMouseEnter, handleMouseLeave } = useContext(SidebarContext);
+  const { toggleSidebar, handleMouseEnter, handleMouseLeave, handleLinkClick} = useContext(SidebarContext);
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const sidebarRef = useRef(null);
@@ -24,8 +24,26 @@ export default function Sidebar() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const screenWidth = window.innerWidth;
+      if(screenWidth < 992 && sidebarRef.current && !sidebarRef.current.contains(event.target)){
+        toggleSidebar();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [toggleSidebar])
+
+
   const storedFrom = localStorage.getItem('candidateFrom');
   const interviewFrom = localStorage.getItem('interviewFrom');
+
+  const roleId = parseInt(localStorage.getItem('roleId'), 10);
+  const isHr = roleId === 3;
 
   return (
     <aside
@@ -98,18 +116,18 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
-              <Link to="index.html" className="menu-link">
+              <Link to="index.html" className="menu-link" onClick={handleLinkClick}>
                 <div data-i18n="Analytics">Analytics</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="dashboards-crm.html" className="menu-link">
+              <Link to="dashboards-crm.html" className="menu-link" onClick={handleLinkClick}>
                 <div data-i18n="CRM">CRM</div>
               </Link>
             </li>
           </ul>
         </li>
-        <li className={`menu-item ${isOpen === 1 ? 'open' : ''}`}>
+        {!isHr && <li className={`menu-item ${isOpen === 1 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(1)}>
             <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
               <ellipse cx="11" cy="6.41667" rx="3.66667" ry="3.66667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -119,13 +137,13 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
-              <Link to="/users/user-list" className={`menu-link ${location.pathname === '/users/user-list' ? 'active-links' : ''}`}>
+              <Link to="/users/user-list" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/users/user-list' ? 'active-links' : ''}`}>
                 <div data-i18n="Users List">Users List</div>
               </Link>
             </li>
           </ul>
-        </li>
-        <li className={`menu-item ${isOpen === 2 ? 'open' : ''}`}>
+        </li>}
+        {!isHr && <li className={`menu-item ${isOpen === 2 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(2)}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <circle cx="6" cy="6" r="3.5" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -134,43 +152,43 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
-              <Link to="/candidates/cv-import" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/cv-import" onClick={() =>{handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/cv-import' ? 'active-links' : ''}`}>
                 <div data-i18n="Bulk CV Import">Bulk CV Import</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/candidate-list" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/candidate-list" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/candidate-list' || storedFrom === 'list' ? 'active-links' : ''}`}>
                 <div data-i18n="Candidate List">Candidate List</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/short-listed" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/short-listed" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/short-listed' || storedFrom === 'shortlisted' ? 'active-links' : ''}`}>
                 <div data-i18n="Short Listed">Short Listed</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/blacklisted" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/blacklisted" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/blacklisted' || storedFrom === 'blacklisted' ? 'active-links' : ''}`}>
                 <div data-i18n="Blacklisted">Blacklisted</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/draft-cvs" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/draft-cvs" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom')}} 
                 className={`menu-link ${location.pathname === '/candidates/draft-cvs' ? 'active-links' : ''}`}>
                 <div data-i18n="Draft CVs">Draft CVs</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/interviewed" onClick={() => localStorage.removeItem('candidateFrom')} 
+              <Link to="/candidates/interviewed" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom')}} 
                 className={`menu-link ${location.pathname === '/candidates/interviewed' ? 'active-links' : ''}`}>
                 <div data-i18n="Interviewed">Interviewed</div>
               </Link>
             </li>
           </ul>
-        </li>
+        </li>}
         <li className={`menu-item ${isOpen === 3 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(3)}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -183,28 +201,28 @@ export default function Sidebar() {
               <div data-i18n="Interview">Interview</div>
           </Link>
           <ul className="menu-sub">
-            <li className="menu-item">
-              <Link to="/interviewed/create-interview" onClick={() => localStorage.removeItem('interviewFrom')}  className={`menu-link ${location.pathname === '/interviewed/create-interview' ? 'active-links' : ''}`}>
+            {!isHr && <li className="menu-item">
+              <Link to="/interviewed/create-interview" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}}  className={`menu-link ${location.pathname === '/interviewed/create-interview' ? 'active-links' : ''}`}>
                 <div data-i18n="Create a Interview">Create a Interview</div>
               </Link>
-            </li>
+            </li>}
             <li className="menu-item">
-              <Link to="/interviewed/interview-list" onClick={() => localStorage.removeItem('interviewFrom')} className={`menu-link ${location.pathname === '/interviewed/interview-list' || interviewFrom === 'interviewlist' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/interview-list" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/interview-list' || interviewFrom === 'interviewlist' ? 'active-links' : ''}`}>
                 <div data-i18n="Interview List">Interview List</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/upcoming-interview" onClick={() => localStorage.removeItem('interviewFrom')} className={`menu-link ${location.pathname === '/interviewed/upcoming-interview' || interviewFrom === 'upcoming' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/upcoming-interview" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/upcoming-interview' || interviewFrom === 'upcoming' ? 'active-links' : ''}`}>
                 <div data-i18n="Upcoming Interview">Upcoming Interview</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/expired-interview" onClick={() => localStorage.removeItem('interviewFrom')} className={`menu-link ${location.pathname === '/interviewed/expired-interview' || interviewFrom === 'expired' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/expired-interview" onClick={() => {handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/expired-interview' || interviewFrom === 'expired' ? 'active-links' : ''}`}>
                 <div data-i18n="Expired Interview">Expired Interview</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/draft-interviews" onClick={() => localStorage.removeItem('interviewFrom')} className={`menu-link ${location.pathname === '/interviewed/draft-interviews' || interviewFrom === 'draft' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/draft-interviews" onClick={() => {handleLinkClick(); localStorage.removeItem('interviewFrom')}} className={`menu-link ${location.pathname === '/interviewed/draft-interviews' || interviewFrom === 'draft' ? 'active-links' : ''}`}>
                 <div data-i18n="Draft Interviews">Draft Interviews</div>
               </Link>
             </li>
@@ -223,15 +241,15 @@ export default function Sidebar() {
         <li className="menu-header small">
             <span className="menu-header-text text-capitalize" data-i18n="Settings">Settings</span>
         </li>
-        <li className="menu-item">
-          <Link to="/company" className={`menu-link ${location.pathname === '/company' ? 'active-links' : ''}`}>
+        {!isHr && <li className="menu-item">
+          <Link to="/company" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/company' ? 'active-links' : ''}`}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                   <path d="M12.8334 2.75V6.41667C12.8334 6.92293 13.2438 7.33333 13.75 7.33333H17.4167" stroke={`${location.pathname === '/company' ? '#ffffff' : '#2F2B3D'}`} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path fillRule="evenodd" clipRule="evenodd" d="M15.5834 19.25H6.41671C5.40419 19.25 4.58337 18.4292 4.58337 17.4167V4.58333C4.58337 3.57081 5.40419 2.75 6.41671 2.75H12.8334L17.4167 7.33333V17.4167C17.4167 18.4292 16.5959 19.25 15.5834 19.25Z" stroke={`${location.pathname === '/company' ? '#ffffff' : '#2F2B3D'}`} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             <div data-i18n="Company Page">Company Page</div>
           </Link>
-        </li>
+        </li>}
         <li className={`menu-item ${isOpen === 5 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(5)}>
             <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">

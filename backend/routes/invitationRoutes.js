@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true }); // mergeParams to get interviewId if nested
 const db = require('../config/db');
 const crypto = require('crypto');
+const invitationQueue = require('../Queues/invitationQueue');
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 
 // Middleware to check if the interview (from parent route) belongs to the user's organization
@@ -42,20 +43,30 @@ router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
   const token = crypto.randomBytes(32).toString('hex');
 
   try {
+    const[[interview]] = await db.query('SELECT status FROM interviews WHERE id = ?', [interviewId]);
+
+    if(!interview){
+        return res.status(404).json({message: 'Interview not found'});
+    }
+
+    const invitationStatus = interview.status === 'active' ? 'sent' : 'unsent';
     // Ownership already checked by middleware
     const [result] = await db.query(
       'INSERT INTO invitations (organization_id, interview_id, email, first_name, last_name, message, status, token, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [organization_id, interviewId, email, first_name, last_name, message, 'sent', token, expires_at]
+      [organization_id, interviewId, email, first_name, last_name, message, invitationStatus, token, expires_at]
     );
 
     // TODO: Send email to the candidate with the invitation link (e.g., /interview/{token})
+    if(invitationStatus === 'sent'){
+        await invitationQueue.add('sendEmail', {email, token, first_name, last_name, message});
+    }
 
     res.status(201).json({ 
         id: result.insertId, 
         interview_id: parseInt(interviewId), 
         email, 
         token, // Return token for reference (maybe not in production)
-        status: 'sent' 
+        status: invitationStatus 
     });
   } catch (error) {
     console.error('Error creating invitation:', error);

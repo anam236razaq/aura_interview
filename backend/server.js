@@ -13,6 +13,7 @@ const candidateRoutes = require('./routes/candidateRoutes'); // Import candidate
 const skillsRoutes = require('./routes/skillsRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
 const companyRoutes = require('./routes/companyRoutes');
+require('./Queues/invitationProcessor');
 const cors = require('cors');
 const app = express();
 app.use(cors())

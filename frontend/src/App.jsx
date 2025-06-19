@@ -91,21 +91,13 @@ export default function App() {
       <Routes>
         <Route path='/' element ={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
             <Route index element ={<DashboardContent />} />
-            <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1]}>
-                  <UserList />
-              </RoleBasedRoute>} />
-            <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2]}>
-                < CandidateList  />
-            </RoleBasedRoute>} />
+            <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1,2]}><UserList /></RoleBasedRoute>} />
+            <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2]}><CandidateList  /></RoleBasedRoute>} />
             <Route path='candidates/cv-import' element={<RoleBasedRoute allowedRoles={[1,2]}><BulkImportCv /></RoleBasedRoute>} />
-            <Route path='candidates/draft-cvs' element={<DraftCv />} />
-            <Route path='candidates/:id' element={<CVDetails />} />
-            <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2]}>
-                  <ShortListedCandidates />
-              </RoleBasedRoute>} />
-            <Route path="candidates/blacklisted" element={<RoleBasedRoute allowedRoles={[1,2]}>
-                  <BlackListedCandidates />
-              </RoleBasedRoute>} />
+            <Route path='candidates/draft-cvs' element={<RoleBasedRoute allowedRoles={[1,2]}><DraftCv /></RoleBasedRoute>} />
+            <Route path='candidates/:id' element={<RoleBasedRoute allowedRoles={[1,2]}><CVDetails /></RoleBasedRoute>} />
+            <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2]}><ShortListedCandidates /></RoleBasedRoute>} />
+            <Route path="candidates/blacklisted" element={<RoleBasedRoute allowedRoles={[1,2]}><BlackListedCandidates /></RoleBasedRoute>} />
             <Route path='/interviewed/create-interview' element={<RoleBasedRoute allowedRoles={[1,2]}>
                   <InterviewSetup/>
               </RoleBasedRoute>} />

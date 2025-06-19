@@ -11,7 +11,7 @@ const FormData = require('form-data');
 
 
 // GET /api/users - List users within the admin's organization (Admin only)
-router.get('/', authMiddleware, checkRole([1]), async (req, res) => {
+router.get('/', authMiddleware, checkRole([1, 2, 3]), async (req, res) => {
   const organization_id = req.user.organization_id;
   const { page = 1, limit = 10, search, status, type } = req.query;
 

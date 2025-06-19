@@ -61,7 +61,6 @@ export default function UserList() {
                 }
             });
 
-            console.log(response)
             setUserList(response?.data?.users || []);
             setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
             setTotalEntries(response?.data?.total)
@@ -93,12 +92,11 @@ export default function UserList() {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
       try{
         const token = localStorage.getItem('authToken');
-        const response = await axios.put(`${API_BASE_URL}/users/${userId}/status`, {status: newStatus}, {
+        await axios.put(`${API_BASE_URL}/users/${userId}/status`, {status: newStatus}, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         })
-        console.log(response);
         setUserList((prevList) => 
           prevList.map((user) => user.id === userId ? {...user, status: newStatus} : user)
         )
@@ -123,7 +121,22 @@ export default function UserList() {
         }
       }
       fetchRoles();
-    }, [])
+    }, []);
+
+  const columns = [
+  { columnName: 'Full name', dtColumn: '1' },
+  { columnName: 'email', dtColumn: '2' },
+  { columnName: 'active/deactive', dtColumn: '3' },
+  { columnName: 'type', dtColumn: '4' },
+  { columnName: 'ACTIONS', dtColumn: '5' }
+  ];
+
+  const roleId = parseInt(localStorage.getItem('roleId'), 10);
+  const isManager = roleId === 2;
+
+  const visibleColumns = isManager
+  ? columns.filter(col => col.columnName !== 'ACTIONS')
+  : columns;
 
   return (
     <>
@@ -173,7 +186,7 @@ export default function UserList() {
                           <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                               <div className="btn-group">
                                   <button className="btn buttons-collection btn-label-secondary dropdown-toggle" tabIndex="0"  onClick={toggleDropdown}
-                                      aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded={open}>
+                                      aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded={open} style={{marginRight: '1.5rem',}}>
                                         <span>
                                             <span className="d-flex align-items-center gap-2">
                                                 <i className="icon-base ti tabler-upload icon-xs"></i>
@@ -226,14 +239,14 @@ export default function UserList() {
                                           </Link>
                                       </div>
                                   </div>
-                                  <button className="btn add-new btn-primary ms-4 override-radius" tabIndex="0" aria-controls="DataTables_Table_0" type="button" onClick={()=>setShowModal(true)} style={{marginRight: '1.5rem',}}>
+                                  {!isManager && <button className="btn add-new btn-primary override-radius" tabIndex="0" aria-controls="DataTables_Table_0" type="button" onClick={()=>setShowModal(true)} style={{marginRight: '1.5rem',}}>
                                     <span>
                                       <span className="d-flex align-items-center gap-2">
                                           <i className="icon-base ti tabler-plus icon-xs"></i>
                                           <span className="d-none d-sm-inline-block">Add User</span>
                                       </span>
                                     </span>
-                                  </button>
+                                  </button>}
                                   {showModal && <UserModel setShowModal={setShowModal} onAddedUser = {handleAddedUser}/> }
                               </div>
                           </div>
@@ -243,12 +256,12 @@ export default function UserList() {
                               <table className="datatables-users table dataTable dtr-column collapsed" id="DataTables_Table_0"
                                 aria-describedby="DataTables_Table_0_info" style={{width: '100%'}}>
                                     <colgroup>
-                                        <col data-dt-column="0" style={{width: '10%'}} />
-                                        <col data-dt-column="1" style={{width: '20%'}} />
-                                        <col data-dt-column="2" style={{width: '20%'}} />
-                                        <col data-dt-column="3" style={{width: '18%'}} />
-                                        <col data-dt-column="4" style={{width: '12%'}} />
-                                        <col data-dt-column="5" style={{width: '20%'}} />
+                                        <col data-dt-column="0" style={{ width: '10%' }} /> 
+                                        <col data-dt-column="1" style={{ width: isManager ? '25%' : '20%' }} />
+                                        <col data-dt-column="2" style={{ width: isManager ? '25%' : '20%' }} />
+                                        <col data-dt-column="3" style={{ width: isManager ? '20%' : '18%' }} />
+                                        <col data-dt-column="4" style={{ width: isManager ? '20%' : '12%' }} />
+                                        {!isManager && <col data-dt-column="5" style={{ width: '15%' }} />}
                                     </colgroup>
                                     <thead className="border-top"> 
                                       <tr>
@@ -257,19 +270,17 @@ export default function UserList() {
                                           <input className="form-check-input custom-checkbox" type="checkbox" />
                                         </th>
 
-                                        {[{columnName: 'Full name', dtColumn: '1'}, {columnName: 'email', dtColumn: '2'},
-                                          {columnName: 'active/deactive', dtColumn: '3'},
-                                          {columnName: 'type', dtColumn: '4'}, {columnName: 'ACTIONS', dtColumn: '5'}].map((column, index) => (
+                                        {visibleColumns.map((column, index) => (
                                             <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
-                                              <span className="dt-column-title">{column.columnName}</span>
+                                                <span className="dt-column-title">{column.columnName}</span>
                                             </th>
-                                        ))}
+                                        ))}                                      \
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {loading ? (
                                           <tr>
-                                            <td colSpan="6" className="text-center py-5">
+                                            <td colSpan={isManager ? 5 : 6} className="text-center py-5">
                                                 <Loader /> 
                                             </td>
                                           </tr>
@@ -282,14 +293,14 @@ export default function UserList() {
                                         <td>
                                           <div className="form-check form-switch m-0">
                                             <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
-                                              checked={user.status === 'active'} onChange={()=>handleStatusToggle(user.id, user.status)}/>
+                                              checked={user.status === 'active'} onChange={()=> !isManager && handleStatusToggle(user.id, user.status)}/>
                                           </div>
                                         </td>
                                         <td>
                                           <span className={`badge text-capitalize ${user.status === 'active' ? 'bg-label-success' : 'bg-label-danger'
                                                   }`}>{user.role_name}</span>
                                         </td>
-                                        <td className="dtr-hidden">
+                                        {!isManager && <td className="dtr-hidden">
                                           <div className="d-flex align-items-center">
                                               <button onClick={()=>{setSelectedUserId(user.id);setShowUpdateModal(true);}} className="btn btn-text-secondary rounded-pill waves-effect btn-icon delete-record">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 38 38" fill="none">
@@ -299,11 +310,11 @@ export default function UserList() {
                                                   </svg>
                                               </button>
                                           </div>
-                                        </td>
+                                        </td>}
                                       </tr>
                                       ))) : (
                                         <tr>
-                                            <td colSpan="6" className="text-center">No users found</td>
+                                            <td colSpan={isManager ? 5 : 6} className="text-center">No users found</td>
                                         </tr>
                                       )}
                                   </tbody>

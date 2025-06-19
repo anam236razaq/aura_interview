@@ -51,7 +51,6 @@ export default function InterviewList() {
             Authorization: `Bearer ${token}`
           }
         });
-        console.log(response);
         setInterviewList(response?.data?.interviews || []);
         setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
         setTotalEntries(response?.data?.total)

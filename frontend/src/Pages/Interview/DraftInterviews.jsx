@@ -56,7 +56,6 @@ export default function DraftInterviews() {
                           Authorization: `Bearer ${token}`
                     }
                   });
-                console.log(response)
                 setInterviewList(response?.data?.interviews || []);
                 setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 
                 setTotalEntries(response?.data?.total);
@@ -96,7 +95,6 @@ export default function DraftInterviews() {
         setShowDeleteModal(false);
         setInterviewList(prevList => prevList.filter(company => company.id !== selectedInterviewId))
         toast.success(response.data.message);
-        console.log(response);
 
       }catch(error){
           toast.error(error.response?.data?.message || 'An unexpected error occured');
