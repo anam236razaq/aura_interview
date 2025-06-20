@@ -100,6 +100,9 @@ export default function UpcomingInterview({type}) {
       }
     }
 
+  const roleId = parseInt(localStorage.getItem('roleId'), 10);
+  const isHr = roleId === 3;
+
   return (
     <>
     <Toaster reverseOrder={false} position='top-center' />
@@ -125,7 +128,7 @@ export default function UpcomingInterview({type}) {
                   <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                       <div className="btn-group">
                           <button className="btn buttons-collection btn-label-secondary dropdown-toggle" tabIndex="0"  onClick={toggleDropdown}
-                              aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded={open}>
+                              aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded={open} style={{marginRight: '1.5rem'}}>
                                 <span>
                                     <span className="d-flex align-items-center gap-2">
                                         <i className="icon-base ti tabler-upload icon-xs"></i>
@@ -178,14 +181,14 @@ export default function UpcomingInterview({type}) {
                                   </Link>
                               </div>
                           </div>
-                          <button onClick={()=> navigate('/interviewed/create-interview')} className="btn add-new btn-primary ms-4 override-radius" tabIndex="0" aria-controls="DataTables_Table_0" type="button" style={{marginRight: '1.5rem',}}>
+                          {!isHr && <button onClick={()=> navigate('/interviewed/create-interview')} className="btn add-new btn-primary override-radius" tabIndex="0" aria-controls="DataTables_Table_0" type="button" style={{marginRight: '1.5rem',}}>
                             <span>
                               <span className="d-flex align-items-center gap-2">
                                   <i className="icon-base ti tabler-plus icon-xs"></i>
                                   <span className="d-none d-sm-inline-block">Create Interview</span>
                               </span>
                             </span>
-                          </button>
+                          </button>}
                       </div>
                   </div>
                 </div>

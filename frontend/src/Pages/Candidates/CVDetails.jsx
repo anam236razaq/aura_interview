@@ -3,7 +3,7 @@ import Footer from '../../UI/Footer'
 import CVPdfModal from '../../UI/CVPdfModal';
 import { useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../utils/Constants';
+import { API_BASE_URL, PDF_BASE_URL } from '../../utils/Constants';
 import { useParams } from 'react-router-dom';
 import NotesEditor from '../../UI/NotesEditor';
 
@@ -76,7 +76,7 @@ export default function CVDetails() {
                       </clipPath>
                   </defs>
               </svg>
-              {showModal && <CVPdfModal setShowModal={setShowModal}/>}
+              {showModal && <CVPdfModal setShowModal={setShowModal} pdfUrl ={`${PDF_BASE_URL}${cv.file_path}`}/>}
             </div>
         </div>
 

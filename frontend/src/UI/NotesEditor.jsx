@@ -27,7 +27,8 @@ export default function NotesEditor({id, onNoteAdded}) {
   }
 
   //Adding Internal note to cv
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try{
         const noteContent = editor.getHTML()
         const token = localStorage.getItem('authToken');

@@ -19,6 +19,7 @@ export default function Navbar() {
 
     // Remove token on frontend
     localStorage.removeItem('authToken');
+    localStorage.removeItem('roleId');
 
     // Redirect to login or homepage
     window.location.href = '/login';
@@ -453,13 +454,13 @@ export default function Navbar() {
                       <div className="dropdown-divider my-1 mx-n2"></div>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="pages-profile-user.html">
+                      <Link className="dropdown-item" to="/profile">
                         <i className="icon-base ti tabler-user me-3 icon-md"></i
                         ><span className="align-middle">My Profile</span>
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to="pages-account-settings-account.html">
+                      <Link className="dropdown-item" to="/settings">
                         <i className="icon-base ti tabler-settings me-3 icon-md"></i
                         ><span className="align-middle">Settings</span>
                       </Link>

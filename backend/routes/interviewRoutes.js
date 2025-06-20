@@ -179,6 +179,10 @@ router.post('/', checkRole([1, 2]), async (req, res) => {
             }
         }
 
+         // Determine interview status (default is draft unless you insert otherwise)
+        const [[createdInterview]] = await db.query('SELECT status FROM interviews WHERE id = ?', [interviewId]);
+        const invitationStatus = createdInterview?.status === 'active' ? 'sent' : 'unsent';
+
         // Insert selected candidates into invitations table
          if (candidateIds && Array.isArray(candidateIds)) {
              for (const candidateId of candidateIds) {
@@ -200,8 +204,8 @@ router.post('/', checkRole([1, 2]), async (req, res) => {
                     }
 
                      await db.query(
-                        'INSERT INTO invitations (interview_id, cvs_id, email, first_name, last_name, token, organization_id, intro_video, outro_video) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        [interviewId, candidateId.candidateId, email, first_name, last_name, token, organization_id, introVideo, outroVideo]
+                        'INSERT INTO invitations (interview_id, cvs_id, email, first_name, last_name, token, organization_id, intro_video, outro_video, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [interviewId, candidateId.candidateId, email, first_name, last_name, token, organization_id, introVideo, outroVideo, invitationStatus]
                      );
                  }
              }
@@ -307,7 +311,7 @@ router.delete('/:id', checkRole([1, 2]), async (req, res) => {
 });
 
 // PATCH /api/interviews/:id/status - Update only the status of an interview
-router.patch('/:id/status', checkRole([1, 2]), async (req, res) => {
+router.patch('/:id/status', checkRole([1, 2,3]), async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     const organization_id = req.user.organization_id;
@@ -334,7 +338,7 @@ router.patch('/:id/status', checkRole([1, 2]), async (req, res) => {
         //If status is set to 'active', process unsent invitations
         if(status === 'active'){
             const [invitations] = await db.query( 'SELECT * FROM invitations WHERE interview_id = ? AND status = "unsent"',
-            [interviewId]);
+            [id]);
 
             for(const invite of invitations){
                 await db.query('UPDATE invitations SET status = "sent" WHERE id = ?', [invite.id]);

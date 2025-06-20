@@ -28,6 +28,8 @@ const ShortListedCandidates = lazy(() => import('./Pages/Candidates/ShortListedC
 const BlackListedCandidates = lazy(() => import('./Pages/Candidates/BlackListedCandidates'));
 const DraftInterviews = lazy(() => import('./Pages/Interview/DraftInterviews'));
 const DraftCv = lazy(() => import('./Pages/Candidates/DraftCv'));
+const Profile = lazy(() => import('./Pages/Profile'));
+const Settings = lazy(() => import('./Pages/Settings'));
 
 
 import Register from './UI/Register'
@@ -112,6 +114,8 @@ export default function App() {
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />
             <Route path='/support' element={<Support />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2]}><CompanyDetails /></RoleBasedRoute>} />
         </Route>
         <Route path='register' element={<PublicRoute><Register /></PublicRoute>} />

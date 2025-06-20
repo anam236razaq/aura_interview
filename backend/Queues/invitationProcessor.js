@@ -20,7 +20,7 @@ invitationQueue.process('sendEmail', async(job) => {
             html: `
                 <p>Hi ${first_name} ${last_name},</p>
                 <p>${message}</p>
-                <p><a href="https://yourapp.com/interview/${token}">Click here to join the interview</a></p>`,
+                <p><a href="https://keydevs.com/interview/${token}">Click here to join the interview</a></p>`,
         })
 
     }catch (error) {

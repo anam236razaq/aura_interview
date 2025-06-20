@@ -25,7 +25,7 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         try {
-            await axios.post(
+            const response = await axios.post(
                 `${API_BASE_URL}/interviews/${interviewId}/invitations`,
                 {
                     email: newInviteEmail,
@@ -34,7 +34,13 @@ export default function AddCandidateModal({setShowModal, interviewId, fetchInvit
                 },
                 config
             );
-            toast.success(`Invitation sent successfully to ${newInviteEmail}.`);
+            const inviteStatus = response.data.status;
+
+            if (inviteStatus === 'sent') {
+                toast.success(`Invitation sent successfully to ${newInviteEmail}.`);
+            } else if (inviteStatus === 'unsent') {
+                toast.error('Interview is in draft. Please update it to "Active" to send invitations.');
+            }
             // Reset form
             setNewInviteEmail('');
             setNewInviteFirstName('');

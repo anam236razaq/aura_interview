@@ -41,7 +41,7 @@ router.get('/', checkInterviewOwnership, async (req, res) => {
 });
 
 // POST /api/interviews/:interviewId/questions - Add a new question to an interview (Admin only)
-router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
+router.post('/', checkInterviewOwnership, checkRole([1,2,3]), async (req, res) => {
   const { interviewId } = req.params;
   const { text, type, time_limit, order } = req.body;
   // Ownership already checked

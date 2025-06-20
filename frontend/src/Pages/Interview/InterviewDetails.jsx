@@ -8,6 +8,7 @@ import {toast, Toaster} from 'react-hot-toast';
 import AddQuestionModel from '../../UI/AddQuestionModel';
 import AddCandidateModal from '../../UI/AddCandidateModal';
 import Pagination from '../../UI/Pagination';
+import { useCallback } from 'react';
 
 export default function InterviewDetails() {
     const [interview, setInterview] = useState(null);
@@ -122,6 +123,7 @@ export default function InterviewDetails() {
 
             await axios.patch(API_BASE_URL+`/interviews/${id}/status`, {status: newStatus}, config);
             setInterview(prev => ({ ...prev, status: newStatus }));
+            setNewStatus('');
 
         }catch(err){
             toast.error('Failed to update status. ' + (err.response?.data?.message || ''));
@@ -273,7 +275,7 @@ function QuestionList({ questions, interviewId, onQuestionAdded }){
                                           <input className="form-check-input custom-checkbox" type="checkbox" />
                                         </th>
                                         {[{columnName: 'QUESTIONS', dtColumn: '1'}, {columnName: 'TYPE', dtColumn: '2'},
-                                            {columnName: 'TIME LIMIT(Mins)', dtColumn: '3'}].map((column, index) => (
+                                            {columnName: 'TIME LIMIT(Secs)', dtColumn: '3'}].map((column, index) => (
                                                 <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                                     <span className="dt-column-title">{column.columnName}</span>
                                                 </th>
@@ -313,7 +315,7 @@ function AssignmentList({interviewId}){
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
-    const fetchAssignmentsAndUsers = async () => {
+    const fetchAssignmentsAndUsers = useCallback(async () => {
         setLoadingAssignments(true);
         setLoadingUsers(true);
         const token = localStorage.getItem('authToken');
@@ -339,11 +341,11 @@ function AssignmentList({interviewId}){
             setLoadingAssignments(false);
             setLoadingUsers(false);
         }
-    };
+    }, [interviewId]);
 
     useEffect(() => {
         fetchAssignmentsAndUsers();
-    }, [interviewId]);
+    }, [interviewId, fetchAssignmentsAndUsers]);
 
     const handleAddAssignment = async (event) => {
         event.preventDefault();
@@ -396,9 +398,9 @@ function AssignmentList({interviewId}){
                 ) : (
                     <ul className="list-group">
                         {assignments.map(a => (
-                            <li key={a.user_id} className="list-group-item d-flex justify-content-between align-items-center">
+                            <li key={a.user_id} className="list-group-item d-flex flex-column">
                                 {a.first_name || ''} {a.last_name || ''} ({a.email})
-                                <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm">
+                                <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm mt-2">
                                     <i className="bi bi-x-circle me-1"></i> Unassign
                                 </button>
                             </li>
@@ -443,7 +445,7 @@ const InvitationList = ({ interviewId }) => {
     
     const [showModal, setShowModal] = useState(false);
 
-    const fetchInvitations = async () => {
+    const fetchInvitations = useCallback(async () => {
         setLoadingInvites(true);
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams({
@@ -465,11 +467,11 @@ const InvitationList = ({ interviewId }) => {
         } finally {
             setLoadingInvites(false);
         }
-    };
+    }, [currentPage, interviewId]);
 
     useEffect(() => {
         fetchInvitations();
-    }, [interviewId]);
+    }, [interviewId, fetchInvitations]);
 
     if(loadingInvites) return;
 

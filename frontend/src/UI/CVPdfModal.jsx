@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-export default function CVPdfModal({setShowModal}) {
+export default function CVPdfModal({setShowModal, pdfUrl}) {
 
     useEffect(() => {
         document.body.style.overflow='hidden';
@@ -22,7 +22,16 @@ export default function CVPdfModal({setShowModal}) {
                 </button>
             </div>
             <div className="modal-body pb-0 d-flex align-items-center justify-content-center" style={{height: '100vh'}}>
-                <strong className='text-dark'  style={{fontSize: '20px', marginLeft: '-8px'}}>Developer show PDF here</strong>
+                {pdfUrl ? (
+                  <iframe src={pdfUrl} width="100%" height="100%"
+                      style={{ border: 'none' }} title="CV PDF"></iframe>
+                ) : (
+                <div className="d-flex justify-content-center align-items-center h-100">
+                    <strong className="text-dark" style={{ fontSize: '20px' }}>
+                      No PDF available
+                    </strong>
+                </div>
+              )}
             </div>
             <div className="modal-footer d-flex justify-content-center">
                 <button type="button" id="submitTask" className="btn btn-outline-customYelow customPrimaryBg text-white rounded-pill px-4"

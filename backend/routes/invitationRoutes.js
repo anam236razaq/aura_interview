@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true }); // mergeParams to get interviewId if nested
 const db = require('../config/db');
-const crypto = require('crypto');
 const invitationQueue = require('../Queues/invitationQueue');
+const { v4: uuidv4 } = require('uuid');
 const checkRole = require('../middleware/roleMiddleware'); // Import role checker
 
 // Middleware to check if the interview (from parent route) belongs to the user's organization
@@ -30,7 +30,7 @@ async function checkInterviewOwnership(req, res, next) {
 }
 
 // POST /api/interviews/:interviewId/invitations - Create a new invitation (Admin only)
-router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
+router.post('/', checkInterviewOwnership, checkRole([1,2,3]), async (req, res) => {
   const { interviewId } = req.params;
   const { email, first_name, last_name, message, expires_at } = req.body;
   const organization_id = req.user.organization_id; // Use org ID from user
@@ -40,7 +40,7 @@ router.post('/', checkInterviewOwnership, checkRole([1]), async (req, res) => {
   }
 
   // Generate a unique token
-  const token = crypto.randomBytes(32).toString('hex');
+  const token = uuidv4();
 
   try {
     const[[interview]] = await db.query('SELECT status FROM interviews WHERE id = ?', [interviewId]);
