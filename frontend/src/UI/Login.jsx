@@ -5,12 +5,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/Constants';
 import toast, { Toaster } from 'react-hot-toast';
+import { useProfileData } from '../Contexts/ProfileContext';
 
 export default function Login({onLogin}) {
     const{register, handleSubmit, formState: {errors}} = useForm();
     const[showPassword, setShowPassword] = useState('');
     const[isChecked, setIsChecked] = useState(false);
     const[isLoading, setIsLoading] = useState(false);
+    const { fetchUserData } =useProfileData();
     const navigate = useNavigate();
     
     const onSubmit = async (data) => {
@@ -28,9 +30,10 @@ export default function Login({onLogin}) {
             )
             const token = response?.data?.token;
             localStorage.setItem('roleId', response?.data?.role_id);
-            console.log(response);
+            
             toast.success("Login successful");
             onLogin(token);
+            await fetchUserData();
 
             setTimeout(()=> {
                 navigate('/')

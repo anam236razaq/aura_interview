@@ -43,6 +43,7 @@ import NotAuthorized from './UI/NotAuthorized'
 import ComingSoon from './UI/ComingSoon'
 import UnderMaintenance from './UI/UnderMaintenance'
 import Loader from "./UI/Loader";
+import { ProfileProvider } from "./Contexts/ProfileContext";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -87,6 +88,7 @@ export default function App() {
     }
 
   return (
+    <ProfileProvider>
     <SidebarProvider>
     <Router>
       <Suspense fallback={<Loader />}>
@@ -134,5 +136,6 @@ export default function App() {
       </Suspense>
     </Router>
     </SidebarProvider>
+    </ProfileProvider>
   )
 }

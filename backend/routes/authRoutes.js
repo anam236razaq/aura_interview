@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-// const authController = require('../controllers/authController');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 require('dotenv').config();
+const authMiddleware = require('../middleware/authMiddleware');
 const validator = require('validator');
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -46,20 +46,22 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
+
         // TODO: Determine the correct role_id (e.g., find or create an 'Admin' role)
         const role_id = 1; // Placeholder for Admin role
+        const profileImage = `${req.protocol}://${req.get('host')}/uploads/profileImg_temp/default_profile.jpg`;
 
         // Insert the new user
         const [userResult] = await connection.query(
-            'INSERT INTO users (email, password_hash, first_name, last_name, role_id, organization_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [email, password_hash, first_name, last_name, role_id, organization_id]
+            'INSERT INTO users (email, password_hash, first_name, last_name, role_id, organization_id, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [email, password_hash, first_name, last_name, role_id, organization_id, profileImage]
         );
         const userId = userResult.insertId;
 
         await connection.commit();
 
         // Generate JWT
-        const payload = { user: { id: userId, role_id: role_id, organization_id: organization_id } };
+        const payload = { user: { id: userId, role_id: role_id, organization_id: organization_id, profileImage} };
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Token expires in 1 hour
 
         res.status(201).json({ token, userId, email, organization_id });
@@ -129,6 +131,46 @@ router.post('/logout', (req, res) => {
 
     // Send success response
     res.status(200).json({ message: 'Logged out successfully' });
-});
+}); 
+
+// PUT /api/auth/change-password - Change user password
+router.put('/change-password', authMiddleware, async(req, res) => {
+    const userId = req.user.id;
+    const {old_password, new_password, confirm_password} = req.body;
+
+    if(!old_password || !new_password || !confirm_password){
+        return res.status(400).json({ message: 'All password fields are required.' });
+    }
+
+    if(new_password !== confirm_password){
+        return res.status(400).json({ message: 'New password and confirmation do not match.' });
+    }
+
+    try{
+         // Fetch user's current password hash
+        const [rows] = await db.query('SELECT password_hash FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        const isMatch = await bcrypt.compare(old_password, rows[0].password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Old password is incorrect.' });
+        }
+
+         // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const newHashedPassword = await bcrypt.hash(new_password, salt);
+
+        // Update password
+        await db.query('UPDATE users SET password_hash = ? WHERE id = ?', [newHashedPassword, userId]);
+
+        res.status(200).json({ message: 'Password updated successfully.' });
+    }catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+})
+
 
 module.exports = router;

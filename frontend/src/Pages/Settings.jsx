@@ -1,22 +1,101 @@
 import { useForm } from 'react-hook-form';
 import Footer from '../UI/Footer';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useProfileData } from '../Contexts/ProfileContext';
+import axios from 'axios';
+import { API_BASE_URL } from '../utils/Constants';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Settings() {
     const{register, handleSubmit, formState: {errors}, reset, watch} = useForm();
     const[activeTab, setActiveTab] = useState('update-profile');
-    
+    const[isLoading, setIsLoading] = useState(false);
+    const[selectedFile, setSelectedFile] = useState(null);
+    const {profileData, fetchUserData} = useProfileData();
+    const[profileImage, setProfileImage] = useState(profileData?.profile_image || '');
 
-    const onSubmit = async (data) => {
-        console.log(data);
+    useEffect(() => {
+      if (profileData?.profile_image) {
+          setProfileImage(profileData.profile_image);
+      }
+  }, [profileData]);
+  
+
+    const handleImageChange = (e) => {
+      const file = e.target.files[0];
+      if(file){
+        setProfileImage(URL.createObjectURL(file));
+        setSelectedFile(file);
+      }
     }
 
+    const onSubmit = async(data) =>{
+      const formData = new FormData();
+      formData.append('first_name', data.firstName);
+      formData.append('last_name', data.lastName);
+      formData.append('email', data.email);
+
+      if(selectedFile){
+        formData.append('profile_image', selectedFile);
+      }
+     
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.put(API_BASE_URL+'/users/profile', formData, {
+          headers: {
+                'Content-type': 'multipart/form-data',
+                Authorization: `Bearer ${token}`
+          }
+        })
+        toast.success(response.data.message);
+        await fetchUserData();
+
+      }catch(error){
+        toast.error('Something went wrong. Please try again.');
+        console.log(error);
+      }
+    }
+    
   const handleCancel = () => {
     reset();
   }
 
+  //handle Changing password
+   const handleChangePassword = async(data) => {
+    try{
+        setIsLoading(true);
+        const token = localStorage.getItem('authToken');
+        const response = await axios.put(API_BASE_URL+'/auth/change-password', {
+            old_password: data.oldPassword,
+            new_password: data.newPassword, 
+             confirm_password: data.confirmPassword 
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        }
+    )
+        toast.success(response.data.message);
+        reset();
+        console.log(response);
+
+        localStorage.removeItem('authToken');
+        window.location.href = '/login'; 
+        
+    }catch(error){
+        toast.error(error.response.data.message);
+        console.log(error);
+    }finally{
+        setIsLoading(false);
+    }
+}
+
 return (
+  <>
+<Toaster reverseOrder={false} position='top-center' />
 <div className="content-wrapper">
     <div className="container-xxl flex-grow-1 container-p-y">
       <div className="row">
@@ -38,17 +117,13 @@ return (
           {activeTab === 'update-profile' && <div className="card mb-6">
             <div className="card-body">
               <div className="d-flex align-items-start align-items-sm-center gap-6">
-                  <img src="../../assets/img/avatars/1.png" alt="user-avatar" className="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" />
+                  <img src={profileImage} alt="user-avatar" className="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" />
                   <div className="button-wrapper">
                     <label htmlFor="upload" className="btn btn-primary me-3 mb-4" tabIndex="0">
                       <span className="d-none d-sm-block">Upload new photo</span>
                       <i className="icon-base ti tabler-upload d-block d-sm-none"></i>
-                      <input type="file" id="upload" className="account-file-input" hidden accept="image/png, image/jpeg" />
+                      <input type="file" id="upload" className="account-file-input" hidden accept="image/png, image/jpeg" onChange={handleImageChange}/>
                     </label>
-                    <button type="button" className="btn btn-label-secondary account-image-reset mb-4">
-                      <i className="icon-base ti tabler-reset d-block d-sm-none"></i>
-                      <span className="d-none d-sm-block">Reset</span>
-                    </button>
                     <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
                   </div>
               </div>
@@ -59,26 +134,20 @@ return (
 
                   <div className="col-md-6">
                     <label htmlFor="firstName" className="form-label">First Name</label>
-                    <input className="form-control" type="text" id="firstName" name="firstName" placeholder="John" autoFocus {...register("firstName", { required: "First name is required" })}/>
+                    <input className="form-control" type="text" id="firstName" defaultValue={profileData?.first_name} name="firstName" placeholder="John" autoFocus {...register("firstName", { required: "First name is required" })}/>
                     {errors.firstName && <small className="text-danger">{errors.firstName.message}</small>}
                   </div>
 
                   <div className="col-md-6">
                     <label htmlFor="lastName" className="form-label">Last Name</label>
-                    <input className="form-control" type="text" name="lastName" id="lastName" placeholder="Doe"  {...register("lastName", { required: "Last name is required" })}/>
+                    <input className="form-control" type="text" name="lastName" defaultValue={profileData?.last_name} id="lastName" placeholder="Doe"  {...register("lastName", { required: "Last name is required" })}/>
                     {errors.lastName && <small className="text-danger">{errors.lastName.message}</small>}
                   </div>
                   
                   <div className="col-md-6">
                     <label htmlFor="email" className="form-label">E-mail</label>
-                    <input className="form-control" type="text" id="email" name="email" placeholder="john.doe@example.com"  {...register("email", { required: "Email is required" })}/>
+                    <input className="form-control" type="text" id="email" name="email" defaultValue={profileData?.email} placeholder="john.doe@example.com"  {...register("email", { required: "Email is required" })}/>
                     {errors.email && <small className="text-danger">{errors.email.message}</small>}
-                  </div>
-
-                  <div className="col-md-6">
-                    <label htmlFor="organization" className="form-label">Organization</label>
-                    <input type="text" className="form-control" id="organization" name="organization" placeholder="john.doe"  {...register("organization", { required: "Organization name is required" })} />
-                    {errors.organization && <small className="text-danger">{errors.organization.message}</small>}
                   </div>
 
                 </div>
@@ -96,7 +165,7 @@ return (
                 <h5 style={{color: '#444050'}} className='mb-0'>Change Your Password</h5>
             </div>
             <div className="card-body pt-4">
-              <form onSubmit={handleSubmit(onSubmit)}>
+              <form onSubmit={handleSubmit(handleChangePassword)}>
                 <div className="row gy-4 gx-6 mb-6">
 
                   <div className="col-md-6">
@@ -120,7 +189,13 @@ return (
 
                 </div>
                 <div className="mt-2">
-                  <button type="submit" className="btn btn-primary me-3">Save changes</button>
+                  <button type="submit" className="btn btn-primary me-3">
+                      {isLoading ? (
+                          <div className="spinner-border text-light" style={{width: '1.5rem', height: '1.5rem'}}></div>
+                      ) : (
+                        'Change Password'
+                      )}
+                  </button>
                   <button type="reset" className="btn btn-label-secondary" onClick={handleCancel}>Cancel</button>
                 </div>
               </form>
@@ -133,5 +208,6 @@ return (
     <Footer/>
     <div className="content-backdrop fade"></div>
   </div>
+  </>
   )
 }

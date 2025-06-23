@@ -274,7 +274,7 @@ export default function UserList() {
                                             <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                                 <span className="dt-column-title">{column.columnName}</span>
                                             </th>
-                                        ))}                                      \
+                                        ))}                                      
                                       </tr>
                                     </thead>
                                     <tbody>

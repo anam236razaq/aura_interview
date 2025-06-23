@@ -3,9 +3,11 @@ import { Link} from 'react-router-dom';
 import { SidebarContext } from '../Contexts/SidebarContext';
 import { API_BASE_URL } from '../utils/Constants';
 import axios from 'axios';
+import { useProfileData } from '../Contexts/ProfileContext';
 
 export default function Navbar() {
   const{ toggleExpandedSidebar } = useContext(SidebarContext);
+  const {profileData} = useProfileData();
 
   const handleLogout = async () => {
       const token = localStorage.getItem('authToken');
@@ -20,6 +22,7 @@ export default function Navbar() {
     // Remove token on frontend
     localStorage.removeItem('authToken');
     localStorage.removeItem('roleId');
+    localStorage.removeItem('profileData');
 
     // Redirect to login or homepage
     window.location.href = '/login';
@@ -431,7 +434,7 @@ export default function Navbar() {
                     to="#"
                     data-bs-toggle="dropdown">
                     <div className="avatar avatar-online">
-                      <img src="../../assets/img/avatars/1.png" alt className="rounded-circle" />
+                      <img src={profileData?.profile_image} alt className="rounded-circle" />
                     </div>
                   </Link>
                   <ul className="dropdown-menu dropdown-menu-end">
@@ -440,12 +443,12 @@ export default function Navbar() {
                         <div className="d-flex align-items-center">
                           <div className="flex-shrink-0 me-2">
                             <div className="avatar avatar-online">
-                              <img src="../../assets/img/avatars/1.png" alt className="rounded-circle" />
+                              <img src={profileData?.profile_image} alt className="rounded-circle" />
                             </div>
                           </div>
                           <div className="flex-grow-1">
-                            <h6 className="mb-0">John Doe</h6>
-                            <small className="text-body-secondary">Admin</small>
+                            <h6 className="mb-0 text-capitalize">{profileData?.first_name} {profileData?.last_name}</h6>
+                            <small className="text-body-secondary text-capitalize">{profileData?.role_name}</small>
                           </div>
                         </div>
                       </Link>
