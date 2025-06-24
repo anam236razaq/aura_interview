@@ -24,7 +24,7 @@ async function checkInterviewOwnership(req, res, next) {
 router.use(checkInterviewOwnership);
 
 // POST /api/interviews/:interviewId/assignments - Assign a user to an interview (Admin only)
-router.post('/', checkRole([1]), async (req, res) => {
+router.post('/', checkRole([1,2]), async (req, res) => {
   const { interviewId } = req.params;
   const { userId } = req.body;
   // Ownership already checked by middleware
@@ -41,11 +41,31 @@ router.post('/', checkRole([1]), async (req, res) => {
         return res.status(409).json({ message: 'User is already assigned to this interview.' });
     }
 
+    //Insert Assignment
     const [result] = await db.query(
       'INSERT INTO interview_assignments (interview_id, user_id) VALUES (?, ?)',
       [interviewId, userId]
     );
-    res.status(201).json({ id: result.insertId, interview_id: parseInt(interviewId), user_id: userId });
+
+    //Fetch interview title and user name
+    const [[interview]] = await db.query('SELECT title FROM interviews WHERE id = ?', [interviewId]);
+    const [[user]] = await db.query('SELECT first_name, last_name FROM users WHERE id = ?', [userId]);
+    const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+
+    //Insert Notification
+    const subject = 'New Interview Assignment';
+    const message = `You (${fullName}) have been assigned to the interview: ${interview?.title}`;
+    await db.query(
+        'INSERT INTO notifications (user_id, interview_id, subject, message) VALUES (?, ?, ?, ?)',
+        [userId, interviewId, subject, message]
+    );
+
+    res.status(201).json({ 
+        id: result.insertId, 
+        interview_id: parseInt(interviewId), 
+        user_id: userId,
+        
+    });
   } catch (error) {
     console.error('Error assigning user to interview:', error);
     // Handle potential foreign key constraint errors (if interviewId or userId doesn't exist)
@@ -84,6 +104,20 @@ router.delete('/:userId', checkRole([1]), async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Assignment not found.' });
         }
+
+        //Fetch interview title and user name
+        const [[interview]] = await db.query('SELECT title FROM interviews WHERE id = ?', [interviewId]);
+        const [[user]] = await db.query('SELECT first_name, last_name FROM users WHERE id = ?', [userId]);
+        const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+
+         // Insert unassignment notification
+        const subject = 'Interview Unassignment';
+        const message = `Dear ${fullName}, you have been unassigned from the interview: "${interview?.title}".`;
+
+        await db.query(
+        'INSERT INTO notifications (user_id, interview_id, subject, message) VALUES (?, ?, ?, ?)',
+        [userId, interviewId, subject, message]
+        );
 
         res.status(204).send(); // No content on successful deletion
     } catch (error) {

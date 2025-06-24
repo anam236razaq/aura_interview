@@ -11,6 +11,7 @@ const jobRoutes = require('./routes/jobRoutes'); // Import job routes
 const userRoutes = require('./routes/userRoutes'); // Import user routes
 const candidateRoutes = require('./routes/candidateRoutes'); // Import candidate routes
 const skillsRoutes = require('./routes/skillsRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 require('./Queues/invitationProcessor');
@@ -40,6 +41,7 @@ app.use('/api/interviews', authMiddleware, interviewRoutes); // This protects in
 app.use('/api/jobs', authMiddleware, jobRoutes); // Mount protected job routes
 app.use('/api/candidates', authMiddleware, candidateRoutes); // Mount protected candidate routes
 app.use('/api/skills', authMiddleware, skillsRoutes);
+app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/companies', authMiddleware, companyRoutes);
 
 // Routes potentially needing different access control:

@@ -342,7 +342,7 @@ function AssignmentList({interviewId}){
             setLoadingUsers(false);
         }
     }, [interviewId]);
-
+ 
     useEffect(() => {
         fetchAssignmentsAndUsers();
     }, [interviewId, fetchAssignmentsAndUsers]);
@@ -384,6 +384,8 @@ function AssignmentList({interviewId}){
 
     const assignedUserIds = new Set(assignments.map(a => a.user_id));
     const availableUsers = allUsers.filter(u => !assignedUserIds.has(u.id));
+    const roleId = parseInt(localStorage.getItem('roleId'), 10);
+    const isHr = roleId === 3;
 
     return (
 
@@ -400,16 +402,16 @@ function AssignmentList({interviewId}){
                         {assignments.map(a => (
                             <li key={a.user_id} className="list-group-item d-flex flex-column">
                                 {a.first_name || ''} {a.last_name || ''} ({a.email})
-                                <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm mt-2">
+                                {!isHr && <button onClick={() => handleRemoveAssignment(a.user_id)} disabled={actionLoading} className="btn btn-danger btn-sm mt-2">
                                     <i className="bi bi-x-circle me-1"></i> Unassign
-                                </button>
+                                </button>}
                             </li>
                         ))}
                     </ul>
                 )
             )}
 
-             <form onSubmit={handleAddAssignment} className="mt-3 border-top pt-3">
+            {!isHr && <form onSubmit={handleAddAssignment} className="mt-3 border-top pt-3">
                 <h5 className='card-title my-3'>Assign New Reviewer</h5>
                 {loadingUsers ? <p>Loading users...</p> : (
                     availableUsers.length === 0 ? (
@@ -428,7 +430,7 @@ function AssignmentList({interviewId}){
                 <button type="submit" disabled={actionLoading || loadingUsers || availableUsers.length === 0 || !selectedUserId} className="btn btn-primary mt-2 w-100">
                     {actionLoading ? 'Assigning...' : 'Assign User'}
                 </button>
-            </form>
+            </form>}
         </div>
     </div>
 

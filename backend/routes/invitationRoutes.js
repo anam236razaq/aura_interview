@@ -49,6 +49,11 @@ router.post('/', checkInterviewOwnership, checkRole([1,2,3]), async (req, res) =
         return res.status(404).json({message: 'Interview not found'});
     }
 
+    // 🚫 Prevent sending invitations for completed or archived interviews
+    if (interview.status === 'completed' || interview.status === 'archived') {
+        return res.status(400).json({ message: 'Cannot invite candidates to a completed or archived interview.' });
+    }
+
     const invitationStatus = interview.status === 'active' ? 'sent' : 'unsent';
     // Ownership already checked by middleware
     const [result] = await db.query(

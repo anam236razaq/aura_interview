@@ -41,11 +41,6 @@ export default function Sidebar() {
   const storedFrom = localStorage.getItem('candidateFrom');
   const interviewFrom = localStorage.getItem('interviewFrom');
 
-  const clearFromKeys = (keepKey) => {
-    if (keepKey !== 'candidateFrom') localStorage.removeItem('candidateFrom');
-    if (keepKey !== 'interviewFrom') localStorage.removeItem('interviewFrom');
-  };
-
   const roleId = parseInt(localStorage.getItem('roleId'), 10);
   const isHr = roleId === 3;
 
@@ -156,37 +151,37 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             <li className="menu-item">
-              <Link to="/candidates/cv-import" onClick={() =>{handleLinkClick(); clearFromKeys('candidateFrom');}} 
+              <Link to="/candidates/cv-import" onClick={() =>{handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/cv-import' ? 'active-links' : ''}`}>
                 <div data-i18n="Bulk CV Import">Bulk CV Import</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/candidate-list" onClick={() => {handleLinkClick(); clearFromKeys('candidateFrom');}} 
+              <Link to="/candidates/candidate-list" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/candidate-list' || storedFrom === 'list' ? 'active-links' : ''}`}>
                 <div data-i18n="Candidate List">Candidate List</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/short-listed" onClick={() => {handleLinkClick(); clearFromKeys('candidateFrom');}} 
+              <Link to="/candidates/short-listed" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/short-listed' || storedFrom === 'shortlisted' ? 'active-links' : ''}`}>
                 <div data-i18n="Short Listed">Short Listed</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/blacklisted" onClick={() => {handleLinkClick(); clearFromKeys('candidateFrom');}} 
+              <Link to="/candidates/blacklisted" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom');}} 
                 className={`menu-link ${location.pathname === '/candidates/blacklisted' || storedFrom === 'blacklisted' ? 'active-links' : ''}`}>
                 <div data-i18n="Blacklisted">Blacklisted</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/draft-cvs" onClick={() => {handleLinkClick(); clearFromKeys('candidateFrom')}} 
+              <Link to="/candidates/draft-cvs" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom')}} 
                 className={`menu-link ${location.pathname === '/candidates/draft-cvs' ? 'active-links' : ''}`}>
                 <div data-i18n="Draft CVs">Draft CVs</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/candidates/interviewed" onClick={() => {handleLinkClick(); clearFromKeys('candidateFrom')}} 
+              <Link to="/candidates/interviewed" onClick={() => {handleLinkClick(); localStorage.removeItem('candidateFrom')}} 
                 className={`menu-link ${location.pathname === '/candidates/interviewed' ? 'active-links' : ''}`}>
                 <div data-i18n="Interviewed">Interviewed</div>
               </Link>
@@ -206,27 +201,27 @@ export default function Sidebar() {
           </Link>
           <ul className="menu-sub">
             {!isHr && <li className="menu-item">
-              <Link to="/interviewed/create-interview" onClick={() =>{handleLinkClick(); clearFromKeys('interviewFrom');}}  className={`menu-link ${location.pathname === '/interviewed/create-interview' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/create-interview" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}}  className={`menu-link ${location.pathname === '/interviewed/create-interview' ? 'active-links' : ''}`}>
                 <div data-i18n="Create a Interview">Create a Interview</div>
               </Link>
             </li>}
             <li className="menu-item">
-              <Link to="/interviewed/interview-list" onClick={() =>{handleLinkClick(); clearFromKeys('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/interview-list' || interviewFrom === 'interviewlist' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/interview-list" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/interview-list' || interviewFrom === 'interviewlist' ? 'active-links' : ''}`}>
                 <div data-i18n="Interview List">Interview List</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/upcoming-interview" onClick={() =>{handleLinkClick(); clearFromKeys('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/upcoming-interview' || interviewFrom === 'upcoming' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/upcoming-interview" onClick={() =>{handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/upcoming-interview' || interviewFrom === 'upcoming' ? 'active-links' : ''}`}>
                 <div data-i18n="Upcoming Interview">Upcoming Interview</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/expired-interview" onClick={() => {handleLinkClick(); clearFromKeys('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/expired-interview' || interviewFrom === 'expired' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/expired-interview" onClick={() => {handleLinkClick(); localStorage.removeItem('interviewFrom');}} className={`menu-link ${location.pathname === '/interviewed/expired-interview' || interviewFrom === 'expired' ? 'active-links' : ''}`}>
                 <div data-i18n="Expired Interview">Expired Interview</div>
               </Link>
             </li>
             <li className="menu-item">
-              <Link to="/interviewed/draft-interviews" onClick={() => {handleLinkClick(); clearFromKeys('interviewFrom')}} className={`menu-link ${location.pathname === '/interviewed/draft-interviews' || interviewFrom === 'draft' ? 'active-links' : ''}`}>
+              <Link to="/interviewed/draft-interviews" onClick={() => {handleLinkClick(); localStorage.removeItem('interviewFrom')}} className={`menu-link ${location.pathname === '/interviewed/draft-interviews' || interviewFrom === 'draft' ? 'active-links' : ''}`}>
                 <div data-i18n="Draft Interviews">Draft Interviews</div>
               </Link>
             </li>

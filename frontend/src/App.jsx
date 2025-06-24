@@ -93,7 +93,7 @@ export default function App() {
     <Router>
       <Suspense fallback={<Loader />}>
       <Routes>
-        <Route path='/' element ={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
+        <Route path='/' element ={isAuthenticated? <ProtectedRoute><Dashboard /></ProtectedRoute> : <Navigate to="/login" replace />}>
             <Route index element ={<DashboardContent />} />
             <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1,2]}><UserList /></RoleBasedRoute>} />
             <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2]}><CandidateList  /></RoleBasedRoute>} />

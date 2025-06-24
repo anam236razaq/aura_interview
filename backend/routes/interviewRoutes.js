@@ -176,6 +176,19 @@ router.post('/', checkRole([1, 2]), async (req, res) => {
                     'INSERT INTO interview_assignments (interview_id, user_id) VALUES (?, ?)',
                     [interviewId, reviewerId]
                 );
+
+                const [[interview]] = await db.query('SELECT title FROM interviews WHERE id = ?', [interviewId]);
+                const [[user]] = await db.query('SELECT first_name, last_name FROM users WHERE id = ?', [userId]);
+                const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+
+                 // Insert notification
+                const subject = 'New Interview Assignment';
+                const message = `Dear ${fullName}, you have been assigned to the interview: "${interview?.title}".`;
+
+                await db.query(
+                    'INSERT INTO notifications (user_id, interview_id, subject, message) VALUES (?, ?, ?, ?)',
+                    [reviewerId, interviewId, subject, message]
+                );
             }
         }
 
