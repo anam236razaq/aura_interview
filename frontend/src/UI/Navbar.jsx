@@ -160,7 +160,8 @@ export default function Navbar() {
                     </li>
                     <li className="dropdown-notifications-list scrollable-container">
                       <ul className="list-group list-group-flush">
-                        {notifications.map((item) => (
+                        {notifications?.length > 0 ? (
+                          notifications.map((item) => (
                           <li className="list-group-item list-group-item-action dropdown-notifications-item" key={item.id}>
                           <div className="d-flex">
                             <div className="flex-shrink-0 me-3">
@@ -177,10 +178,14 @@ export default function Navbar() {
                               <Link onClick={()=>handledeleteNotification(item.id)} className="dropdown-notifications-archive"
                                 ><span className="icon-base ti tabler-x"></span
                               ></Link>
-                            </div>
+                            </div> 
                           </div>
                         </li>
-                        ))}
+                        ))) : (
+                          <div>
+                              <span className="text-center">No Notifications found</span>
+                          </div>
+                        )}
                       </ul>
                     </li>
                     <li className="border-top">

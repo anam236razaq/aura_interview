@@ -107,24 +107,11 @@ export default function Sidebar() {
       <div className="menu-inner-shadow"></div>
 
       <ul className="menu-inner py-1">
-        <li className={`menu-item ${isOpen === 0 ? 'open' : ''}`}>
-          <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(0)}>
+        <li className='menu-item'>
+          <Link to="/" className={`menu-link ${location.pathname === '/' ? 'active-links' : ''}`} onClick={handleLinkClick}>
             <i className="menu-icon icon-base ti tabler-smart-home mb-1"></i>
             <div data-i18n="Dashboards">Dashboards</div>
-            <div className="badge text-bg-danger rounded-pill ms-auto">5</div>
           </Link>
-          <ul className="menu-sub">
-            <li className="menu-item">
-              <Link to="index.html" className="menu-link" onClick={handleLinkClick}>
-                <div data-i18n="Analytics">Analytics</div>
-              </Link>
-            </li>
-            <li className="menu-item">
-              <Link to="dashboards-crm.html" className="menu-link" onClick={handleLinkClick}>
-                <div data-i18n="CRM">CRM</div>
-              </Link>
-            </li>
-          </ul>
         </li>
         {!isHr && <li className={`menu-item ${isOpen === 1 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(1)}>

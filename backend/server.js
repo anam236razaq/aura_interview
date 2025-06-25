@@ -14,6 +14,7 @@ const skillsRoutes = require('./routes/skillsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
 const companyRoutes = require('./routes/companyRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 require('./Queues/invitationProcessor');
 const cors = require('cors');
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api/candidates', authMiddleware, candidateRoutes); // Mount protected 
 app.use('/api/skills', authMiddleware, skillsRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/companies', authMiddleware, companyRoutes);
+app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 
 // Routes potentially needing different access control:
 app.use('/api/roles', rolesRoutes);

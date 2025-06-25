@@ -8,6 +8,7 @@ const fs = require('fs').promises; // Use promise-based fs
 const fsSync = require('fs'); // for using fsSync.existsSync()
 const axios = require('axios');
 const FormData = require('form-data'); // To send multipart/form-data
+const authMiddleware = require('../middleware/authMiddleware');
 
 
 // --- Multer Configuration for CV Uploads ---
@@ -652,22 +653,23 @@ router.get('/', checkRole([1,2]), async (req, res) => {
 });
 
 // POST /api/cv/:id/shortlist - Toggle shortlist status for a CV
-router.post('/:id/shortlist', checkRole([1, 2]), async (req, res) => {
+router.post('/:id/shortlist', authMiddleware, checkRole([1, 2]), async (req, res) => {
   const { id } = req.params; // CV ID
   const { shortlisted } = req.body; // Boolean: true or false
-
+  const organization_id = req.user.organization_id;
+  
   try {
     if (shortlisted) {
       // Add to shortlist
       await db.query(
-        'INSERT INTO cvs_shortlist (cv_id, shortlisted) VALUES (?, TRUE) ON DUPLICATE KEY UPDATE shortlisted = TRUE',
-        [id]
+        'INSERT INTO cvs_shortlist (cv_id, shortlisted, organization_id) VALUES (?, TRUE, ?) ON DUPLICATE KEY UPDATE shortlisted = TRUE',
+        [id, organization_id]
       );
     } else {
       // Remove from shortlist
       await db.query(
-        'DELETE FROM cvs_shortlist WHERE cv_id = ?',
-        [id]
+        'DELETE FROM cvs_shortlist WHERE cv_id = ? AND organization_id = ?',
+        [id, organization_id]
       );
     }
 
