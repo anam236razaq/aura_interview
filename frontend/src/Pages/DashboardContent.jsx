@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import Footer from '../UI/Footer'
 import axios from 'axios'
 import { API_BASE_URL } from '../utils/Constants'
-
+import moment from "moment";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 export default function DashboardContent() {
   const[stats, setStats] = useState([]);
   const[latestEntries, setLatestEntries] = useState([]);
+  const[data, setData] = useState([]);
 
   //Dashboard Statistics
   useEffect(() => {
@@ -48,6 +51,51 @@ export default function DashboardContent() {
     fetchLatestEntries();
   }, [])
 
+  //Get Last 30 days interviews
+  useEffect(() => {
+    const fetchLastMonthInterviews = async () => {
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get(`${API_BASE_URL}/dashboard/stats/last-30-days`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": 'application/json'
+          }
+        })
+        setData(response.data);
+        console.log(response);
+      }catch(error){
+        console.log(error);
+      }
+    }
+
+    fetchLastMonthInterviews();
+  }, [])
+
+  // Line Chart
+  ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+  const chartData = {
+    labels: data?.map(d => d.date),
+    datasets: [
+      {
+        label: 'Interviews in Last 30 Days',
+        data: data.map(d => d.count),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        tension: 0.4, // smooth curve
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: true, text: 'Monthly Interviews Line Chart' },
+    },
+  };
+
 return (
   <div className="content-wrapper">
   <div className="container-xxl flex-grow-1 container-p-y">
@@ -65,6 +113,9 @@ return (
           <Card title = 'Total Questions' value={stats?.total_questions || 0} icon="tabler-help-circle" />
           <Card title = 'Total Responses' value={stats?.total_responses || 0} icon="tabler-message-circle-2" />
           
+          {/*Chart for interviews conducted in last 30 days */}
+          <Line data = {chartData} options={options}/>
+
           {/*Latest Users*/}
           <div className="col-xxl-6 col-md-6">
             <div className="card h-100">
@@ -109,7 +160,7 @@ return (
               <div className="card-header d-flex justify-content-between">
                 <div className="card-title m-0 me-2">
                   <h5 className="mb-1">Latest Candidates</h5>
-                  <p className="card-subtitle">Total {stats?.total_candidates || 0} Users</p>
+                  <p className="card-subtitle">Total {stats?.total_candidates || 0} Candidates</p>
                 </div>
               </div>
               <div className="card-body">
@@ -130,7 +181,86 @@ return (
                   </li>
                   ))) : (
                     <div>
-                        <span className="text-center">No Users found</span>
+                        <span className="text-center">No Candidates found</span>
+                    </div>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/**Latest Interviews**/}
+          <div className="col-xxl-6 col-md-6">
+            <div className="card h-100">
+              <div className="card-header d-flex justify-content-between">
+                <div className="card-title m-0 me-2">
+                  <h5 className="mb-1">Latest Interviews</h5>
+                  <p className="card-subtitle">Total {stats?.total_interviews || 0} Interviews</p>
+                </div>
+              </div>
+              <div className="card-body">
+                <ul className="p-0 m-0">
+                  {latestEntries?.latestInterviews?.length > 0 ? (
+                  latestEntries?.latestInterviews.map((item) => (
+                  <li className="d-flex mb-6" key={item.id}>
+                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                      <div className="me-2">
+                        <h6 className="mb-0">{item.title}</h6>
+                      </div>
+                      <div className="me-2">
+                        <h6 className="mb-0">{moment(item.expiry_date).format("MMMM Do, YYYY")}</h6>
+                      </div>
+                      <div className="user-progress d-flex align-items-center gap-1">
+                        <p className={`badge text-capitalize fw-semibold ${
+                            item.status === 'active'
+                            ? 'bg-success text-white'
+                            : item.status === 'draft'
+                            ? 'bg-warning text-white'
+                            : item.status === 'completed'
+                            ? 'bg-primary text-white'
+                            : item.status === 'archived'
+                            ? 'bg-dark text-white'
+                            : 'bg-primary text-white' }`}>{item.status}
+                          </p>
+                      </div>
+                    </div>
+                  </li>
+                  ))) : (
+                    <div>
+                        <span className="text-center">No Interviews found</span>
+                    </div>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/*Latest Questions */}
+          <div className="col-xxl-6 col-md-6">
+            <div className="card h-100">
+              <div className="card-header d-flex justify-content-between">
+                <div className="card-title m-0 me-2">
+                  <h5 className="mb-1">Latest Questions</h5>
+                  <p className="card-subtitle">Total {stats?.total_questions || 0} Questions</p>
+                </div>
+              </div>
+              <div className="card-body">
+                <ul className="p-0 m-0">
+                  {latestEntries?.latestQuestions?.length > 0 ? (
+                  latestEntries?.latestQuestions.map((item) => (
+                  <li className="d-flex mb-6" key={item.id}>
+                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                      <div className="me-2">
+                        <h6 className="mb-0 text-capitalize">{item.text}</h6>
+                      </div>
+                      <div className="user-progress d-flex align-items-center gap-1">
+                        <p className={`badge text-capitalize bg-label-primary`}>{item.type}</p>
+                      </div>
+                    </div>
+                  </li>
+                  ))) : (
+                    <div>
+                        <span className="text-center">No Questions found</span>
                     </div>
                   )}
                 </ul>

@@ -83,6 +83,47 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 })
 
+//GET /api/dashboard/stats/last-30-days getting interviews per day of last 30 days
+router.get('/stats/last-30-days', async (req, res) => {
+  const organization_id = req.user.organization_id;
+
+  const query = `
+    SELECT DATE(created_at) as date, COUNT(*) as count
+    FROM interviews
+    WHERE organization_id = ? AND DATE(created_at) >= NOW() - INTERVAL 30 DAY
+    GROUP BY DATE(created_at)
+    ORDER BY date ASC
+  `;
+
+  try {
+    const [results] = await db.query(query, [organization_id]);
+
+    // Fill in missing dates (optional)
+    const today = new Date();
+    const stats = [];
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = results.find(r => {
+        const resultDate = new Date(r.date).toISOString().split('T')[0];
+        return resultDate === dateStr}
+      );
+      stats.push({
+        date: dateStr,
+        count: found ? found.count : 0,
+      });
+    }
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ message: 'Error fetching stats' });
+  }
+});
+
 //GET /api/dashboard/latest-entries  getting latest interviews, candidates, users and questions
 router.get('/latest-entries', authMiddleware, async(req, res) => {
     const organization_id  = req.user.organization_id;

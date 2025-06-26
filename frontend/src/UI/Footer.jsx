@@ -10,20 +10,20 @@ export default function Footer() {
         <div className="text-body">
           ©
             {new Date().getFullYear()}
-          , made with ❤️ by <Link to="https://pixinvent.com" target="_blank" className="footer-link">KeyDevs</Link>
+          , made with ❤️ by <Link to="https://keydevs.com/" target="_blank" className="footer-link">KeyDevs</Link>
         </div>
         <div className="d-none d-lg-inline-block">
-          <Link to="https://themeforest.net/licenses/standard" className="footer-link me-4" target="_blank"
+          <Link to="/privacy-policy" className="footer-link me-4" target="_blank"
             >Privacy Policy</Link>
-          <Link href="https://themeforest.net/user/pixinvent/portfolio" target="_blank" className="footer-link me-4"
+          <Link to="/terms-conditions" target="_blank" className="footer-link me-4"
             >Term and Condition</Link>
           <Link
-            to="https://demos.pixinvent.com/vuexy-html-admin-template/documentation/"
+            to="#"
             target="_blank"
             className="footer-link me-4"
             >Documentation</Link>
 
-          <Link href="https://pixinvent.ticksy.com/" target="_blank" className="footer-link d-none d-sm-inline-block"
+          <Link href="/contact-us" target="_blank" className="footer-link d-none d-sm-inline-block"
             >Support</Link>
         </div>
       </div>
