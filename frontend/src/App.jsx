@@ -44,6 +44,9 @@ import ComingSoon from './UI/ComingSoon'
 import UnderMaintenance from './UI/UnderMaintenance'
 import Loader from "./UI/Loader";
 import { ProfileProvider } from "./Contexts/ProfileContext";
+import PrivacyPolicy from "./LandingPages/PrivacyPolicy";
+import TermsConditions from "./LandingPages/TermsConditions";
+import ContactUs from "./LandingPages/ContactUs";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -132,6 +135,9 @@ export default function App() {
         <Route path='not-authorized' element={<NotAuthorized />} />
         <Route path='coming-soon' element={<ComingSoon />} />
         <Route path='under-maintenance' element={<UnderMaintenance />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path='/contact-us' element={<ContactUs />} />
       </Routes>
       </Suspense>
     </Router>

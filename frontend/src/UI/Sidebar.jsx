@@ -56,11 +56,11 @@ export default function Sidebar() {
         <Link to="index.html" className="app-brand-link">
           <span className="app-brand-logo demo">
             <span className="text-primary">
-                <img src='.././public/assets/img/logo_img_1.png' alt='AuraInterview'/>
+                <img src='/assets/img/logo_img_1.png' alt='AuraInterview'/>
             </span>
           </span>
           <span className="app-brand-text demo menu-text mt-2">
-            <img src='.././public/assets/img/logo_img_2.png' alt='Aurainterview' style={{width: '90%'}}/>
+            <img src='/assets/img/logo_img_2.png' alt='Aurainterview' style={{width: '90%'}}/>
           </span>
         </Link>
 

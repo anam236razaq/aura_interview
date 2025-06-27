@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom';
-import Footer from '../../UI/Footer';
 import UserModel from '../../UI/UserModel';
 import { useEffect } from 'react';
 import axios from 'axios';
@@ -9,6 +8,7 @@ import { Toaster } from 'react-hot-toast';
 import Pagination from '../../UI/Pagination';
 import Loader from '../../UI/Loader';
 import UpdateUser from '../../UI/UpdateUser';
+import Footer from '../../UI/Footer';
 
 export default function UserList() {
   const[open, setOpen] = useState(false);

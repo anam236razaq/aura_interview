@@ -1,8 +1,7 @@
 import React from 'react'
-import Navbar from '../UI/Navbar'
 import Sidebar from '../UI/Sidebar'
 import { Link, Outlet } from 'react-router-dom'
-
+import Navbar from '../UI/Navbar'
 
 export default function Dashboard() {
 

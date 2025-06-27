@@ -23,7 +23,7 @@ export default function Footer() {
             className="footer-link me-4"
             >Documentation</Link>
 
-          <Link href="/contact-us" target="_blank" className="footer-link d-none d-sm-inline-block"
+          <Link to="/contact-us" target="_blank" className="footer-link d-none d-sm-inline-block"
             >Support</Link>
         </div>
       </div>

@@ -15,6 +15,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const rolesRoutes = require('./routes/rolesRoutes');
 const companyRoutes = require('./routes/companyRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const inquiriesRoutes = require('./routes/inquiriesRoutes');
 require('./Queues/invitationProcessor');
 const cors = require('cors');
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/companies', authMiddleware, companyRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 
 // Routes potentially needing different access control:
+app.use('/api/inquiries',  inquiriesRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/users', userRoutes); // Mount user routes
 app.use('/api/invitations', invitationRoutes); // Contains public /:token access and protected /interviews/:id/invitations
