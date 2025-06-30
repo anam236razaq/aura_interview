@@ -33,10 +33,26 @@ const logoFileFilter = (req, file, cb) => {
     }
 }
 
-const uploadLogo = multer({storage: logoStorage, fileFilter: logoFileFilter, limits: { fileSize: 50 * 1024 * 1024 }})
+const uploadLogo = multer({storage: logoStorage, fileFilter: logoFileFilter, limits: { fileSize: 200 * 1024 }})
+
+//Middleware for Multer Logo File Size
+const multerLogoUpload = (req, res, next) => {
+  uploadLogo.single('logo')(req, res, function(err) {
+    if (err instanceof multer.MulterError){
+
+    if(err.code === 'LIMIT_FILE_SIZE'){
+        return res.status(413).json({message: 'File too large. Max allowed is 200KB.'})
+    }
+
+    }else if (err){
+      return res.status(400).json({message: err.message})
+    }
+    next();
+})
+}
 
 // POST /api/companies
-router.post('/', uploadLogo.single('logo'), checkRole([1, 2]),  async(req, res) => {
+router.post('/', multerLogoUpload, checkRole([1, 2]),  async(req, res) => {
     const organization_id = req.user.organization_id;
 
     const {company_name, email, address, city, country, phone_number, title, state} = req.body;
@@ -104,7 +120,7 @@ router.get('/', checkRole([1, 2]), async (req, res) => {
 });
 
 // PUT /api/companies/:id - Update a company for the organization (All authenticated users)
-router.put('/:id', uploadLogo.single('logo'), checkRole([1, 2]),  async(req, res) => {
+router.put('/:id', multerLogoUpload, checkRole([1, 2]),  async(req, res) => {
     const {id} = req.params;
     const organization_id = req.user.organization_id;
 

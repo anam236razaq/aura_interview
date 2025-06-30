@@ -102,7 +102,7 @@ export default function CandidateList() {
         toast.error(error.response?.data?.message || 'An unexpected error occured');
       }
     }
-
+ 
     //Toggle shortlist candidate
     const handleShortlistToggle = async (cvId, currentlyShortlisted) => {
   try {

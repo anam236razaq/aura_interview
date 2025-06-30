@@ -209,7 +209,7 @@ export default function Navbar() {
                   </Link>
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li>
-                      <Link className="dropdown-item mt-0" to="pages-account-settings-account.html">
+                      <div className="dropdown-item mt-0" style={{pointer: 'cursor'}}>
                         <div className="d-flex align-items-center">
                           <div className="flex-shrink-0 me-2">
                             <div className="avatar avatar-online">
@@ -221,7 +221,7 @@ export default function Navbar() {
                             <small className="text-body-secondary text-capitalize">{profileData?.role_name}</small>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     </li>
                     <li>
                       <div className="dropdown-divider my-1 mx-n2"></div>

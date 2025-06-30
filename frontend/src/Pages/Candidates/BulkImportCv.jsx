@@ -3,6 +3,7 @@ import Footer from '../../UI/Footer';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
 import { useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function BulkImportCv() {
     const[uploadProgressList, setUploadProgressList] = useState([]);
@@ -44,7 +45,20 @@ export default function BulkImportCv() {
                 console.log(response);
             }catch(error){
                 console.log(error);
-                updatedProgressList[i].progress = 'Failed';
+
+                let errorMessage = 'Failed';
+                if(error.response){
+                    if(error.response.status === 413){
+                        errorMessage = 'File too large'
+                    }else if (error.response.status === 409) {
+                    errorMessage = 'Duplicate CV';
+                    toast.error(`${file.name} has already been uploaded.`, { autoClose: 5000 });
+                    }else if(error.response.data?.message){
+                        errorMessage = error.response.data.message
+                    }
+                }
+
+                updatedProgressList[i].progress = errorMessage;
                 setUploadProgressList([...updatedProgressList]);
             }
         }
@@ -52,6 +66,8 @@ export default function BulkImportCv() {
 
 
   return (
+    <>
+    <Toaster reverseOrder={false} position='top-center' />
      <div className="content-wrapper">
       <div className="container-xxl flex-grow-1 container-p-y">
         <div className='mb-4'>
@@ -74,8 +90,8 @@ export default function BulkImportCv() {
                             </svg>
                         </div>
                         <p className="h4 needsclick pt-3 mb-2">Drag and drop your CVs here</p>
-                        <p className='mb-2 text-black'>Supported file type: .docx, doc and pdf</p>
-                        <p className='mb-2 text-black'>Max 20 files at once, 10MB each.</p>
+                        <p className='mb-2 text-black'>Multiple files at once, 5MB each.</p>
+                        <p className='mb-2 text-black'>Supported file type: pdf</p>
                         <p className="h6 text-body-secondary d-block fw-normal mb-2">or</p>
                         <span className="needsclick btn btn-sm btn-label-primary waves-effect" id="btnBrowse" onClick={(e)=> {e.stopPropagation(); handleSelectFilesClick()}}>Select Files</span>
                     </div>
@@ -94,9 +110,13 @@ export default function BulkImportCv() {
                             <h6 className="fw-normal mb-2">{file.name}</h6>
                             <p className="text-body mb-1">{typeof file.progress === 'number' ? `${file.progress}%` : file.progress}</p>
                         </div>
-                        <div className="progress" style={{height: '6px'}}>
-                            <div className={`progress-bar ${file.progress === 'Failed' ? 'bg-danger' : ''}`} role="progressbar" style={{width: `${file.progress}%`}}
-                                aria-valuenow={file.progress} aria-valuemin="0" aria-valuemax="100">
+                        <div className="progress" style={{ height: '6px' }}>
+                            <div className={`progress-bar ${ typeof file.progress !== 'number' ? 'bg-danger' : ''}`} role="progressbar"
+                                style={{ width: typeof file.progress === 'number' ? `${file.progress}%` : '100%',}}
+                                aria-valuenow={typeof file.progress === 'number' ? file.progress : 100}
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                            >
                             </div>
                         </div>
                     </div>
@@ -108,5 +128,6 @@ export default function BulkImportCv() {
       <Footer />
       <div className="content-backdrop fade"></div>
     </div>
+    </>
   )
 }

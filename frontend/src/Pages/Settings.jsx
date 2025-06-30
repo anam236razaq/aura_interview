@@ -11,6 +11,7 @@ export default function Settings() {
     const{register, handleSubmit, formState: {errors}, reset, watch} = useForm();
     const[activeTab, setActiveTab] = useState('update-profile');
     const[isLoading, setIsLoading] = useState(false);
+    const[error, setError] = useState('');
     const[selectedFile, setSelectedFile] = useState(null);
     const {profileData, fetchUserData} = useProfileData();
     const[profileImage, setProfileImage] = useState(profileData?.profile_image || '');
@@ -24,11 +25,22 @@ export default function Settings() {
 
     const handleImageChange = (e) => {
       const file = e.target.files[0];
-      if(file){
-        setProfileImage(URL.createObjectURL(file));
+
+      if (file) {
+        const maxSize = 200 * 1024;
+
+        if (file.size > maxSize) {
+          setError('File too large. Max allowed is 200KB.');
+          setSelectedFile(null);
+          setProfileImage(profileData?.profile_image || '');
+          return;
+        }
+
+        setError('');
         setSelectedFile(file);
+        setProfileImage(URL.createObjectURL(file));
       }
-    }
+    };
 
     const onSubmit = async(data) =>{
       const formData = new FormData();
@@ -52,7 +64,13 @@ export default function Settings() {
         await fetchUserData();
 
       }catch(error){
+        if(error.response.status === 413){
+          setError(error.response.data.message);
+        }else if (error.response.data?.message){
+          toast.error(error.response.data?.message);
+        }else{
         toast.error('Something went wrong. Please try again.');
+        }
         console.log(error);
       }
     }
@@ -124,7 +142,8 @@ return (
                       <i className="icon-base ti tabler-upload d-block d-sm-none"></i>
                       <input type="file" id="upload" className="account-file-input" hidden accept="image/png, image/jpeg" onChange={handleImageChange}/>
                     </label>
-                    <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
+                    <div>Allowed JPG, GIF or PNG. Max size of 200KB</div>
+                    <span className='text-danger small'>{error}</span>
                   </div>
               </div>
             </div>

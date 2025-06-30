@@ -9,6 +9,7 @@ const fsSync = require('fs'); // for using fsSync.existsSync()
 const axios = require('axios');
 const FormData = require('form-data'); // To send multipart/form-data
 const authMiddleware = require('../middleware/authMiddleware');
+const crypto = require('crypto');
 
 
 // --- Multer Configuration for CV Uploads ---
@@ -28,22 +29,49 @@ const cvStorage = multer.diskStorage({
     const finalName = `${nameWithoutExt}-${uniqueSuffix}${ext}`;
     cb(null, finalName);
   }
-
 });
 
 const cvFileFilter = (req, file, cb) => {
   // Accept only PDF and DOCX
-  if (file.mimetype === 'application/pdf' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (file.mimetype === 'application/pdf') {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF and DOCX are allowed.'), false);
+    cb(new Error('Invalid file type. Only PDF files are allowed.'), false);
   }
 };
 
-const uploadCv = multer({ storage: cvStorage, fileFilter: cvFileFilter, limits: { fileSize: 20 * 1024 * 1024 } }); // 20MB limit
+const uploadCv = multer({ storage: cvStorage, fileFilter: cvFileFilter, limits: { fileSize: 50 * 1024 } }); // 5MB limit
+
+//Middleware for Multer CV File Size
+const multerCvUpload = (req, res, next) => {
+  uploadCv.single('cvFile')(req, res, function(err) {
+    if (err instanceof multer.MulterError){
+
+      if(err.code === 'LIMIT_FILE_SIZE'){
+        return res.status(413).json({message: 'File too large. Max allowed is 5MB.'})
+      }
+
+    }else if (err){
+      return res.status(400).json({message: err.message})
+    }
+    next();
+})
+}
+
+//function for ensuring a that there is no dulplicate file
+function calculateFileHash(filePath){
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fsSync.createReadStream(filePath);
+
+    stream.on('data', (data) => hash.update(data));
+    stream.on('end', () => resolve(hash.digest('hex')));
+    stream.on('error', (err) => reject(err));
+  })
+}
 
 // POST /api/cv/upload - Upload CV, send to N8N (Admin only)
-router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req, res) => {
+router.post('/upload', checkRole([1, 2]), multerCvUpload,  async (req, res) => {
     const organization_id = req.user.organization_id;
     const file = req.file;
 
@@ -56,6 +84,19 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
     let fileStream;
 
     try {
+        //for checking duplication of file
+        const fileHash = await calculateFileHash(file.path);
+        const [existing] = await db.query( 'SELECT id FROM cvs WHERE organization_id = ? AND file_hash = ?',
+        [organization_id, fileHash]);
+
+        if(existing.length > 0){
+          fsSync.unlink(file.path, (err) => {
+            if(err) console.error('Error deleting duplicate file:', err)
+          });
+
+        return res.status(409).json({message: 'Duplicate CV detected. This file has already been uploaded.' })
+        }
+
         // Create a readable stream for the uploaded file
         fileStream = require('fs').createReadStream(file.path);
         formData.append('file', fileStream, file.originalname); // N8N expects the field name 'file' for binary data
@@ -90,8 +131,8 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
                 // 1. Insert into cvs table
                 const personalInfo = cvData.personal_info || {};
                 const cvInsertResult = await connection.query(
-                    'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
-                    [parseInt(organization_id), file.filename, JSON.stringify(personalInfo), null, 'processed'] // Score is initially null
+                    'INSERT INTO cvs (organization_id, file_path, personal_info, score, status, file_hash) VALUES (?, ?, ?, ?, ?, ?)',
+                    [parseInt(organization_id), file.filename, JSON.stringify(personalInfo), null, 'processed', fileHash] // Score is initially null
                 );
                 const cvId = cvInsertResult[0].insertId;
 
@@ -228,8 +269,8 @@ router.post('/upload', checkRole([1, 2]), uploadCv.single('cvFile'), async (req,
         try{
           const connection = await db.getConnection();
           await connection.query(
-                'INSERT INTO cvs (organization_id, file_path, personal_info, score, status) VALUES (?, ?, ?, ?, ?)',
-                [parseInt(organization_id), file.filename, '{}', null, 'draft'] // ← Save as draft on N8N failure
+                'INSERT INTO cvs (organization_id, file_path, personal_info, score, status, file_hash) VALUES (?, ?, ?, ?, ?, ?)',
+                [parseInt(organization_id), file.filename, '{}', null, 'draft', fileHash] // ← Save as draft on N8N failure
             );
           connection.release();
 

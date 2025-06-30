@@ -11,6 +11,7 @@ export default function AddCompanyModal({setShowModal, onAddedCompany, companyTo
     const { register, handleSubmit, setValue, formState: { errors }, clearErrors, reset } = useForm();
     const fileInputRef = useRef();
     const [logoPreview, setLogoPreview] = useState(null);
+    const[error, setError] = useState('');
 
     // Pre-fill in edit mode
     useEffect(() => {
@@ -46,13 +47,24 @@ export default function AddCompanyModal({setShowModal, onAddedCompany, companyTo
     };
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setValue('logo', file);
-            clearErrors('logo');
-            setLogoPreview(URL.createObjectURL(file));
+    const file = e.target.files[0];
+
+    if (file) {
+        const maxSize = 200 * 1024 ; // 200KB in bytes
+
+        if (file.size > maxSize) {
+            setError('File too large. Max allowed is 200KB.');
+            setLogoPreview(null);
+            setValue('logo', null);
+            return;
         }
-    };
+
+        clearErrors('logo');
+        setValue('logo', file);
+        setLogoPreview(URL.createObjectURL(file));
+    }
+};
+
 
     const onSubmit = async (data) => {
         const formData = new FormData();
@@ -105,8 +117,11 @@ export default function AddCompanyModal({setShowModal, onAddedCompany, companyTo
             toast.success(response.data.message);
             setShowModal(false);
         } catch (error) {
+            if(error.response.status === 413){
+                setError(error.response.data.message);
+            }else {
             toast.error(error.response?.data?.message || 'An unexpected error occurred');
-            console.error(error);
+            }
         }
     };
 
@@ -147,6 +162,7 @@ export default function AddCompanyModal({setShowModal, onAddedCompany, companyTo
                                         </>
                                     )}
                             </div> 
+                            <small className='text-danger small'>{error}</small>
                             {errors.logo && <span className="text-danger small">{errors.logo.message}</span>}
                         </div>
                         <div className='col-12 d-flex align-items-center'>

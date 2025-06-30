@@ -205,34 +205,6 @@ export default function Sidebar() {
             <div data-i18n="Company Page">Company Page</div>
           </Link>
         </li>}
-        <li className={`menu-item ${isOpen === 5 ? 'open' : ''}`}>
-          <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(5)}>
-            <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M11 2.75C13.1411 4.64436 15.9357 5.63069 18.7916 5.5C19.6317 8.35774 19.2769 11.434 17.8084 14.0255C16.3399 16.617 13.8832 18.5021 11 19.25C8.11671 18.5021 5.66001 16.617 4.1915 14.0255C2.72299 11.434 2.36821 8.35774 3.20829 5.5C6.06419 5.63069 8.85878 4.64436 11 2.75" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <ellipse cx="11" cy="10.0834" rx="0.916667" ry="0.916667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M11 11V13.2917" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div data-i18n="Integration">Integration</div>
-          </Link>
-        </li>
-        <li className={`menu-item ${isOpen === 6 ? 'open' : ''}`}>
-          <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(6)}>
-              <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                  <ellipse cx="4.58329" cy="11" rx="0.916667" ry="0.916667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="11" cy="11" r="0.916667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="17.4167" cy="11" r="0.916667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div data-i18n="Integration">Notification</div>
-          </Link>
-        </li>
-        <li className={`menu-item ${isOpen === 7 ? 'open' : ''}`}>
-          <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(7)}>
-            <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <rect x="3.66663" y="3.66669" width="14.6667" height="14.6667" rx="2" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div data-i18n="Integration">Subscription</div>
-          </Link>
-        </li>
         <li className="menu-header small">
             <span className="menu-header-text text-capitalize" data-i18n="Settings">Support & Help</span>
             <ul className='ps-0'>

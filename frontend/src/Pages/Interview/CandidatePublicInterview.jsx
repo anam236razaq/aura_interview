@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../../utils/Constants';
 import toast, { Toaster } from 'react-hot-toast';
@@ -31,7 +31,10 @@ export default function CandidatePublicInterview() {
     const [timer, setTimer] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [cvId, setCvId] = useState(null);
+    const[cvError, setCVError] = useState('');
     const [selectedDevices, setSelectedDevices] = useState(null); // Add state for selected devices
+    const currentQuestion = questions?.[currentQuestionIndex]; // ✅ declare this first
+    const [timeLeft, setTimeLeft] = useState(currentQuestion?.time_limit || 0);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -93,7 +96,7 @@ export default function CandidatePublicInterview() {
             }
         };
     }, [currentStep, selectedDevices]); // Rerun when step changes or devices are selected
-
+ 
     useEffect(() => {
         if (!recorder) return;
 
@@ -161,12 +164,12 @@ export default function CandidatePublicInterview() {
         }
     };
 
-    const clearBlobUrl = () => {
+    const clearBlobUrl = useCallback(() => {
         if (blobUrl) {
             URL.revokeObjectURL(blobUrl);
             setBlobUrl(null);
         }
-    };
+    }, [blobUrl]);
 
     const handleTextResponseChange = (event) => {
         setCurrentTextResponse(event.target.value);
@@ -176,7 +179,7 @@ export default function CandidatePublicInterview() {
         setCurrentVideoFile(event.target.files[0]);
     };
 
-    const handleSubmitResponse = async () => {
+    const handleSubmitResponse = useCallback(async () => {
         if (!questions || questions.length === 0) {
             console.warn('No questions available to submit.');
             return;
@@ -242,7 +245,7 @@ export default function CandidatePublicInterview() {
         } finally {
             setSubmitLoading(false);
         }
-    };
+    }, [blobUrl, clearBlobUrl, currentQuestionIndex, currentTextResponse, cvId, invitationToken, questions]);
 
     const goToNextQuestion = () => {
         if (currentQuestionIndex < questions.length - 1) {
@@ -278,24 +281,60 @@ export default function CandidatePublicInterview() {
             setCurrentStep(3);
         } catch (error) {
             console.error('Error uploading CV:', error);
+            if(error.response.status === 413){
+                setCVError(error.response.data.message);
+            }else if(error.response.status === 409){
+                setCVError(error.response.data.message)
+            }else{
             toast.error('Failed to upload CV. Please try again.');
+            }
         } finally {
             setUploading(false);
         }
     };
+
+    const isLastQuestion = currentQuestionIndex === questions.length - 1;
+    const questionSubmitted = responses[currentQuestion?.id] === 'submitted';
+
+    useEffect(() => {
+  if (!questionSubmitted && currentStep === 4 && currentQuestion?.time_limit) {
+    setTimeLeft(currentQuestion.time_limit); // reset timer when question changes
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmitResponse(); // auto-submit when time is up
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer); // cleanup on unmount/change
+  }
+}, [currentQuestionIndex, questionSubmitted, currentStep, currentQuestion?.time_limit, handleSubmitResponse]);
+
 
     const handleDevicesSelected = (devices) => {
         setSelectedDevices(devices);
         setCurrentStep(4); // Move to Step 3: Questions
     };
 
+    const handleCvFileChange = (e) => {
+        const file = e.target.files[0];
+        
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                setCVError('File too large. Max allowed is 5MB.');
+                setCvFile(null);
+            } else {
+                setCVError('');
+                setCvFile(file);
+            }
+        }
+    }
+
     if (loading && currentStep !== 1) return <p>Loading interview...</p>; // Show loading only after form submission
     if (error) return <p style={{ color: 'red' }}>{error}</p>;
-    // Conditional rendering for interview/questions check should happen in Step 3
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const isLastQuestion = currentQuestionIndex === questions.length - 1;
-    const questionSubmitted = responses[currentQuestion?.id] === 'submitted';
 
     return (
         <>
@@ -350,7 +389,8 @@ export default function CandidatePublicInterview() {
                                 </div>
                                 <div className="mt-3">
                                     <label className="form-label">Upload CV (PDF)</label>
-                                    <input type="file" className="form-control" onChange={(e) => setCvFile(e.target.files[0])} accept=".pdf" required />
+                                    <input type="file" className="form-control" onChange={handleCvFileChange} accept=".pdf" required />
+                                    <span className='text-danger small'>{cvError}</span>
                                 </div>
                                 <div className="form-check my-5">
                                     <input className="form-check-input" type='checkbox' checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} required/>
@@ -385,6 +425,12 @@ export default function CandidatePublicInterview() {
                                         <i className="bi bi-clock me-2"></i>
                                         Time limit: {currentQuestion.time_limit} seconds
                                     </p>
+
+                                    <p>
+                                        <i className="bi bi-clock me-2"></i>
+                                        Time left: {timeLeft} seconds
+                                    </p>
+
                                 
                                     {currentQuestion.type === 'text' && (
                                         <div>
