@@ -481,8 +481,9 @@ export default function InterviewSetup() {
                                                     </svg>
                                                     <span className='text-black'>
                                                         <input type='number' className='question-selection' style={{width: '40px'}} value={question.time_limit} onChange={(e)=> {
+                                                             const value = Math.max(1, parseInt(e.target.value) || 1);
                                                             const newQuestions = [...questions];
-                                                            newQuestions[index].time_limit = e.target.value;
+                                                            newQuestions[index].time_limit = value;
                                                             setQuestions(newQuestions);
                                                         }} />
                                                     </span>

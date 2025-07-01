@@ -112,7 +112,7 @@ router.get('/', checkInterviewOwnership, async (req, res) => {
 }); 
 
 // --- Routes for candidates accessing via token (mounted separately) ---
-
+ 
 // GET /api/invitations/:token - Get invitation/interview details by token
 router.get('/:token', async (req, res) => {
     const { token } = req.params;

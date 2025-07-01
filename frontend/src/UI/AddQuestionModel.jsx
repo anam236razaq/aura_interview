@@ -6,7 +6,7 @@ import {toast} from 'react-hot-toast'
 export default function AddQuestionModel({setShowModal, interviewId, onQuestionAdded}) {
     const [newQuestionText, setNewQuestionText] = useState('');
     const [newQuestionType, setNewQuestionType] = useState('video'); 
-    const [newQuestionTimeLimit, setNewQuestionTimeLimit] = useState(60);
+    const [newQuestionTimeLimit, setNewQuestionTimeLimit] = useState(2);
     const [addingQuestion, setAddingQuestion] = useState(false);
 
     useEffect(() => {
@@ -37,7 +37,7 @@ export default function AddQuestionModel({setShowModal, interviewId, onQuestionA
             onQuestionAdded(response.data);
             setNewQuestionText('');
             setNewQuestionType('video');
-            setNewQuestionTimeLimit(60);
+            setNewQuestionTimeLimit(2);
             setShowModal(false);
         } catch (err) {
             toast.error('Failed to add question. ' + (err.response?.data?.message || ''));
@@ -70,7 +70,7 @@ export default function AddQuestionModel({setShowModal, interviewId, onQuestionA
                             </select>
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="qTime" className="form-label">Time Limit (seconds):</label>
+                            <label htmlFor="qTime" className="form-label">Time Limit (mins):</label>
                             <input id="qTime" type="number" value={newQuestionTimeLimit} 
                                 onChange={(e) => setNewQuestionTimeLimit(e.target.value)} min="0" className="form-control"/>
                         </div>

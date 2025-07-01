@@ -384,10 +384,10 @@ function calculateFileHash(filePath){
 
 // POST /api/candidates/upload - Upload candidate info and CV
 router.post('/upload', fileUpload(), async (req, res) => {
-    const { fullName, email, phoneNumber, invitationToken } = req.body;
+    const { name, email, phoneNumber, invitationToken } = req.body;
     const cvFile = req.files && req.files.cvFile;
 
-    if (!fullName || !email || !phoneNumber || !cvFile || !invitationToken) {
+    if (!name || !email || !phoneNumber || !cvFile || !invitationToken) {
         return res.status(400).json({ message: 'Please provide all required information and a CV file.' });
     }
 
@@ -491,7 +491,7 @@ router.post('/upload', fileUpload(), async (req, res) => {
          const n8nPhoneNumber = personalInfo.phoneNumber;
 
         // 6. Prioritize user-submitted information over n8n-provided information
-        const finalName = fullName;
+        const finalName = name;
         const finalEmail = email;
         const finalPhoneNumber = phoneNumber;
 
@@ -501,7 +501,7 @@ router.post('/upload', fileUpload(), async (req, res) => {
         // 7. Create a new CV record in the database
         const [result] = await connection.query(
             'INSERT INTO cvs (organization_id, job_id, file_path, personal_info, status, file_hash) VALUES (?, ?, ?, ?, ?, ?)',
-            [organizationId, jobId, fileName, JSON.stringify({fullName: finalName, email: finalEmail, phoneNumber: finalPhoneNumber}), 'processed', fileHash]
+            [organizationId, jobId, fileName, JSON.stringify({name: finalName, email: finalEmail, phoneNumber: finalPhoneNumber}), 'processed', fileHash]
         );
 
         const cvId = result.insertId;

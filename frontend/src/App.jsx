@@ -122,7 +122,7 @@ export default function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2]}><CompanyDetails /></RoleBasedRoute>} />
-        </Route>
+        </Route> 
         <Route path='register' element={<PublicRoute><Register /></PublicRoute>} />
         <Route path='login' element={<PublicRoute><Login onLogin = {handleLogin}/></PublicRoute>} />
         <Route path='/interview/public/:invitationToken' element={<CandidatePublicInterview />} />

@@ -410,7 +410,7 @@ router.get('/:id/invitation-token', authMiddleware,  async (req, res) => {
         console.error('Error generating invitation token:', error);
         res.status(500).json({ message: 'Error generating invitation token.' });
     }
-});
+}); 
 
 //Retrives invitation token on the basis of interview_id
 router.get('/invitation/:interviewId/:token' ,  async (req, res) => { 
@@ -443,7 +443,6 @@ router.get('/invitation/:interviewId/:token' ,  async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-
 
 // GET /api/interviews/:interviewId/all-responses - Get all responses for an interview, grouped by candidate
 router.get('/:interviewId/all-responses', async (req, res) => {

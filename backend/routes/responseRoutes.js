@@ -31,9 +31,9 @@ const storage = multer.diskStorage({
 
 // File filter (optional - adjust as needed for video/file types)
 const fileFilter = (req, file, cb) => {
-  // Accept common video and document types
-  // You might want to be more specific based on requirements
-  if (file.mimetype.startsWith('video/') || file.mimetype === 'application/pdf' || file.mimetype === 'application/msword' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('image/') || 
+    file.mimetype === 'application/pdf' || file.mimetype === 'application/msword' || 
+    file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type'), false);
@@ -211,8 +211,10 @@ router.get('/private/invitation/:invitationId', async (req, res) => {
 // POST /api/responses - Submit a response to a question
 // Use upload.single('responseFile') for video/file uploads
 router.post('/', upload.single('responseFile'), async (req, res) => {
-  const { invitationToken, questionId, responseType, responseText, cvId } = req.body;
-  const file = req.file; // Uploaded file details from multer
+  const { invitationToken, questionId, responseType, responseText, cvId , duration } = req.body;
+  const file = req.file;
+  const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
+
 
   if (!invitationToken || !questionId || !responseType) {
     return res.status(400).json({ message: 'invitationToken, questionId, and responseType are required.' });
@@ -223,7 +225,7 @@ router.post('/', upload.single('responseFile'), async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // 1. Validate Invitation Token and get invitation ID
+    // 1. Validate Invitation Token and get interview ID
     const [Interviews] = await connection.query(
       'SELECT id, status FROM interviews WHERE token = ? AND (expiry_date IS NULL OR expiry_date > NOW()) AND status NOT IN ("completed", "canceled")',
       [invitationToken]
@@ -233,10 +235,10 @@ router.post('/', upload.single('responseFile'), async (req, res) => {
       await connection.rollback();
       return res.status(404).json({ message: 'Invalid, expired, or completed Interview token.' });
     }
-    const invitation = Interviews[0];
-    const interviewId = invitation.id;
 
-    // 2. Validate Question ID belongs to the correct interview
+    const interviewId = Interviews[0].id;
+
+    // 2. Validate that question belongs to this interview
     const [questions] = await connection.query(
       'SELECT type FROM questions WHERE id = ? AND interview_id = ?',
       [questionId, interviewId]
@@ -246,73 +248,80 @@ router.post('/', upload.single('responseFile'), async (req, res) => {
       await connection.rollback();
       return res.status(400).json({ message: 'Question ID does not belong to the specified interview.' });
     }
-    const expectedResponseType = questions[0].type; // e.g., 'video', 'text', 'file'
 
-    // 3. Validate responseType matches question type and required data is present
+    const expectedResponseType = questions[0].type;
+
+    // 3. Validate response type
     if (responseType !== expectedResponseType) {
-        await connection.rollback();
-        return res.status(400).json({ message: `Invalid responseType. Expected '${expectedResponseType}' but received '${responseType}'.` });
+      await connection.rollback();
+      return res.status(400).json({ message: `Invalid responseType. Expected '${expectedResponseType}' but received '${responseType}'.` });
     }
 
-    if (responseType === 'text' && !responseText) {
-        await connection.rollback();
-        return res.status(400).json({ message: 'responseText is required for text responses.' });
-    }
-    if ((responseType === 'video' || responseType === 'file') && !file) {
-        await connection.rollback();
-        // Clean up potentially uploaded file if validation fails later (though multer might handle this)
-        if (req.file) fs.unlinkSync(req.file.path);
-        return res.status(400).json({ message: 'A file upload is required for video/file responses.' });
+    // Check if a response already exists
+    const [existingResponses] = await connection.query(
+    'SELECT id FROM responses WHERE interview_id = ? AND question_id = ? AND cv_id = ?',
+    [interviewId, questionId, cvId]
+    );
+
+    if (existingResponses.length > 0) {
+    await connection.rollback();
+    return res.status(409).json({ message: 'Response already submitted for this question.' });
     }
 
-    // 4. Insert into `responses` table
+
+    // 4. Insert into responses table with 'submitted' status even if response is null
     const [responseResult] = await connection.query(
       'INSERT INTO responses (interview_id, question_id, response_type, cv_id, status) VALUES (?, ?, ?, ?, ?)',
-      [interviewId, questionId, responseType, cvId, 'submitted'] // Mark as submitted
+      [interviewId, questionId, responseType, cvId, 'submitted']
     );
+
     const responseId = responseResult.insertId;
 
-    // 5. Insert into specific response table based on type
+    // 5. Insert response content (if available), or null if skipped
     if (responseType === 'text') {
       await connection.query(
         'INSERT INTO text_responses (response_id, text) VALUES (?, ?)',
-        [responseId, responseText]
+        [responseId, responseText?.trim() || null]
       );
     } else if (responseType === 'video') {
+      const videoUrl = file ? `${serverBaseUrl}/uploads/${file.filename}` : null;
+
       await connection.query(
         'INSERT INTO video_responses (response_id, video_url, duration) VALUES (?, ?, ?)',
-        [responseId, file.path, null] // Store file path, duration might be added later
+        [responseId, videoUrl, duration || null]
       );
     } else if (responseType === 'file') {
+      const filePathUrl = file ? `${serverBaseUrl}/uploads/${file.filename}` : null;
+
       await connection.query(
         'INSERT INTO file_responses (response_id, file_path, file_name, file_size, mime_type) VALUES (?, ?, ?, ?, ?)',
-        [responseId, file.path, file.originalname, file.size, file.mimetype]
+        [
+          responseId,
+          filePathUrl,
+          file ? file.originalname : null,
+          file ? file.size : null,
+          file ? file.mimetype : null
+        ]
       );
     }
-    // TODO: Handle 'audio' and 'multiple_choice' if implemented
-
-    // 6. Update invitation status (optional: could be done after all questions are answered)
-    // if (invitation.status === 'sent' || invitation.status === 'viewed') {
-    //     await connection.query('UPDATE invitations SET status = ? WHERE id = ?', ['started', invitationId]);
-    // }
-    // TODO: Add logic to check if this is the last question and update status to 'completed'.
 
     await connection.commit();
-    res.status(201).json({ message: 'Response submitted successfully', responseId: responseId });
+    res.status(201).json({ message: 'Response submitted successfully', responseId });
 
   } catch (error) {
     await connection.rollback();
     console.error('Error submitting response:', error);
-    // Clean up uploaded file if an error occurred during DB operations
+
     if (req.file) {
-        try { fs.unlinkSync(req.file.path); } catch (unlinkErr) { console.error("Error deleting uploaded file after DB error:", unlinkErr); }
+      try { fs.unlinkSync(req.file.path); } 
+      catch (unlinkErr) { console.error("Error deleting uploaded file after DB error:", unlinkErr); }
     }
+
     res.status(500).json({ message: 'Error submitting response', error: error.message });
   } finally {
     connection.release();
   }
 });
-
 
 // POST /api/responses/invitation - Submit a response to a question
 // Use upload.single('responseFile') for video/file uploads
@@ -418,8 +427,6 @@ router.post('/invitation', upload.single('responseFile'), async (req, res) => {
     connection.release();
   }
 });
-
-
 
 // --- Nested Routes for Reviews ---
 
