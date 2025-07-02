@@ -28,6 +28,7 @@ export default function Login({onLogin}) {
                     }
                 }
             )
+            console.log(response);
             const token = response?.data?.token;
             localStorage.setItem('roleId', response?.data?.role_id);
             

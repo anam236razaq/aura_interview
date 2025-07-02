@@ -6,7 +6,6 @@ const fileUpload = require('express-fileupload');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const authMiddleware = require('../middleware/authMiddleware');
-const multer = require('multer');
 const fs = require('fs').promises; 
 const FormData = require('form-data');
 const axios = require('axios');
@@ -143,13 +142,14 @@ router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {
         console.error('Error inviting user:', error);
         res.status(500).json({ message: 'Error creating user.' });
     }
-});
+}); 
 
 // DELETE /api/users/:id - Delete a user within the organization (Admin only)
 router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
     const { id } = req.params; // ID of user to delete
     const adminUserId = req.user.id;
     const organization_id = req.user.organization_id;
+   
 
     if (parseInt(id) === adminUserId) {
         return res.status(400).json({ message: 'Admin cannot delete themselves.' });
@@ -176,121 +176,27 @@ router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
     }
 });
 
-// GET /api/users/profile - Get user profile the same organization
-router.get('/profile', authMiddleware, async (req, res) => {
-    const userId = req.user.id;
+
+// GET /api/users/:id - Get a user by ID within the organization (Admin only)
+router.get('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+    const { id } = req.params;
     const organization_id = req.user.organization_id;
 
     try {
-        const [userRows] = await db.query(`SELECT u.id,  u.email, u.first_name, u.last_name, u.role_id, u.status,
-            r.name AS role_name, u.profile_image, u.organization_id, o.company_name AS organization_name, u.created_at
-            FROM users u
-            JOIN roles r ON u.role_id = r.id
-            JOIN organizations o ON u.organization_id = o.id
-            WHERE u.id = ? AND u.organization_id = ?`,
-            [userId, organization_id]
+        const [rows] = await db.query(
+            'SELECT id, email, first_name, last_name, role_id, organization_id, profile_image FROM users WHERE id = ? AND organization_id = ?',
+            [id, organization_id]
         );
 
-        if (userRows.length === 0) {
+        if (rows.length === 0) {
             return res.status(404).json({ message: 'User not found or access denied.' });
         }
 
-        res.status(200).json(userRows[0]);
+        res.status(200).json(rows[0]);
     } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).json({ message: 'Internal server error.' });
+        console.error('Error fetching user by ID:', error);
+        res.status(500).json({ message: 'Error fetching user details.' });
     }
-});
-
-// --- Multer Configuration for Updating profile image ---
-const imgUploadDir = path.join(__dirname, '../uploads/profileImg_temp');
-
-//Ensure Img directory exist
-fs.mkdir(imgUploadDir, {recursive: true}).catch(console.error);
-
-// Configure storage
-const imgstorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, imgUploadDir);
-  },
-  filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'img-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const imgFileFilter = (req, file, cb) => {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-
-    if(allowedMimeTypes.includes(file.mimetype)){
-        cb(null, true);
-    }else{
-        cb(new Error('Invalid file type. Only JPEG, PNG, GIF and WEBP are allowed.'), false)
-    }
-}
-
-const uploadImg = multer({ storage: imgstorage, fileFilter: imgFileFilter, limits: { fileSize: 200 * 1024 }});
-
-//Middleware for Multer Image File Size
-const multerImgUpload = (req, res, next) => {
-  uploadImg.single('profile_image')(req, res, function(err) {
-    if (err instanceof multer.MulterError){
-
-      if(err.code === 'LIMIT_FILE_SIZE'){
-        return res.status(413).json({message: 'File too large. Max allowed is 200KB.'})
-      }
-
-    }else if (err){
-      return res.status(400).json({message: err.message})
-    }
-    next();
-})
-}
-
-// PUT /api/users/profile - Update user profile
-router.put('/profile', authMiddleware, multerImgUpload, async (req, res) => {
-    const userId = req.user.id;
-    const {first_name, last_name, email} = req.body;
-
-    const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
-    const imgPath = req.file ? `/uploads/profileImg_temp/${req.file.filename}` : null;
-    const profileImagePath = imgPath ? `${serverBaseUrl}${imgPath}` : null;
- 
-  try {
-    const fields = [];
-    const values = [];
-
-    if (first_name) {
-      fields.push('first_name = ?');
-      values.push(first_name);
-    }
-    if (last_name) {
-      fields.push('last_name = ?');
-      values.push(last_name);
-    }
-    if (email) {
-      fields.push('email = ?');
-      values.push(email);
-    }
-    if (profileImagePath) {
-      fields.push('profile_image = ?');
-      values.push(profileImagePath);
-    }
-
-    if (fields.length === 0) {
-      return res.status(400).json({ message: 'No fields to update.' });
-    }
-
-    values.push(userId);
-
-    const updateQuery = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
-    await db.query(updateQuery, values);
-
-    res.status(200).json({ message: 'Profile updated successfully.' });
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).json({ message: 'Internal server error.' });
-  }
 });
 
 // TODO: Add PUT /api/users/:id for updating user details (e.g., name, role - maybe restrict role changes)

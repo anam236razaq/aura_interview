@@ -60,6 +60,7 @@ export default function UserList() {
                   Authorization: `Bearer ${token}`
                 }
             });
+            console.log(response);
 
             setUserList(response?.data?.users || []);
             setTotalPages(Math.ceil((response?.data?.total || 0) / itemsPerPage)); 

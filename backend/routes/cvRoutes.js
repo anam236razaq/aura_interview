@@ -40,7 +40,7 @@ const cvFileFilter = (req, file, cb) => {
   }
 };
 
-const uploadCv = multer({ storage: cvStorage, fileFilter: cvFileFilter, limits: { fileSize: 50 * 1024 } }); // 5MB limit
+const uploadCv = multer({ storage: cvStorage, fileFilter: cvFileFilter, limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
 
 //Middleware for Multer CV File Size
 const multerCvUpload = (req, res, next) => {
@@ -79,13 +79,14 @@ router.post('/upload', checkRole([1, 2]), multerCvUpload,  async (req, res) => {
         return res.status(400).json({ message: 'CV file (cvFile) is required.' });
     } 
 
+    const fileHash = await calculateFileHash(file.path);
+
     const n8nWebhookUrl = 'https://social.keydevsdemo.com/webhook/0bc2284e-f2c2-427f-b11e-78fa8fad4aea';
     const formData = new FormData();
     let fileStream;
 
     try {
         //for checking duplication of file
-        const fileHash = await calculateFileHash(file.path);
         const [existing] = await db.query( 'SELECT id FROM cvs WHERE organization_id = ? AND file_hash = ?',
         [organization_id, fileHash]);
 

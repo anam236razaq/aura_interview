@@ -54,7 +54,7 @@ export default function Settings() {
      
       try{
         const token = localStorage.getItem('authToken');
-        const response = await axios.put(API_BASE_URL+'/users/profile', formData, {
+        const response = await axios.put(API_BASE_URL+'/profile', formData, {
           headers: {
                 'Content-type': 'multipart/form-data',
                 Authorization: `Bearer ${token}`

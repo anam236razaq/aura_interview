@@ -153,8 +153,8 @@ router.post('/', checkRole([1, 2]), async (req, res) => {
     try {
         const sharedUUID = uuidv4();
         const [result] = await db.query(
-            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [organization_id, title, description, userId, jobId, companyId, expiry_date, sharedUUID]
+            'INSERT INTO interviews (organization_id, title, description, user_id, job_id, company_id,  expiry_date, token, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [organization_id, title, description, userId, jobId, companyId, expiry_date, sharedUUID, 'draft']
         );
         const interviewId = result.insertId;
 

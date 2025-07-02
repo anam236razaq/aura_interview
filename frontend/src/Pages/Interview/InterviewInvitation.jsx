@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
@@ -14,17 +14,19 @@ const InterviewInvitation = () => {
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentTextResponse, setCurrentTextResponse] = useState('');
-    const [currentVideoFile, setCurrentVideoFile] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [responses, setResponses] = useState({}); // Track submission status per question
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [recorder, setRecorder] = useState(null);
     const [recording, setRecording] = useState(false);
     const [stream, setStream] = useState(null);
-    const [blobUrl, setBlobUrl] = useState(null);
+    const [blobUrl, setBlobUrl] = useState(null); 
     const [timer, setTimer] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [selectedDevices, setSelectedDevices] = useState(null); // Add state for selected devices
+    const currentQuestion = questions?.[currentQuestionIndex]; 
+    const [timeLeft, setTimeLeft] = useState(currentQuestion?.time_limit || 0);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -153,22 +155,27 @@ const InterviewInvitation = () => {
         }
     };
 
-    const clearBlobUrl = () => {
+    const clearBlobUrl = useCallback(() => {
         if (blobUrl) {
             URL.revokeObjectURL(blobUrl);
             setBlobUrl(null);
         }
-    };
+    }, [blobUrl]);
 
     const handleTextResponseChange = (event) => {
         setCurrentTextResponse(event.target.value);
     };
 
-    const handleVideoFileChange = (event) => {
-        setCurrentVideoFile(event.target.files[0]);
-    };
+    const isSubmittingRef = useRef(false);
+    const handleSubmitResponse = useCallback(async (allowEmpty = false) => {
 
-    const handleSubmitResponse = async () => {
+        if (isSubmittingRef.current) {
+        console.warn('Submission already in progress...');
+        return;
+        }
+
+        isSubmittingRef.current = true; 
+
         if (!questions || questions.length === 0) {
             console.warn('No questions available to submit.');
             return;
@@ -189,13 +196,23 @@ const InterviewInvitation = () => {
 
         try {
             if (questionType === 'text') {
-                payload.responseText = currentTextResponse;
-            } else if (questionType === 'video') {
-                if (!blobUrl) {
-                    setSubmitError('Please record a video response.');
+                if(!currentTextResponse && !allowEmpty){
+                    setSubmitError('Please enter a response.');
                     setSubmitLoading(false);
+                    isSubmittingRef.current = false;
                     return;
                 }
+                payload.responseText = currentTextResponse?.trim() || null;
+            } 
+            else if (questionType === 'video') {
+                if (!blobUrl && !allowEmpty) {
+                    setSubmitError('Please record a video response.');
+                    setSubmitLoading(false);
+                    isSubmittingRef.current = false;
+                    return;
+                }
+                
+                if(blobUrl){
                 const videoBlob = await fetch(blobUrl).then(r => r.blob());
                 const videoFile = new File([videoBlob], `response-${questionId}.webm`, { type: 'video/webm' });
                 const formData = new FormData();
@@ -205,15 +222,32 @@ const InterviewInvitation = () => {
                 formData.append('responseType', questionType);
                 payload = formData;
                 config.headers = { 'Content-Type': 'multipart/form-data' };
+                }else{
+                    payload.responseFile = null
+                }
             } else if (questionType === 'file') {
-                console.warn(`Submission logic for type 'file' not implemented yet.`);
-                setSubmitError(`Submission for 'file' is not yet implemented.`);
-                setSubmitLoading(false);
-                return;
+                if (!selectedFile && !allowEmpty) {
+                    console.warn(`Submission logic for type 'file' not implemented yet.`);
+                    setSubmitError(`Submission for 'file' is not yet implemented.`);
+                    setSubmitLoading(false);
+                    isSubmittingRef.current = false;
+                    return;
+                }
+
+                if (selectedFile) {
+                const formData = new FormData();
+                formData.append('responseFile', selectedFile);
+                formData.append('invitationToken', token);
+                formData.append('questionId', questionId);
+                formData.append('responseType', questionType);
+                payload = formData;
+                config.headers = { 'Content-Type': 'multipart/form-data' };
+                }
             } else {
                 console.warn(`Unknown question type: ${questionType}`);
                 setSubmitError(`Cannot submit response for unknown type '${questionType}'.`);
                 setSubmitLoading(false);
+                isSubmittingRef.current = false;
                 return;
             }
 
@@ -221,16 +255,20 @@ const InterviewInvitation = () => {
 
             setResponses(prev => ({ ...prev, [questionId]: 'submitted' })); 
             setCurrentTextResponse(''); 
-            setCurrentVideoFile(null);
+            setSelectedFile(null);
             clearBlobUrl();
+            setSubmitError('');
 
         } catch (err) {
             console.error(`Error submitting response for question ${questionId}:`, err);
-            setSubmitError('Failed to submit response. ' + (err.response?.data?.message || ''));
+            if(!allowEmpty){
+                setSubmitError('Failed to submit response. ' + (err.response?.data?.message || ''));
+            }
         } finally {
             setSubmitLoading(false);
+            isSubmittingRef.current = false;
         }
-    };
+    }, [blobUrl, clearBlobUrl, currentQuestionIndex, currentTextResponse, token, questions, selectedFile]);
 
     useEffect(() => {
     const validateToken = async () => {
@@ -253,13 +291,13 @@ const InterviewInvitation = () => {
     validateToken();
   }, [interviewId, token]);
 
-    const goToNextQuestion = () => {
+    const goToNextQuestion = useCallback(() => {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
             setCurrentStep(4)
         }
-    };
+    }, [currentQuestionIndex, questions.length]);
 
 
     const handleDevicesSelected = (devices) => {
@@ -267,12 +305,42 @@ const InterviewInvitation = () => {
         setCurrentStep(3); //
     };
 
-    const currentQuestion = questions[currentQuestionIndex];
     const isLastQuestion = currentQuestionIndex === questions.length - 1;
     const questionSubmitted = responses[currentQuestion?.id] === 'submitted';
+    const timerInitializedFor = useRef(null);
+
+    useEffect(() => {
+  if (
+    !questionSubmitted &&
+    currentStep === 4 &&
+    currentQuestion?.time_limit &&
+    currentQuestion.id !== timerInitializedFor.current
+  ) {
+    setTimeLeft(currentQuestion.time_limit); // reset timer
+    timerInitializedFor.current = currentQuestion.id;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmitResponse(true).then(() => {
+            goToNextQuestion();
+          });
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer); // clean up when question changes
+  }
+}, [currentQuestion?.id, currentStep, questionSubmitted, currentQuestion?.time_limit]);
+
+    useEffect(() => {
+        setSubmitError('');
+    }, [currentQuestionIndex]);
 
   if (loading) return
-
 
   return (
      <>
@@ -315,7 +383,9 @@ const InterviewInvitation = () => {
                                     <p className='mb-2'>{currentQuestion.text}</p>
                                     <p>
                                         <i className="bi bi-clock me-2"></i>
-                                        Time limit: {currentQuestion.time_limit} seconds
+                                        Time left:{timeLeft}{' '}
+                                        {Math.floor(timeLeft / 60) > 0 && `${Math.floor(timeLeft / 60)} minute${Math.floor(timeLeft / 60) > 1 ? 's' : ''} `}
+                                        {timeLeft % 60 > 0 && `${timeLeft % 60} second${timeLeft % 60 !== 1 ? 's' : ''}`}
                                     </p>
                                 
                                     {currentQuestion.type === 'text' && (
@@ -333,13 +403,13 @@ const InterviewInvitation = () => {
                                     {currentQuestion.type === 'file' && (
                                         <div>
                                             <label htmlFor="fileUpload" className="form-label">
-                                                Drag and drop image here, or click to select:
+                                                Drag and drop image file here, or click to select:
                                             </label>
                                             <input
                                                 type="file"
                                                 id="fileUpload"
                                                 className="form-control"
-                                                onChange={handleVideoFileChange}
+                                                onChange={(e) => setSelectedFile(e.target.files[0])}
                                                 disabled={questionSubmitted}
                                                 accept="image/*"
                                             />
@@ -382,9 +452,16 @@ const InterviewInvitation = () => {
                                         <p style={{ color: 'green' }}><i className="bi bi-check-circle"></i> Submitted</p>
                                     )}
                                 
+                                    <div>
+                                    {!questionSubmitted && (
+                                        <button onClick={async() => {await handleSubmitResponse(true); goToNextQuestion();}} disabled={submitLoading} className='btn btn-warning' style={{ marginRight: '1rem' }}>
+                                            Skip
+                                        </button>
+                                    )}
                                     <button onClick={goToNextQuestion} className='btn btn-secondary' disabled={submitLoading || !questionSubmitted}>
                                         {isLastQuestion ? 'Finish Interview' : 'Next Question'}
                                     </button>
+                                    </div>
                                     </div>
                             </div>
                         </div>

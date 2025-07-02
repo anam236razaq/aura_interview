@@ -31,7 +31,7 @@ export const ProfileProvider = ({children}) => {
         return;
       }
   
-      const response = await axios.get(API_BASE_URL + '/users/profile', {
+      const response = await axios.get(API_BASE_URL + '/profile', {
         headers: {
           "Content-Type": 'application/json',
           Authorization: `Bearer ${token}`

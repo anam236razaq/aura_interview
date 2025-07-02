@@ -57,7 +57,6 @@ router.post('/register', async (req, res) => {
             [email, password_hash, first_name, last_name, role_id, organization_id, profileImage]
         );
         const userId = userResult.insertId;
-
         await connection.commit();
 
         // Generate JWT

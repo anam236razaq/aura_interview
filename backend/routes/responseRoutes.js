@@ -211,7 +211,7 @@ router.get('/private/invitation/:invitationId', async (req, res) => {
 // POST /api/responses - Submit a response to a question
 // Use upload.single('responseFile') for video/file uploads
 router.post('/', upload.single('responseFile'), async (req, res) => {
-  const { invitationToken, questionId, responseType, responseText, cvId , duration } = req.body;
+  const { invitationToken, questionId, responseType, responseText, cvId } = req.body;
   const file = req.file;
   const serverBaseUrl = `${req.protocol}://${req.get('host')}`;
 
@@ -288,7 +288,7 @@ router.post('/', upload.single('responseFile'), async (req, res) => {
 
       await connection.query(
         'INSERT INTO video_responses (response_id, video_url, duration) VALUES (?, ?, ?)',
-        [responseId, videoUrl, duration || null]
+        [responseId, videoUrl, null]
       );
     } else if (responseType === 'file') {
       const filePathUrl = file ? `${serverBaseUrl}/uploads/${file.filename}` : null;

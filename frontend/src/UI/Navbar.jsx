@@ -182,19 +182,19 @@ export default function Navbar() {
                           </div>
                         </li>
                         ))) : (
-                          <div>
+                          <div className='d-flex align-items-center justify-content-center py-5'>
                               <span className="text-center">No Notifications found</span>
                           </div>
                         )}
                       </ul>
                     </li>
-                    <li className="border-top">
+                    {!notifications && <li className="border-top">
                       <div className="d-grid p-4">
                         <Link className="btn btn-primary btn-sm d-flex" to="#">
                           <small className="align-middle">View all notifications</small>
                         </Link>
                       </div>
-                    </li>
+                    </li> }
                   </ul>
                 </li>
 

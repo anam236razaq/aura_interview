@@ -172,19 +172,6 @@ export default function CandidatePublicInterview() {
         }
     }, [blobUrl]);
 
-    const getVideoDuration = (blob) => {
-        return new Promise((resolve) => {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            video.src = URL.createObjectURL(blob);
-            video.onloadedmetadata = () => {
-                URL.revokeObjectURL(video.src);
-                resolve(video.duration);
-            };
-        });
-    };
-
-
     const handleTextResponseChange = (event) => {
         setCurrentTextResponse(event.target.value);
     };
@@ -239,14 +226,12 @@ export default function CandidatePublicInterview() {
             if(blobUrl){
                 const videoBlob = await fetch(blobUrl).then(r => r.blob());
                 const videoFile = new File([videoBlob], `response-${questionId}.webm`, { type: 'video/webm' });
-                const duration = await getVideoDuration(videoBlob); 
                 const formData = new FormData();
                 formData.append('responseFile', videoFile);
                 formData.append('invitationToken', invitationToken);
                 formData.append('questionId', questionId);
                 formData.append('responseType', questionType);
                 formData.append('cvId', cvId);
-                 formData.append('duration', duration);
                 payload = formData;
                 config.headers = { 'Content-Type': 'multipart/form-data' };
             }else{
@@ -527,7 +512,7 @@ export default function CandidatePublicInterview() {
                                     {currentQuestion.type === 'video' && (
                                         <div>
                                             <div style={{ marginBottom: '10px' }}>
-                                                <video id="liveFeed" width="320" height="240" style={{ marginBottom: '10px', border: '1px solid #ccc' }} />
+                                                <video id="liveFeed" width="320" height="240"  style={{ marginBottom: '10px', border: '1px solid #ccc' }} />
                                                 {!recording && !blobUrl && (
                                                     <button onClick={startRecording} disabled={recording || questionSubmitted} style={{ marginRight: '10px' }}>
                                                         <i className="bi bi-camera-video"></i>Start Recording
@@ -559,15 +544,16 @@ export default function CandidatePublicInterview() {
                                     ) : (
                                         <p style={{ color: 'green' }}><i className="bi bi-check-circle"></i> Submitted</p>
                                     )}
-
+                                    <div>
                                     {!questionSubmitted && (
-                                        <button onClick={async() => {await handleSubmitResponse(true); goToNextQuestion();}} disabled={submitLoading} className='btn btn-warning' style={{ marginRight: '10px' }}>
+                                        <button onClick={async() => {await handleSubmitResponse(true); goToNextQuestion();}} disabled={submitLoading} className='btn btn-warning' style={{ marginRight: '1rem' }}>
                                             Skip
                                         </button>
                                     )}
                                     <button onClick={goToNextQuestion} className='btn btn-secondary' disabled={submitLoading || !questionSubmitted}>
                                         {isLastQuestion ? 'Finish Interview' : 'Next Question'}
                                     </button>
+                                    </div>
                                     </div>
                             </div>
                         </div>
