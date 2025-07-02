@@ -383,7 +383,7 @@ const InterviewInvitation = () => {
                                     <p className='mb-2'>{currentQuestion.text}</p>
                                     <p>
                                         <i className="bi bi-clock me-2"></i>
-                                        Time left:{timeLeft}{' '}
+                                        Time left:{' '}
                                         {Math.floor(timeLeft / 60) > 0 && `${Math.floor(timeLeft / 60)} minute${Math.floor(timeLeft / 60) > 1 ? 's' : ''} `}
                                         {timeLeft % 60 > 0 && `${timeLeft % 60} second${timeLeft % 60 !== 1 ? 's' : ''}`}
                                     </p>
