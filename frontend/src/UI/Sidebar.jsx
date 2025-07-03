@@ -183,12 +183,12 @@ export default function Sidebar() {
             </li>
           </ul>
         </li>
-        <li className={`menu-item ${isOpen === 4 ? 'open' : ''}`}>
-          <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(4)}>
+        <li className='menu-item'>
+          <Link to="/reporting" className={`menu-link ${location.pathname === '/reporting' ? 'active-links' : ''}`} onClick={handleLinkClick}>
             <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <rect x="4.58337" y="10.0834" width="12.8333" height="9.16667" rx="2" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <ellipse cx="11" cy="14.6667" rx="0.916667" ry="0.916667" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M7.33337 10.0833V6.41667C7.33337 4.39162 8.975 2.75 11 2.75C13.0251 2.75 14.6667 4.39162 14.6667 6.41667V10.0833" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <rect x="4.58337" y="10.0834" width="12.8333" height="9.16667" rx="2" stroke={location.pathname === '/reporting' ? '#ffffff' : "#2F2B3D"} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <ellipse cx="11" cy="14.6667" rx="0.916667" ry="0.916667" stroke={location.pathname === '/reporting' ? '#ffffff' : "#2F2B3D"} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7.33337 10.0833V6.41667C7.33337 4.39162 8.975 2.75 11 2.75C13.0251 2.75 14.6667 4.39162 14.6667 6.41667V10.0833" stroke={location.pathname === '/reporting' ? '#ffffff' : "#2F2B3D"} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <div data-i18n="Reporting">Reporting</div>
           </Link>

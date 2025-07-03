@@ -447,9 +447,9 @@ router.get('/invitation/:interviewId/:token' ,  async (req, res) => {
 // GET /api/interviews/:interviewId/all-responses - Get all responses for an interview, grouped by candidate
 router.get('/:interviewId/all-responses', async (req, res) => {
     const { interviewId } = req.params;
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, shortlisted } = req.query;
     const organization_id = req.user.organization_id;
-
+ 
     try {
         // 1. Verify interview exists and belongs to the organization
         const [interviews] = await db.query(
@@ -481,9 +481,11 @@ router.get('/:interviewId/all-responses', async (req, res) => {
 
          // 3. Get paginated CV IDs
         const [cvRows] = await db.query(
-            `SELECT DISTINCT r.cv_id, cv.personal_info
+            `SELECT DISTINCT r.cv_id, cv.personal_info, sc.shortlisted
             FROM responses r
             JOIN cvs cv ON r.cv_id = cv.id
+            LEFT JOIN interview_shortlisted sc 
+            ON sc.cv_id = r.cv_id AND sc.interview_id = r.interview_id
             WHERE r.interview_id = ?
             ${searchClause}
             ORDER BY r.cv_id
@@ -531,7 +533,8 @@ router.get('/:interviewId/all-responses', async (req, res) => {
                     cvId: cvId,
                     name: personalInfo.name || 'N/A',
                     email: personalInfo.email || 'N/A',
-                    responses: []
+                    responses: [],
+                    shortlisted: cvRows.find(cv => cv.cv_id === cvId)?.shortlisted === 1
                 });
             }
 
@@ -564,6 +567,36 @@ router.get('/:interviewId/all-responses', async (req, res) => {
         console.error('Error fetching all responses for interview:', error);
         res.status(500).json({ message: 'Error fetching responses' });
     }
+});
+
+// POST /api/interviews/:id/shortlist - Toggle shortlist status for a interviews
+router.post('/:id/shortlist', authMiddleware, checkRole([1, 2]), async (req, res) => {
+  const { id } = req.params; // interview ID
+  const { cvId, shortlisted } = req.body; // Boolean: true or false
+  const organization_id = req.user.organization_id;
+  
+  try {
+        // 1. Validate ownership
+        const [interviews] = await db.query(
+            'SELECT id FROM interviews WHERE id = ? AND organization_id = ?',
+            [id, organization_id]
+        )
+        if (interviews.length === 0) {
+            return res.status(403).json({ message: 'Access denied or interview not found' });
+        }
+
+        // 2. Insert or update shortlist entry
+        await db.query(`
+        INSERT INTO interview_shortlisted (interview_id, cv_id, shortlisted)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE shortlisted = VALUES(shortlisted)
+        `, [id, cvId, shortlisted]);
+
+    res.json({ message: 'Shortlist status updated successfully' });
+  } catch (error) {
+    console.error('Error updating shortlist status:', error);
+    res.status(500).json({ message: 'Error updating shortlist status' });
+  }
 });
 
 // PUT /api/interviews/bulk-update - Update status for multiple interviews

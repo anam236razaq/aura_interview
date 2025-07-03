@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../UI/Footer';
-import AIReprocessModal from '../../UI/AIReprocessModal';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';

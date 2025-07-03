@@ -11,13 +11,14 @@ import Loader from '../../UI/Loader';
 export default function InterviewResponses() {
     const { interviewId } = useParams();
     const[open, setOpen] = useState(false);
-    const [responsesData, setResponsesData] = useState(null);
-    const [interviewTitle, setInterviewTitle] = useState('');
-    const [loading, setLoading] = useState(true);
+    const[responsesData, setResponsesData] = useState(null);
+    const[interviewTitle, setInterviewTitle] = useState('');
+    const[loading, setLoading] = useState(true);
     const[searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+    const[currentPage, setCurrentPage] = useState(1);
     const[totalPages, setTotalPages] = useState(1);
     const[totalEntries, setTotalEntries] = useState(0);
+    const[shortlisted, setShortlisted] = useState('');
     const itemsPerPage = 10;
     
     const toggleDropdown = () => setOpen(!open);
@@ -29,10 +30,12 @@ export default function InterviewResponses() {
         const fetchResponses = async () => {
             try {
             setLoading(true);
+            setShortlisted('');
             const token = localStorage.getItem('authToken');
             const params = new URLSearchParams({
                 page: currentPage,
-                limit: itemsPerPage
+                limit: itemsPerPage,
+                shortlisted
             });
 
             if (searchQuery.trim()) {
@@ -70,7 +73,7 @@ export default function InterviewResponses() {
     }, 500)
     
     return () => clearTimeout(delayDebounce);
-    }, [interviewId, currentPage, searchQuery]);
+    }, [interviewId, currentPage, searchQuery, shortlisted]);
 
     if(loading) return
 
@@ -79,6 +82,32 @@ export default function InterviewResponses() {
         setCurrentPage(page);
       }
     }
+
+     //Toggle shortlist candidate
+    const handleShortlistToggle = async (cvId, currentlyShortlisted) => {
+        try {
+            const updatedShortlisted = currentlyShortlisted === 1 ? 0 : 1;
+            const token = localStorage.getItem('authToken');
+
+            await axios.post(`${API_BASE_URL}/interviews/${interviewId}/shortlist`, 
+            { cvId, shortlisted: updatedShortlisted },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+            });
+            
+            // Ideally, update the local state to reflect change
+            setResponsesData(prev =>
+            prev.map(c =>
+                c.cvId === cvId ? { ...c, shortlisted: updatedShortlisted } : c
+            ));
+
+        } catch (err) {
+            console.error('Error toggling shortlist:', err);
+        }
+    };
 
   return (
     <>
@@ -167,9 +196,10 @@ export default function InterviewResponses() {
                         aria-describedby="DataTables_Table_0_info" style={{width: '100%'}}>
                             <colgroup>
                                 <col data-dt-column="0" style={{width: '10%'}} />
-                                <col data-dt-column="1" style={{width: '35%'}} />
-                                <col data-dt-column="2" style={{width: '35%'}} />
-                                <col data-dt-column="3" style={{width: '20%'}} />
+                                <col data-dt-column="1" style={{width: '30%'}} />
+                                <col data-dt-column="2" style={{width: '30%'}} />
+                                <col data-dt-column="3" style={{width: '10%'}} />
+                                <col data-dt-column="4" style={{width: '20%'}} />
                             </colgroup>
                             <thead className="border-top">
                               <tr>
@@ -178,6 +208,7 @@ export default function InterviewResponses() {
                                   <input className="form-check-input custom-checkbox" type="checkbox" />
                                 </th>
                                 {[{columnName: 'CANDIDATE NAME', dtColumn: '1'}, {columnName: 'EMAIL', dtColumn: '2'},
+                                    {columnName: 'SHORTLIST', dtColumn: '3'},
                                     {columnName: 'ACTIONS', dtColumn: '4'}].map((column, index) => (
                                     <th data-dt-column={column.dtColumn} rowSpan="1" colSpan="1" key={index}>
                                         <span className="dt-column-title">{column.columnName}</span>
@@ -199,6 +230,12 @@ export default function InterviewResponses() {
                                         type="checkbox" onClick={(e)=>e.stopPropagation()}/></td>
                                     <td className='text-black'>{candidate.name}</td>
                                     <td className='text-black'>{candidate.email}</td>
+                                    <td>
+                                    <div className="form-check form-switch m-0">
+                                      <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" onClick={(e)=>e.stopPropagation()}
+                                          checked={candidate.shortlisted === 1} onChange={() => handleShortlistToggle(candidate.cvId, candidate.shortlisted)}/>
+                                    </div>
+                                  </td>
 
                                     <td className="dtr-hidden">
                                         <div className="d-flex align-items-center">

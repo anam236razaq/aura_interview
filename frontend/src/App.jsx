@@ -47,6 +47,7 @@ import { ProfileProvider } from "./Contexts/ProfileContext";
 import PrivacyPolicy from "./LandingPages/PrivacyPolicy";
 import TermsConditions from "./LandingPages/TermsConditions";
 import ContactUs from "./LandingPages/ContactUs";
+import Reporting from "./Pages/Users/Reporting";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -121,6 +122,7 @@ export default function App() {
             <Route path='/support' element={<Support />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/reporting" element={<Reporting />} />
             <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2]}><CompanyDetails /></RoleBasedRoute>} />
         </Route> 
         <Route path='register' element={<PublicRoute><Register /></PublicRoute>} />
