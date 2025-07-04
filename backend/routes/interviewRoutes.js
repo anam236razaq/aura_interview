@@ -447,7 +447,7 @@ router.get('/invitation/:interviewId/:token' ,  async (req, res) => {
 // GET /api/interviews/:interviewId/all-responses - Get all responses for an interview, grouped by candidate
 router.get('/:interviewId/all-responses', async (req, res) => {
     const { interviewId } = req.params;
-    const { page = 1, limit = 10, search, shortlisted } = req.query;
+    const { page = 1, limit = 10, search } = req.query;
     const organization_id = req.user.organization_id;
  
     try {
@@ -537,7 +537,7 @@ router.get('/:interviewId/all-responses', async (req, res) => {
                     shortlisted: cvRows.find(cv => cv.cv_id === cvId)?.shortlisted === 1
                 });
             }
-
+ 
             let content = null;
             if (row.response_type === 'text') content = row.text_content;
             else if (row.response_type === 'video') content = row.video_content; // Assuming video_url is the path/URL

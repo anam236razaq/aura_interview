@@ -181,6 +181,11 @@ export default function Sidebar() {
                 <div data-i18n="Draft Interviews">Draft Interviews</div>
               </Link>
             </li>
+            <li className="menu-item">
+              <Link to="/interviewed/interview-picks" onClick={() => {handleLinkClick(); localStorage.removeItem('interviewFrom')}} className={`menu-link ${location.pathname === '/interviewed/interview-picks'? 'active-links' : ''}`}>
+                <div data-i18n="Interview picks">Interview Picks</div>
+              </Link>
+            </li>
           </ul>
         </li>
         <li className='menu-item'>

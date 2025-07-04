@@ -132,7 +132,7 @@ router.get('/latest-entries', authMiddleware, async(req, res) => {
         const latestInterviews = await db.query(`SELECT * FROM interviews WHERE organization_id = ?
         ORDER BY created_at DESC LIMIT 5`, [organization_id]).then(r => r[0]);
 
-        const latestCandidates = await db.query(`SELECT id, status, created_at,   
+        const latestCandidates = await db.query(`SELECT id, status, created_at, file_path,   
         JSON_UNQUOTE(JSON_EXTRACT(personal_info, '$.name')) AS name,
         JSON_UNQUOTE(JSON_EXTRACT(personal_info, '$.email')) AS email FROM cvs WHERE organization_id = ?
         ORDER BY created_at DESC LIMIT 5`, [organization_id]).then(r => r[0]);

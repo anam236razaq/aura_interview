@@ -86,10 +86,10 @@ export default function InterviewResponses() {
      //Toggle shortlist candidate
     const handleShortlistToggle = async (cvId, currentlyShortlisted) => {
         try {
-            const updatedShortlisted = currentlyShortlisted === 1 ? 0 : 1;
+            const updatedShortlisted = currentlyShortlisted ? 0 : 1;
             const token = localStorage.getItem('authToken');
 
-            await axios.post(`${API_BASE_URL}/interviews/${interviewId}/shortlist`, 
+            const response = await axios.post(`${API_BASE_URL}/interviews/${interviewId}/shortlist`, 
             { cvId, shortlisted: updatedShortlisted },
             {
                 headers: {
@@ -97,7 +97,7 @@ export default function InterviewResponses() {
                     Authorization: `Bearer ${token}`
                 },
             });
-            
+            console.log(response);
             // Ideally, update the local state to reflect change
             setResponsesData(prev =>
             prev.map(c =>
@@ -233,7 +233,7 @@ export default function InterviewResponses() {
                                     <td>
                                     <div className="form-check form-switch m-0">
                                       <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" onClick={(e)=>e.stopPropagation()}
-                                          checked={candidate.shortlisted === 1} onChange={() => handleShortlistToggle(candidate.cvId, candidate.shortlisted)}/>
+                                          checked={!!candidate.shortlisted} onChange={() => handleShortlistToggle(candidate.cvId, candidate.shortlisted)}/>
                                     </div>
                                   </td>
 

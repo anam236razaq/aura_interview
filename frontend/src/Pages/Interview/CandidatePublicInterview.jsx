@@ -176,6 +176,7 @@ export default function CandidatePublicInterview() {
         setCurrentTextResponse(event.target.value);
     };
 
+    console.log(timeLeft);
     const isSubmittingRef = useRef(false);
     const handleSubmitResponse = useCallback(async (allowEmpty = false) => {
         if (isSubmittingRef.current) {
@@ -511,20 +512,20 @@ export default function CandidatePublicInterview() {
                                 
                                     {currentQuestion.type === 'video' && (
                                         <div>
-                                            <div style={{ marginBottom: '10px' }}>
+                                            <div style={{ marginBottom: '10px' }} className='d-flex flex-column'>
                                                 <video id="liveFeed" width="320" height="240"  style={{ marginBottom: '10px', border: '1px solid #ccc' }} />
                                                 {!recording && !blobUrl && (
-                                                    <button onClick={startRecording} disabled={recording || questionSubmitted} style={{ marginRight: '10px' }}>
+                                                    <button onClick={startRecording} disabled={recording || questionSubmitted} style={{ marginRight: '10px', width: '320px'  }}>
                                                         <i className="bi bi-camera-video"></i>Start Recording
                                                     </button>
                                                 )}
                                                 {recording && (
-                                                    <button onClick={stopRecording} disabled={!recording || questionSubmitted} style={{ marginRight: '10px' }}>
+                                                    <button onClick={stopRecording} disabled={!recording || questionSubmitted} style={{ marginRight: '10px', width: '320px' }}>
                                                         Stop Recording
                                                     </button>
                                                 )}
                                                 {blobUrl && (
-                                                    <button onClick={clearBlobUrl} style={{ marginRight: '10px' }}>Clear</button>
+                                                    <button onClick={clearBlobUrl} style={{ marginRight: '10px', width: '320px'  }}>Clear</button>
                                                 )}
                                             </div>
                                 
@@ -536,9 +537,9 @@ export default function CandidatePublicInterview() {
                                 
                                     {submitError && <p style={{ color: 'red' }}>{submitError}</p>}
                                 
-                                    <div className='d-flex align-items-center justify-content-between mt-5'>
+                                    <div className='d-flex flex-md-row flex-column align-items-start align-items-md-center justify-content-between mt-5'>
                                     {!questionSubmitted ? (
-                                        <button onClick={handleSubmitResponse} disabled={submitLoading} className='btn btn-primary' style={{ marginRight: '10px' }}>
+                                        <button onClick={handleSubmitResponse} disabled={submitLoading} className='btn btn-primary mb-md-0 mb-2' style={{ marginRight: '10px' }}>
                                             {submitLoading ? 'Submitting...' : 'Submit Response'}
                                         </button>
                                     ) : (

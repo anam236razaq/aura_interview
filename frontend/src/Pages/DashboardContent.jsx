@@ -114,7 +114,11 @@ return (
           <Card title = 'Total Responses' value={stats?.total_responses || 0} icon="tabler-message-circle-2" />
           
           {/*Chart for interviews conducted in last 30 days */}
-          <Line data = {chartData} options={options}/>
+          <div className='d-flex align-items-center justify-content-center'>
+            <div style={{ width: '900px', height: '500px' }}>
+                <Line data={chartData} options={options} />
+            </div>
+          </div>
 
           {/*Latest Users*/}
           <div className="col-xxl-6 col-md-6">
@@ -170,8 +174,14 @@ return (
                   <li className="d-flex mb-6" key={item.id}>
                     <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                       <div className="me-2">
-                        <h6 className="mb-0">{item.name}</h6>
-                        <small className="text-body d-block">{item.email}</small>
+                        {item.name && item.email ? (
+                          <>
+                            <h6 className="mb-0">{item.name}</h6>
+                            <small className="text-body d-block">{item.email}</small>
+                          </>
+                        ) : (
+                            <h6 className="mb-0">{item.file_path}</h6>
+                        )}
                       </div>
                       <div className="user-progress d-flex align-items-center gap-1">
                         <p className={`badge text-capitalize ${item.status === 'processed' ? 'bg-label-success' : 'bg-label-danger'

@@ -340,7 +340,7 @@ router.post('/invitation', upload.single('responseFile'), async (req, res) => {
 
     // 1. Validate Invitation Token and get invitation ID
     const [Invitations] = await connection.query(
-      'SELECT id, interview_id, status FROM invitations WHERE token = ? AND (expires_at IS NULL OR expires_at > NOW()) AND status NOT IN ("completed", "canceled")',
+      'SELECT id, interview_id, cvs_id, status FROM invitations WHERE token = ? AND (expires_at IS NULL OR expires_at > NOW()) AND status NOT IN ("completed", "canceled")',
       [invitationToken]
     );
 
@@ -349,7 +349,7 @@ router.post('/invitation', upload.single('responseFile'), async (req, res) => {
       return res.status(404).json({ message: 'Invalid, expired, or completed Interview token.' });
     }
     const invitation = Invitations[0];
-    const interviewId = invitation.interview_id;
+    const {interview_id: interviewId, cvs_id} = invitation
 
     // 2. Validate Question ID belongs to the correct interview
     const [questions] = await connection.query(
@@ -382,8 +382,8 @@ router.post('/invitation', upload.single('responseFile'), async (req, res) => {
 
     // 4. Insert into `responses` table
     const [responseResult] = await connection.query(
-      'INSERT INTO responses (interview_id, question_id, response_type, status) VALUES (?, ?, ?, ?)',
-      [interviewId, questionId, responseType, 'submitted'] // Mark as submitted
+      'INSERT INTO responses (interview_id, question_id, response_type, status, cv_id) VALUES (?, ?, ?, ?, ?)',
+      [interviewId, questionId, responseType, 'submitted', cvs_id] // Mark as submitted
     );
     const responseId = responseResult.insertId;
 

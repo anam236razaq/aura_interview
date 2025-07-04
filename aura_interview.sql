@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 02, 2025 at 01:59 PM
+-- Generation Time: Jul 04, 2025 at 09:06 AM
 -- Server version: 10.4.17-MariaDB
 -- PHP Version: 7.4.15
 
@@ -105,7 +105,9 @@ INSERT INTO `cvs` (`id`, `organization_id`, `job_id`, `file_path`, `personal_inf
 (52, 8, 0, 'Resume Anam Razaq.pdf', '{\"name\":\"Anam Razaq\",\"address\":\"Naseerabad ferozpur road, Lahore\",\"email\":\"anamrazaq236@gmail.com\",\"phone\":3097328603,\"phone_country_code\":92,\"github\":\"github.com/anam236razaq\",\"linkedin\":\"linkedin.com/in/anam-razaq-6baa3928b/\",\"website\":null,\"summary\":\"Six months of experience in creating responsive and visually engaging user interfaces. Committed to writing clean code, fostering collaboration, and ensuring seamless user experiences. Looking to utilize expertise and experience to inspire Innovation and make valuable contributions to varied projects.\"}', NULL, '2025-04-30 07:38:05', '2025-07-02 06:29:21', 'draft', NULL),
 (53, 2, 0, '1746000892151-Resume Anam Razaq.pdf', '{\"fullName\":\"Anam Razaq\",\"email\":\"anamrazaq236@gmail.com\",\"phoneNumber\":\"3097328603\"}', NULL, '2025-04-30 08:15:07', '2025-04-30 08:15:07', 'processed', NULL),
 (57, 2, 0, 'ali_resume-1751449504488.pdf', '{}', NULL, '2025-07-02 09:45:06', '2025-07-02 09:45:06', 'invalid', 'b4878dabea8a0b30374e9100fbfebc70ab20ae20598f859c35d4e0d51da9cd46'),
-(58, 2, 0, 'zain_resume-1751449525415.pdf', '{}', NULL, '2025-07-02 09:45:28', '2025-07-02 09:45:28', 'invalid', '7691c644b0d221bbfaef457b61902f5170550dcc9495bd456d87a260f6620c65');
+(58, 2, 0, 'zain_resume-1751449525415.pdf', '{}', NULL, '2025-07-02 09:45:28', '2025-07-02 09:45:28', 'invalid', '7691c644b0d221bbfaef457b61902f5170550dcc9495bd456d87a260f6620c65'),
+(64, 2, 3, 'Resume-Anam-Razaq-1751532241979.pdf', '{\"name\":\"Anam Razaq\",\"email\":\"anamrazaq236@gmail.com\",\"phoneNumber\":\"3097328603\"}', NULL, '2025-07-03 08:44:45', '2025-07-03 08:44:45', 'processed', 'a119f89e9375de5b3d5b146fc3fdd35b22c2e50dc0c27525ccc022a5d5cdd380'),
+(65, 2, 3, 'Resume-Anam-Razaq-3-1751609950743.pdf', '{\"name\":\"Anam Razaq\",\"email\":\"anamrazaq236@gmail.com\",\"phoneNumber\":\"3097328603\"}', NULL, '2025-07-04 06:19:32', '2025-07-04 06:19:32', 'processed', '3d9df44f61270ffbe4479e4b4111370717d9e90b46198048f826eb63ccb8ce98');
 
 -- --------------------------------------------------------
 
@@ -199,7 +201,15 @@ INSERT INTO `cvs_achievements` (`id`, `cv_id`, `achievement`, `achievement_date`
 (119, 63, 'Position Holder – University Of Sargodha.', '2023-01-01', '2025-07-02 10:51:27'),
 (120, 63, 'Position Holder – ICS Dg Khan Board.', '2019-01-01', '2025-07-02 10:51:27'),
 (121, 63, 'Certificate of Merit – GC for Women Layyah.', '2019-01-01', '2025-07-02 10:51:27'),
-(122, 63, 'English Essay Writing Competition Award.', '2017-01-01', '2025-07-02 10:51:27');
+(122, 63, 'English Essay Writing Competition Award.', '2017-01-01', '2025-07-02 10:51:27'),
+(123, 64, 'Position Holder – University Of Sargodha.', '2023-01-01', '2025-07-03 08:44:45'),
+(124, 64, 'Position Holder – ICS Dg Khan Board.', '2019-01-01', '2025-07-03 08:44:45'),
+(125, 64, 'Certificate of Merit – GC for Women Layyah.', '2019-01-01', '2025-07-03 08:44:45'),
+(126, 64, 'English Essay Writing Competition Award.', '2017-01-01', '2025-07-03 08:44:45'),
+(127, 65, 'Position Holder – University Of Sargodha', '2023-01-01', '2025-07-04 06:19:32'),
+(128, 65, 'Position Holder – ICS Dg Khan Board', '2019-01-01', '2025-07-04 06:19:32'),
+(129, 65, 'Certificate of Merit – GC for Women Layyah', '2019-01-01', '2025-07-04 06:19:32'),
+(130, 65, 'English Essay Writing Competition Award', '2017-01-01', '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -318,7 +328,9 @@ INSERT INTO `cvs_education` (`id`, `cv_id`, `institution`, `start_year`, `end_ye
 (85, 54, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-02 08:50:46'),
 (86, 55, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-02 09:30:56'),
 (87, 56, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-02 09:44:41'),
-(92, 63, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-02 10:51:27');
+(92, 63, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-02 10:51:27'),
+(93, 64, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-03 08:44:45'),
+(94, 65, 'University Of Sargodha', 2019, 2023, 'Bachelor of Science', 'Software Engineering', '3.74', '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -449,7 +461,12 @@ INSERT INTO `cvs_experience` (`id`, `cv_id`, `position`, `company`, `duration`, 
 (141, 56, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Creating Responsive Interfaces: Designing adaptable UI components using React for optimal display across devices.\",\"API Integration: Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Diagnosing and Resolving Issues : Detecting and addressing bugs within the frontend codebase.\",\"Team Collaboration: Partnering with design and backend teams to implement and enhance frontend features.\",\"State Management Implementation: Utilizing React hooks or Redux to efficiently handle application state.\",\"Testing and Assurance: Crafting unit tests to validate the functionality of React components.\",\"Code Review and Optimization: Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Onsite', '2025-07-02 09:44:41'),
 (142, 59, 'Frontend React Developer Intern', 'Eziline Software House', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-02 10:28:18'),
 (150, 63, 'Frontend React Developer Intern', 'Eziline Software House', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-02 10:51:27'),
-(151, 63, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Lahore', '2025-07-02 10:51:27');
+(151, 63, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Lahore', '2025-07-02 10:51:27'),
+(152, 64, 'Frontend React Developer Intern', 'Eziline Software House', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-03 08:44:45'),
+(153, 64, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Lahore', '2025-07-03 08:44:45'),
+(154, 65, 'Frontend React Developer Intern', 'Eziline Software House Rawalpindi', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-04 06:19:32');
+INSERT INTO `cvs_experience` (`id`, `cv_id`, `position`, `company`, `duration`, `responsibilities`, `location`, `created_at`) VALUES
+(155, 65, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Onsite', '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -501,7 +518,9 @@ INSERT INTO `cvs_extra` (`id`, `cv_id`, `programming_languages`, `foreign_langua
 (54, 56, '{\"languages\":[\"JavaScript\",\"HTML\",\"CSS\",\"SQL\"],\"tools\":[\"Visual Studio\",\"Postman\",\"GIT\",\"Mongo DB Compass\",\"MySQL\"],\"methodologies\":[]}', '[{\"language\":\"English\",\"level\":\"Professional\"},{\"language\":\"Urdu\",\"level\":\"Native\"},{\"language\":\"Punjabi\",\"level\":\"Native\"}]', '2025-07-02 09:44:41'),
 (55, 57, '{}', '[]', '2025-07-02 09:45:06'),
 (56, 58, '{}', '[]', '2025-07-02 09:45:28'),
-(62, 63, '{\"languages\":[\"JavaScript\",\"HTML\",\"CSS\",\"SQL\"],\"tools\":[\"Visual Studio\",\"Postman\",\"GIT\",\"Mongo DB Compass\",\"MySQL\"],\"methodologies\":[]}', '[{\"language\":\"English\",\"level\":\"Professional\"},{\"language\":\"Urdu\",\"level\":\"Native\"},{\"language\":\"Punjabi\",\"level\":\"Native\"}]', '2025-07-02 10:51:27');
+(62, 63, '{\"languages\":[\"JavaScript\",\"HTML\",\"CSS\",\"SQL\"],\"tools\":[\"Visual Studio\",\"Postman\",\"GIT\",\"Mongo DB Compass\",\"MySQL\"],\"methodologies\":[]}', '[{\"language\":\"English\",\"level\":\"Professional\"},{\"language\":\"Urdu\",\"level\":\"Native\"},{\"language\":\"Punjabi\",\"level\":\"Native\"}]', '2025-07-02 10:51:27'),
+(63, 64, '{\"languages\":[\"JavaScript\",\"HTML\",\"CSS\",\"SQL\"],\"tools\":[\"Visual Studio\",\"Postman\",\"GIT\",\"Mongo DB Compass\",\"MySQL\"],\"methodologies\":[]}', '[{\"language\":\"English\",\"level\":\"Professional\"},{\"language\":\"Urdu\",\"level\":\"Native\"},{\"language\":\"Punjabi\",\"level\":\"Native\"}]', '2025-07-03 08:44:45'),
+(64, 65, '{\"languages\":[\"JavaScript\",\"HTML\",\"CSS\",\"SQL\"],\"tools\":[\"Visual Studio\",\"Postman\",\"GIT\",\"Mongo DB Compass\",\"MySQL\"],\"methodologies\":[]}', '[{\"language\":\"English\",\"level\":\"Professional\"},{\"language\":\"Urdu\",\"level\":\"Native\"},{\"language\":\"Punjabi\",\"level\":\"Native\"}]', '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -682,7 +701,15 @@ INSERT INTO `cvs_projects` (`id`, `cv_id`, `name`, `year`, `description`, `techn
 (207, 63, 'Lawyyar AI Website', NULL, 'Developed a platform for lawyers to manage cases, schedule hearing dates, and upload files for data extraction. Integrated AI to act as a virtual judge, analyzing inputs from both parties and providing responses.', '[\"React\"]', NULL, '2025-07-02 10:51:27'),
 (208, 63, 'AuraInterview Site', NULL, 'Built a platform where users upload their CVs and receive interview invitations. Admins create question sets, and users record and submit video responses through a unique interview link.', '[\"React\"]', NULL, '2025-07-02 10:51:27'),
 (209, 63, 'Capstone Project CyberCrime Attacks Ontology', NULL, 'Developed an ontology representing knowledge about different attacks like their best defences, prevention and detection techniques, and their vulnerabilities, aimed at providing accessible information for beginners, students and domain experts.', '[\"Protege\"]', NULL, '2025-07-02 10:51:27'),
-(210, 63, 'FurnsShop Site', NULL, 'Developed an ecommerce platform, allowing users to browse and purchase furniture items effortlessly. Integrated features like product categories, detailed item views, and a user-friendly interface.', '[\"React\"]', NULL, '2025-07-02 10:51:27');
+(210, 63, 'FurnsShop Site', NULL, 'Developed an ecommerce platform, allowing users to browse and purchase furniture items effortlessly. Integrated features like product categories, detailed item views, and a user-friendly interface.', '[\"React\"]', NULL, '2025-07-02 10:51:27'),
+(211, 64, 'Lawyyar AI Website', NULL, 'Developed a platform for lawyers to manage cases, schedule hearing dates, and upload files for data extraction. Integrated AI to act as a virtual judge, analyzing inputs from both parties and providing responses.', '[\"React\",\"Visual Studio\"]', NULL, '2025-07-03 08:44:45'),
+(212, 64, 'AuraInterview Site', NULL, 'Built a platform where users upload their CVs and receive interview invitations. Admins create question sets, and users record and submit video responses through a unique interview link.', '[\"React\",\"Visual Studio\"]', NULL, '2025-07-03 08:44:45'),
+(213, 64, 'Capstone Project CyberCrime Attacks Ontology', NULL, 'Developed an ontology representing knowledge about different attacks like their best defences, prevention and detection techniques, and their vulnerabilities, aimed at providing accessible information for beginners, students and domain experts.', '[\"Protege\"]', NULL, '2025-07-03 08:44:45'),
+(214, 64, 'FurnsShop Site', NULL, 'Developed an ecommerce platform, allowing users to browse and purchase furniture items effortlessly. Integrated features like product categories, detailed item views, and a user-friendly interface.', '[\"React\",\"Visual Studio\"]', NULL, '2025-07-03 08:44:45'),
+(215, 65, 'CyberCrime Attacks Ontology', NULL, 'Developed an ontology representing knowledge about different attacks like their best defences, prevention and detection techniques, and their vulnerabilities, aimed at providing accessible information for beginners, students and domain experts.', '[]', NULL, '2025-07-04 06:19:32'),
+(216, 65, 'Ezitech Courses Site', NULL, 'Built an online learning platform offering a diverse range of courses, empowering learners with practical skills in different fields.', '[]', NULL, '2025-07-04 06:19:32'),
+(217, 65, 'EzilineShop Site', NULL, 'Created an Ecommerce platform for selling Eziline Products.', '[]', NULL, '2025-07-04 06:19:32'),
+(218, 65, 'PizzaPal', NULL, 'Developed a site for customizing and ordering pizzas with seamless delivery.', '[]', NULL, '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -1127,7 +1154,46 @@ INSERT INTO `cvs_skills` (`id`, `cv_id`, `skill`, `level`, `created_at`) VALUES
 (788, 63, 'CSS Modules', NULL, '2025-07-02 10:51:27'),
 (789, 63, 'Redux', NULL, '2025-07-02 10:51:27'),
 (790, 63, 'Ontology Development', NULL, '2025-07-02 10:51:27'),
-(791, 63, 'MVC', NULL, '2025-07-02 10:51:27');
+(791, 63, 'MVC', NULL, '2025-07-02 10:51:27'),
+(792, 64, 'JavaScript', NULL, '2025-07-03 08:44:45'),
+(793, 64, 'HTML', NULL, '2025-07-03 08:44:45'),
+(794, 64, 'CSS', NULL, '2025-07-03 08:44:45'),
+(795, 64, 'SQL', NULL, '2025-07-03 08:44:45'),
+(796, 64, 'React JS', NULL, '2025-07-03 08:44:45'),
+(797, 64, 'Tailwind CSS', NULL, '2025-07-03 08:44:45'),
+(798, 64, 'Bootstrap', NULL, '2025-07-03 08:44:45'),
+(799, 64, 'Visual Studio', NULL, '2025-07-03 08:44:45'),
+(800, 64, 'Postman', NULL, '2025-07-03 08:44:45'),
+(801, 64, 'GIT', NULL, '2025-07-03 08:44:45'),
+(802, 64, 'Mongo DB Compass', NULL, '2025-07-03 08:44:45'),
+(803, 64, 'MySQL', NULL, '2025-07-03 08:44:45'),
+(804, 64, 'RESTful APIs', NULL, '2025-07-03 08:44:45'),
+(805, 64, 'Node JS', NULL, '2025-07-03 08:44:45'),
+(806, 64, 'Express', NULL, '2025-07-03 08:44:45'),
+(807, 64, 'Mongo DB', NULL, '2025-07-03 08:44:45'),
+(808, 64, 'CSS Modules', NULL, '2025-07-03 08:44:45'),
+(809, 64, 'Redux', NULL, '2025-07-03 08:44:45'),
+(810, 64, 'Ontology Development', NULL, '2025-07-03 08:44:45'),
+(811, 65, 'JavaScript', NULL, '2025-07-04 06:19:32'),
+(812, 65, 'HTML', NULL, '2025-07-04 06:19:32'),
+(813, 65, 'CSS', NULL, '2025-07-04 06:19:32'),
+(814, 65, 'SQL', NULL, '2025-07-04 06:19:32'),
+(815, 65, 'React JS', NULL, '2025-07-04 06:19:32'),
+(816, 65, 'Tailwind CSS', NULL, '2025-07-04 06:19:32'),
+(817, 65, 'Bootstrap', NULL, '2025-07-04 06:19:32'),
+(818, 65, 'Visual Studio', NULL, '2025-07-04 06:19:32'),
+(819, 65, 'Postman', NULL, '2025-07-04 06:19:32'),
+(820, 65, 'GIT', NULL, '2025-07-04 06:19:32'),
+(821, 65, 'Mongo DB Compass', NULL, '2025-07-04 06:19:32'),
+(822, 65, 'MySQL', NULL, '2025-07-04 06:19:32'),
+(823, 65, 'RESTful APIs', NULL, '2025-07-04 06:19:32'),
+(824, 65, 'Node JS', NULL, '2025-07-04 06:19:32'),
+(825, 65, 'Express', NULL, '2025-07-04 06:19:32'),
+(826, 65, 'Mongo DB', NULL, '2025-07-04 06:19:32'),
+(827, 65, 'CSS Modules', NULL, '2025-07-04 06:19:32'),
+(828, 65, 'Redux', NULL, '2025-07-04 06:19:32'),
+(829, 65, 'Ontology Development', NULL, '2025-07-04 06:19:32'),
+(830, 65, 'MVC', NULL, '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
 
@@ -1177,7 +1243,33 @@ CREATE TABLE `file_responses` (
 INSERT INTO `file_responses` (`id`, `response_id`, `file_path`, `file_name`, `file_size`, `mime_type`, `created_at`) VALUES
 (1, 30, 'http://localhost:3001/uploads/responseFile-1751448974879-133790455.png', 'image1.png', 4377, 'image/png', '2025-07-02 09:36:14'),
 (2, 33, 'http://localhost:3001/uploads/responseFile-1751452309320-317540651.png', 'image1.png', 4377, 'image/png', '2025-07-02 10:31:49'),
-(3, 41, 'http://localhost:3001/uploads/responseFile-1751453546423-789258136.png', 'image1.png', 4377, 'image/png', '2025-07-02 10:52:26');
+(3, 41, 'http://localhost:3001/uploads/responseFile-1751453546423-789258136.png', 'image1.png', 4377, 'image/png', '2025-07-02 10:52:26'),
+(4, 45, 'http://localhost:3001/uploads/responseFile-1751532333818-174646525.png', 'image1.png', 4377, 'image/png', '2025-07-03 08:45:33'),
+(5, 48, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751611171925-538636903.png', 'image1.png', 4377, 'image/png', '2025-07-04 06:39:31'),
+(6, 51, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751612052725-497045129.png', 'image1.png', 4377, 'image/png', '2025-07-04 06:54:12');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inquiries`
+--
+
+CREATE TABLE `inquiries` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `organization_id` int(11) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `inquiries`
+--
+
+INSERT INTO `inquiries` (`id`, `user_id`, `organization_id`, `name`, `email`, `message`, `created_at`) VALUES
+(1, 2, 2, 'Anam Razaq', 'anamrazaq236@gmail.com', 'hello', '2025-07-04 07:06:17');
 
 -- --------------------------------------------------------
 
@@ -1291,6 +1383,26 @@ INSERT INTO `interview_assignments` (`id`, `interview_id`, `user_id`, `created_a
 (38, 43, 2, '2025-07-02 10:00:53'),
 (39, 44, 2, '2025-07-02 10:14:02'),
 (40, 45, 2, '2025-07-02 10:23:02');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `interview_shortlisted`
+--
+
+CREATE TABLE `interview_shortlisted` (
+  `id` int(11) NOT NULL,
+  `interview_id` int(11) NOT NULL,
+  `cv_id` int(11) NOT NULL,
+  `shortlisted` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `interview_shortlisted`
+--
+
+INSERT INTO `interview_shortlisted` (`id`, `interview_id`, `cv_id`, `shortlisted`) VALUES
+(1, 45, 64, 1);
 
 -- --------------------------------------------------------
 
@@ -1424,7 +1536,9 @@ INSERT INTO `invitations` (`id`, `organization_id`, `interview_id`, `cvs_id`, `e
 (107, 2, 45, 19, 'xofajosuku@mailinator.com', 'Reece', 'Valentine', NULL, 'unsent', '224bef50-fd4e-4298-8741-1a42b16054cd', NULL, '2025-07-02 10:23:02', NULL, '2025-07-02 10:23:02', '/uploads/video_temp/video-1751451718352-173618348.mp4', '/uploads/video_temp/video-1751451725502-562166654.mp4'),
 (108, 2, 45, 53, 'anamrazaq236@gmail.com', 'Anam', 'Razaq', NULL, 'unsent', '11575d99-288b-44e6-9a5d-833886f2a277', NULL, '2025-07-02 10:23:02', NULL, '2025-07-02 10:23:02', '/uploads/video_temp/video-1751451718352-173618348.mp4', '/uploads/video_temp/video-1751451725502-562166654.mp4'),
 (109, 2, 45, 56, 'anamrazaq236@gmail.com', '', '', NULL, 'unsent', 'a53b7418-74c5-4608-93d9-f5445acae16b', NULL, '2025-07-02 10:23:02', NULL, '2025-07-02 10:23:02', '/uploads/video_temp/video-1751451718352-173618348.mp4', '/uploads/video_temp/video-1751451725502-562166654.mp4'),
-(114, 2, 45, 63, 'anamrazaq236@gmail.com', 'Anam', 'Razaq', NULL, 'unsent', NULL, NULL, '2025-07-02 10:51:27', NULL, '2025-07-02 10:51:27', NULL, NULL);
+(114, 2, 45, 63, 'anamrazaq236@gmail.com', 'Anam', 'Razaq', NULL, 'unsent', NULL, NULL, '2025-07-02 10:51:27', NULL, '2025-07-02 10:51:27', NULL, NULL),
+(115, 2, 45, 64, 'anamrazaq236@gmail.com', 'Anam', 'Razaq', NULL, 'unsent', NULL, NULL, '2025-07-03 08:44:45', NULL, '2025-07-03 08:44:45', NULL, NULL),
+(116, 2, 45, 65, 'anamrazaq236@gmail.com', 'Anam', 'Razaq', NULL, 'unsent', NULL, NULL, '2025-07-04 06:19:32', NULL, '2025-07-04 06:19:32', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1475,7 +1589,7 @@ CREATE TABLE `notifications` (
 
 INSERT INTO `notifications` (`id`, `user_id`, `subject`, `message`, `is_read`, `created_at`, `interview_id`) VALUES
 (2, 2, 'New Interview Assignment', 'Dear ali shan, you have been assigned to the interview: \"Database Management System (DBMS)\".', 1, '2025-07-02 15:00:53', 43),
-(4, 2, 'New Interview Assignment', 'Dear ali shan, you have been assigned to the interview: \"Operating system\".', 0, '2025-07-02 15:23:02', 45);
+(4, 2, 'New Interview Assignment', 'Dear ali shan, you have been assigned to the interview: \"Operating system\".', 1, '2025-07-02 15:23:02', 45);
 
 -- --------------------------------------------------------
 
@@ -1688,11 +1802,15 @@ INSERT INTO `responses` (`id`, `interview_id`, `question_id`, `cv_id`, `response
 (31, 45, 107, 59, 'video', 'submitted', '2025-07-02 10:31:21'),
 (32, 45, 108, 59, 'text', 'submitted', '2025-07-02 10:31:34'),
 (33, 45, 109, 59, 'file', 'submitted', '2025-07-02 10:31:49'),
-(37, 45, 108, 62, 'text', 'submitted', '2025-07-02 10:48:02'),
 (39, 45, 107, 63, 'video', 'submitted', '2025-07-02 10:52:03'),
 (40, 45, 108, 63, 'text', 'submitted', '2025-07-02 10:52:12'),
 (41, 45, 109, 63, 'file', 'submitted', '2025-07-02 10:52:26'),
-(42, 45, 107, 0, 'video', 'submitted', '2025-07-02 11:22:27');
+(43, 45, 107, 64, 'video', 'submitted', '2025-07-03 08:45:05'),
+(44, 45, 108, 64, 'text', 'submitted', '2025-07-03 08:45:13'),
+(45, 45, 109, 64, 'file', 'submitted', '2025-07-03 08:45:33'),
+(49, 45, 107, 56, 'video', 'submitted', '2025-07-04 06:53:35'),
+(50, 45, 108, 56, 'text', 'submitted', '2025-07-04 06:53:57'),
+(51, 45, 109, 56, 'file', 'submitted', '2025-07-04 06:54:12');
 
 -- --------------------------------------------------------
 
@@ -1751,7 +1869,10 @@ INSERT INTO `text_responses` (`id`, `response_id`, `text`, `created_at`) VALUES
 (13, 25, 'jhjhjhj', '2025-04-28 11:40:22'),
 (15, 32, 'asdkshdk sjdkshdjkshdkjsh sjkdhs', '2025-07-02 10:31:34'),
 (16, 37, 'shdjshdjshdjshdjshds', '2025-07-02 10:48:02'),
-(17, 40, 'skhdjkshdj kshdjkshdjkshdkjsahdka', '2025-07-02 10:52:12');
+(17, 40, 'skhdjkshdj kshdjkshdjkshdkjsahdka', '2025-07-02 10:52:12'),
+(18, 44, 'akdjkhdjksdhkjshdjkadhks', '2025-07-03 08:45:13'),
+(19, 47, 'heehdjkhdkjshdjkshdjkshdsjkhd', '2025-07-04 06:39:17'),
+(20, 50, 'shksahdajkshdkjshdk', '2025-07-04 06:53:57');
 
 -- --------------------------------------------------------
 
@@ -1819,7 +1940,10 @@ INSERT INTO `video_responses` (`id`, `response_id`, `video_url`, `duration`, `cr
 (14, 27, 'C:\\Users\\CITY C\\Downloads\\project\\backend\\uploads\\responseFile-1745840477626-412220270.webm', NULL, '2025-04-28 11:41:17'),
 (16, 31, 'http://localhost:3001/uploads/responseFile-1751452281660-367864315.webm', 0, '2025-07-02 10:31:21'),
 (17, 39, 'http://localhost:3001/uploads/responseFile-1751453522941-2696374.webm', NULL, '2025-07-02 10:52:03'),
-(18, 42, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751455347459-810508731.webm', NULL, '2025-07-02 11:22:27');
+(18, 42, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751455347459-810508731.webm', NULL, '2025-07-02 11:22:27'),
+(19, 43, 'http://localhost:3001/uploads/responseFile-1751532305768-584993662.webm', NULL, '2025-07-03 08:45:05'),
+(20, 46, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751611140263-115367799.webm', NULL, '2025-07-04 06:39:00'),
+(21, 49, 'D:\\AuraIntervView\\Interview\\backend\\uploads\\responseFile-1751612014967-755165486.webm', NULL, '2025-07-04 06:53:35');
 
 --
 -- Indexes for dumped tables
@@ -1935,6 +2059,14 @@ ALTER TABLE `file_responses`
   ADD KEY `response_id` (`response_id`) USING BTREE;
 
 --
+-- Indexes for table `inquiries`
+--
+ALTER TABLE `inquiries`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `organization_id` (`organization_id`);
+
+--
 -- Indexes for table `interviews`
 --
 ALTER TABLE `interviews`
@@ -1949,6 +2081,14 @@ ALTER TABLE `interview_assignments`
   ADD PRIMARY KEY (`id`) USING BTREE,
   ADD KEY `interview_id` (`interview_id`) USING BTREE,
   ADD KEY `user_id` (`user_id`) USING BTREE;
+
+--
+-- Indexes for table `interview_shortlisted`
+--
+ALTER TABLE `interview_shortlisted`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_shortlist` (`interview_id`,`cv_id`),
+  ADD KEY `cv_id` (`cv_id`);
 
 --
 -- Indexes for table `invitations`
@@ -2036,13 +2176,13 @@ ALTER TABLE `companies`
 -- AUTO_INCREMENT for table `cvs`
 --
 ALTER TABLE `cvs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `cvs_achievements`
 --
 ALTER TABLE `cvs_achievements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT for table `cvs_certifications`
@@ -2054,19 +2194,19 @@ ALTER TABLE `cvs_certifications`
 -- AUTO_INCREMENT for table `cvs_education`
 --
 ALTER TABLE `cvs_education`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `cvs_experience`
 --
 ALTER TABLE `cvs_experience`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=156;
 
 --
 -- AUTO_INCREMENT for table `cvs_extra`
 --
 ALTER TABLE `cvs_extra`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT for table `cvs_internal_notes`
@@ -2078,7 +2218,7 @@ ALTER TABLE `cvs_internal_notes`
 -- AUTO_INCREMENT for table `cvs_projects`
 --
 ALTER TABLE `cvs_projects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=219;
 
 --
 -- AUTO_INCREMENT for table `cvs_publications`
@@ -2102,7 +2242,7 @@ ALTER TABLE `cvs_shortlist`
 -- AUTO_INCREMENT for table `cvs_skills`
 --
 ALTER TABLE `cvs_skills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=792;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=831;
 
 --
 -- AUTO_INCREMENT for table `cvs_volunteer`
@@ -2114,7 +2254,13 @@ ALTER TABLE `cvs_volunteer`
 -- AUTO_INCREMENT for table `file_responses`
 --
 ALTER TABLE `file_responses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `inquiries`
+--
+ALTER TABLE `inquiries`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `interviews`
@@ -2129,10 +2275,16 @@ ALTER TABLE `interview_assignments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
+-- AUTO_INCREMENT for table `interview_shortlisted`
+--
+ALTER TABLE `interview_shortlisted`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
 -- AUTO_INCREMENT for table `invitations`
 --
 ALTER TABLE `invitations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -2162,7 +2314,7 @@ ALTER TABLE `questions`
 -- AUTO_INCREMENT for table `responses`
 --
 ALTER TABLE `responses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -2174,7 +2326,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `text_responses`
 --
 ALTER TABLE `text_responses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -2186,7 +2338,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `video_responses`
 --
 ALTER TABLE `video_responses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
@@ -2204,6 +2356,20 @@ ALTER TABLE `companies`
 ALTER TABLE `cvs_shortlist`
   ADD CONSTRAINT `cvs_shortlist_ibfk_1` FOREIGN KEY (`cv_id`) REFERENCES `cvs` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `cvs_shortlist_ibfk_2` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `inquiries`
+--
+ALTER TABLE `inquiries`
+  ADD CONSTRAINT `inquiries_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `inquiries_ibfk_2` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `interview_shortlisted`
+--
+ALTER TABLE `interview_shortlisted`
+  ADD CONSTRAINT `interview_shortlisted_ibfk_1` FOREIGN KEY (`interview_id`) REFERENCES `interviews` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `interview_shortlisted_ibfk_2` FOREIGN KEY (`cv_id`) REFERENCES `cvs` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `notifications`

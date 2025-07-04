@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link} from 'react-router-dom';
 import Footer from '../../UI/Footer';
 import { useEffect } from 'react';
 import axios from 'axios';
@@ -7,6 +6,8 @@ import { API_BASE_URL } from '../../utils/Constants';
 import Pagination from '../../UI/Pagination';
 import { Toaster } from 'react-hot-toast';
 import Loader from '../../UI/Loader';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export default function Reporting() {
     const[loading, setLoading] = useState(true);
@@ -15,6 +16,8 @@ export default function Reporting() {
     const[totalPages, setTotalPages] = useState(1);
     const[totalEntries, setTotalEntries] = useState(0);
     const[stats, setStats] = useState([]);
+    const[dateRange, setDateRange] = useState([null, null]);
+    const[startDate, endDate] = dateRange;
     const itemsPerPage = 10;
 
     useEffect(() => {
@@ -30,6 +33,11 @@ export default function Reporting() {
 
                 if (searchQuery.trim()) {
                     params.append('search', searchQuery.trim());
+                }
+
+                if (startDate && endDate) {
+                    params.append('startDate', startDate.toISOString().split('T')[0]);
+                    params.append('endDate', endDate.toISOString().split('T')[0]);
                 }
 
                 const endPoint = `${API_BASE_URL}/report/stats?${params.toString()}`;
@@ -53,13 +61,59 @@ export default function Reporting() {
     }, 1000)
 
     return () => clearTimeout(delayDebounce);
-    }, [searchQuery, currentPage]);
+    }, [searchQuery, currentPage, startDate, endDate]);
+
+    const handleChange = (dates) => {
+      const [start, end] = dates;
+      setDateRange([start, end]);
+    };
+
 
     const handlePageChange = (page) => {
       if(page >= 1 && page <= totalPages){
         setCurrentPage(page);
       }
     }
+
+    const handleExport = async() => {
+      try{
+        const token = localStorage.getItem('authToken');
+        const params = new URLSearchParams();
+
+        if (searchQuery.trim()) {
+            params.append('search', searchQuery.trim());
+        }
+
+        if (startDate && endDate) {
+          params.append('startDate', startDate.toISOString().split('T')[0]);
+          params.append('endDate', endDate.toISOString().split('T')[0]);
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/report/stats/export?${params.toString()}`, {
+          responseType: 'blob',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'interview_stats.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+      }catch(error){
+        console.log(error);
+      }
+    }
+
+
   return (
     <>
     <Toaster reverseOrder={false} position='top-center' />
@@ -74,17 +128,23 @@ export default function Reporting() {
           <div id='DataTables_Table_0_wrapper' className='dt-container dt-bootstrap5 dt-empty-footer'>
             <div className='row my-0 justify-content-between'>
                 <div className='d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto'>
-                    <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '1.5rem'}}>
-                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search" 
+                    <div className='dt-search mt-5' style={{marginLeft: '1.5rem', marginRight: '0.1rem'}}>
+                      <input type="search" className="form-control" id="dt-search-0" placeholder="Search by title" 
                         aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} />
                       <label htmlFor='dt-search-0'></label>
                     </div>
+                    <DatePicker selectsRange
+                        startDate={startDate} endDate={endDate}
+                        onChange={handleChange}
+                        isClearable
+                        placeholderText="Select date range"
+                        className="form-control px-5 rounded w-full ms-4" />
                 </div>
                 <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
                   <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
                       <div className="btn-group">
                           <button className="btn buttons-collection btn-label-secondary dropdown-toggle me-5" tabIndex="0"
-                              aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog">
+                              aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" onClick={handleExport}>
                                 <span>
                                     <span className="d-flex align-items-center gap-2">
                                         <i className="icon-base ti tabler-upload icon-xs"></i>

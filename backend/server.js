@@ -18,6 +18,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const inquiriesRoutes = require('./routes/inquiriesRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const allResponsesRoutes = require('./routes/allResponsesRoutes');
 require('./Queues/invitationProcessor');
 const cors = require('cors');
 const app = express();
@@ -50,7 +51,7 @@ app.use('/api/companies', authMiddleware, companyRoutes);
 app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/profile', authMiddleware, profileRoutes);
 app.use('/api/report', authMiddleware, reportRoutes);
-
+app.use('/api/all-responses-org', authMiddleware, allResponsesRoutes);
 
 // Routes potentially needing different access control:
 app.use('/api/inquiries',  inquiriesRoutes);

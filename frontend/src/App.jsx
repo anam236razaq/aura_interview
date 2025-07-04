@@ -48,6 +48,7 @@ import PrivacyPolicy from "./LandingPages/PrivacyPolicy";
 import TermsConditions from "./LandingPages/TermsConditions";
 import ContactUs from "./LandingPages/ContactUs";
 import Reporting from "./Pages/Users/Reporting";
+import InterviewPicks from "./Pages/Interview/InterviewPicks";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
@@ -116,6 +117,7 @@ export default function App() {
             <Route path="/interviewed/interview/:interviewId/responses" element={<InterviewResponses />} />
             <Route path="/interview/:interviewId/responses/:cvId" element={<ViewResponse />} />
             <Route path="/interviewed/draft-interviews" element={<DraftInterviews />} />
+            <Route path="/interviewed/interview-picks" element={<InterviewPicks />} />
             <Route path='/accounts/account-settings' element={<AccountSettings />} />
             <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />
