@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import Footer from '../../UI/Footer';
+import Footer from '../UI/Footer';
 import { useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../utils/Constants';
-import Pagination from '../../UI/Pagination';
+import { API_BASE_URL } from '../utils/Constants';
+import Pagination from '../UI/Pagination';
 import { Toaster } from 'react-hot-toast';
-import Loader from '../../UI/Loader';
+import Loader from '../UI/Loader';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 

@@ -47,8 +47,8 @@ import { ProfileProvider } from "./Contexts/ProfileContext";
 import PrivacyPolicy from "./LandingPages/PrivacyPolicy";
 import TermsConditions from "./LandingPages/TermsConditions";
 import ContactUs from "./LandingPages/ContactUs";
-import Reporting from "./Pages/Users/Reporting";
 import InterviewPicks from "./Pages/Interview/InterviewPicks";
+import Reporting from "./Pages/Reporting";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));

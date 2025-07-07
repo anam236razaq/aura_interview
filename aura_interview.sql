@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 04, 2025 at 09:06 AM
+-- Generation Time: Jul 07, 2025 at 07:11 AM
 -- Server version: 10.4.17-MariaDB
 -- PHP Version: 7.4.15
 
@@ -1402,7 +1402,10 @@ CREATE TABLE `interview_shortlisted` (
 --
 
 INSERT INTO `interview_shortlisted` (`id`, `interview_id`, `cv_id`, `shortlisted`) VALUES
-(1, 45, 64, 1);
+(1, 45, 64, 1),
+(10, 1, 19, 1),
+(11, 1, 20, 1),
+(25, 1, 22, 1);
 
 -- --------------------------------------------------------
 
@@ -2278,7 +2281,7 @@ ALTER TABLE `interview_assignments`
 -- AUTO_INCREMENT for table `interview_shortlisted`
 --
 ALTER TABLE `interview_shortlisted`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `invitations`

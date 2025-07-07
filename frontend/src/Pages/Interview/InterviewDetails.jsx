@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../../utils/Constants';
+import { API_BASE_URL, PUBLIC_BASE_URL } from '../../utils/Constants';
 import Footer from '../../UI/Footer';
 import {toast, Toaster} from 'react-hot-toast';
 import AddQuestionModel from '../../UI/AddQuestionModel';
@@ -133,8 +133,8 @@ export default function InterviewDetails() {
     }
 
     if(loading) return
-    const publicLink = `${window.location.origin}/interview/public/${invitationToken}`;
-
+    const publicLink = `${PUBLIC_BASE_URL}/interview/public/${invitationToken}`;
+ 
   return (
     <>
     <Toaster position="top-center" reverseOrder={false} />
