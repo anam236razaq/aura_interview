@@ -30,7 +30,11 @@ const DraftInterviews = lazy(() => import('./Pages/Interview/DraftInterviews'));
 const DraftCv = lazy(() => import('./Pages/Candidates/DraftCv'));
 const Profile = lazy(() => import('./Pages/Profile'));
 const Settings = lazy(() => import('./Pages/Settings'));
-
+const Reporting = lazy(() => import('./Pages/Reporting'));
+const InterviewPicks = lazy(() => import('./Pages/Interview/InterviewPicks'));
+const ContactUs = lazy(() => import('./LandingPages/ContactUs'));
+const TermsConditions = lazy(() => import('./LandingPages/TermsConditions'));
+const PrivacyPolicy = lazy(() => import('./LandingPages/PrivacyPolicy'));
 
 import Register from './UI/Register'
 import Login from './UI/Login'
@@ -44,11 +48,6 @@ import ComingSoon from './UI/ComingSoon'
 import UnderMaintenance from './UI/UnderMaintenance'
 import Loader from "./UI/Loader";
 import { ProfileProvider } from "./Contexts/ProfileContext";
-import PrivacyPolicy from "./LandingPages/PrivacyPolicy";
-import TermsConditions from "./LandingPages/TermsConditions";
-import ContactUs from "./LandingPages/ContactUs";
-import InterviewPicks from "./Pages/Interview/InterviewPicks";
-import Reporting from "./Pages/Reporting";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('authToken'));
