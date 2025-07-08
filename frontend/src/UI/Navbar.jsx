@@ -238,31 +238,9 @@ export default function Navbar() {
                         ><span className="align-middle">Settings</span>
                       </Link>
                     </li>
-                    <li>
-                      <Link className="dropdown-item" to="pages-account-settings-billing.html">
-                        <span className="d-flex align-items-center align-middle">
-                          <i className="flex-shrink-0 icon-base ti tabler-file-dollar me-3 icon-md"></i
-                          ><span className="flex-grow-1 align-middle">Billing</span>
-                          <span className="flex-shrink-0 badge bg-danger d-flex align-items-center justify-content-center"
-                            >4</span
-                          >
-                        </span>
-                      </Link>
-                    </li>
+                  
                     <li>
                       <div className="dropdown-divider my-1 mx-n2"></div>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item" to="pages-pricing.html">
-                        <i className="icon-base ti tabler-currency-dollar me-3 icon-md"></i
-                        ><span className="align-middle">Pricing</span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item" to="pages-faq.html">
-                        <i className="icon-base ti tabler-question-mark me-3 icon-md"></i
-                        ><span className="align-middle">FAQ</span>
-                      </Link>
                     </li>
                     <li>
                       <div className="d-grid px-2 pt-2 pb-1">

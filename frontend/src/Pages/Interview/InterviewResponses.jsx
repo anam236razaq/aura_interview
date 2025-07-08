@@ -10,7 +10,6 @@ import Loader from '../../UI/Loader';
 
 export default function InterviewResponses() {
     const { interviewId } = useParams();
-    const[open, setOpen] = useState(false);
     const[responsesData, setResponsesData] = useState(null);
     const[interviewTitle, setInterviewTitle] = useState('');
     const[loading, setLoading] = useState(true);
@@ -21,7 +20,6 @@ export default function InterviewResponses() {
     const[shortlisted, setShortlisted] = useState('');
     const itemsPerPage = 10;
     
-    const toggleDropdown = () => setOpen(!open);
     const navigate = useNavigate();
 
     //Fetching Candidates List who responded to the interview
@@ -129,66 +127,6 @@ export default function InterviewResponses() {
                       <label htmlFor='dt-search-0'></label>
                     </div>
                     
-                </div>
-                <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
-                  <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
-                      <div className="btn-group">
-                          <button className="btn buttons-collection btn-label-secondary dropdown-toggle me-5" tabIndex="0"  onClick={toggleDropdown}
-                              aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded={open}>
-                                <span>
-                                    <span className="d-flex align-items-center gap-2">
-                                        <i className="icon-base ti tabler-upload icon-xs"></i>
-                                        <span className="d-none d-sm-inline-block">Export</span>
-                                    </span>
-                                </span>
-                          </button>
-                          {open && (<div className="dt-button-background fixed inset-0 z-10" onClick={() => setOpen(false)}></div>)}
-                          <div className={`dropdown-menu dt-button-collection fade ${open ? 'show' : ''}`} aria-modal="true" role="dialog" style={{ top: '50px', left: '0px' }}>
-                              <div role='menu'>
-                                  <Link className="dt-button dropdown-item buttons-print" tabIndex="0"  aria-controls="DataTables_Table_0" to='#'>
-                                      <span>
-                                        <span className="d-flex align-items-center">
-                                            <i className="icon-base ti tabler-printer me-1"></i>
-                                            Print
-                                        </span>
-                                      </span>
-                                  </Link>
-                                  <Link className="dt-button dropdown-item buttons-csv buttons-html5" tabIndex="0"  aria-controls="DataTables_Table_0" to='#'>
-                                      <span>
-                                        <span className="d-flex align-items-center">
-                                            <i className="icon-base ti tabler-file-text me-1"></i>
-                                            Csv
-                                        </span>
-                                      </span>
-                                  </Link> 
-                                  <Link className="dt-button dropdown-item buttons-excel buttons-html5" tabIndex="0"  aria-controls="DataTables_Table_0" to='#'>
-                                      <span>
-                                        <span className="d-flex align-items-center">
-                                            <i className="icon-base ti tabler-file-spreadsheet me-1"></i>
-                                            Excel
-                                        </span>
-                                      </span>
-                                  </Link>
-                                  <Link className="dt-button dropdown-item buttons-pdf buttons-html5" tabIndex="0"  aria-controls="DataTables_Table_0" to='#'>
-                                      <span>
-                                        <span className="d-flex align-items-center">
-                                            <i className="icon-base ti tabler-file-description me-1"></i>
-                                            Pdf
-                                        </span>
-                                      </span>
-                                  </Link>
-                                  <Link className="dt-button dropdown-item buttons-copy buttons-html5" tabIndex="0"  aria-controls="DataTables_Table_0" to='#'>
-                                      <span>
-                                        <span className="d-flex align-items-center">
-                                            <i className="icon-base ti tabler-copy me-1"></i>
-                                            Copy
-                                        </span>
-                                      </span>
-                                  </Link>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
                 </div>
                 <div className="justify-content-between dt-layout-table">
                     <div className="d-md-flex justify-content-between align-items-center dt-layout-full table-responsive">
