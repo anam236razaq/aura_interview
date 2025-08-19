@@ -90,7 +90,16 @@ export default function DraftInterviews() {
           }
         });
         setShowDeleteModal(false);
-        setInterviewList(prevList => prevList.filter(company => company.id !== selectedInterviewId))
+        const updatedList = interviewList.filter(item => item.id !== selectedInterviewId);
+        setInterviewList(updatedList);
+
+        setTotalEntries(prevTotal => prevTotal - 1);
+        setTotalPages(Math.ceil((totalEntries - 1) / itemsPerPage));
+
+         //if current page becomes empty, go back one page
+        if ((updatedList.length === 0) && currentPage > 1) {
+          handlePageChange(currentPage - 1);
+        }
         toast.success(response.data.message);
 
       }catch(error){

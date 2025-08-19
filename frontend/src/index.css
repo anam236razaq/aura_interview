@@ -153,3 +153,6 @@ button:focus-visible {
         }
     }
     
+    .react-datepicker-wrapper {
+    display: flex !important;
+}

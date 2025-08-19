@@ -72,7 +72,21 @@ export default function CompanyDetails() {
 
     //Add company
     const handleAddCompany = (newCompany) => {
-      setCompanyList(prev => [newCompany, ...prev]);
+      const updatedList = [newCompany, ...companyList];
+      setCompanyList(updatedList);
+
+        // Update total entries
+      const newTotalEntries = totalEntries + 1;
+      setTotalEntries(newTotalEntries);
+
+      // Update total pages
+      const newTotalPages = Math.ceil(newTotalEntries / itemsPerPage);
+      setTotalPages(newTotalPages);
+
+      // If the current page is no longer valid (e.g., adding to a new page), adjust
+      if (currentPage > newTotalPages) {
+        handlePageChange(newTotalPages);
+      }
     }
 
     //Delete Company
@@ -91,7 +105,16 @@ export default function CompanyDetails() {
           }
         });
         setShowDeleteModal(false);
-        setCompanyList(prevList => prevList.filter(company => company.id !== selectedCompanyId))
+        const updatedList = companyList.filter(item => item.id !== selectedCompanyId);
+        setCompanyList(updatedList);
+
+        setTotalEntries(prevTotal => prevTotal - 1);
+        setTotalPages(Math.ceil((totalEntries - 1) / itemsPerPage));
+
+         //if current page becomes empty, go back one page
+        if ((updatedList.length === 0) && currentPage > 1) {
+          handlePageChange(currentPage - 1);
+        }
         toast.success(response.data.message);
 
       }catch(error){
@@ -120,7 +143,6 @@ export default function CompanyDetails() {
                                   aria-controls="DataTables_Table_0" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)}/>
                               <label htmlFor='dt-search-0'></label>
                             </div>
-                            
                         </div>
                         <div className="d-md-flex align-items-center dt-layout-end col-md-auto ms-auto d-flex gap-md-4 justify-content-md-between justify-content-center gap-2 flex-wrap">
                           <div className="dt-buttons btn-group flex-wrap d-flex gap-4 mb-md-0 mb-4">
@@ -169,7 +191,7 @@ export default function CompanyDetails() {
                                     <tbody>
                                         {loading ? (
                                             <tr>
-                                                <td colSpan="6" className="text-center py-5">
+                                                <td colSpan="8" className="text-center py-5">
                                                     <Loader /> 
                                                 </td>
                                             </tr>
@@ -210,7 +232,7 @@ export default function CompanyDetails() {
                                             </tr>
                                         ))) : (
                                           <tr>
-                                            <td colSpan="6" className="text-center">No Companies found</td>
+                                            <td colSpan="8" className="text-center">No Companies found</td>
                                           </tr>
                                         )}
                                     </tbody>

@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const fsSync = require('fs'); 
 
 // GET /api/users - List users within the admin's organization (Admin only)
-router.get('/', authMiddleware, checkRole([1, 2, 3]), async (req, res) => {
+router.get('/', authMiddleware, checkRole([1, 2, 3, 4]), async (req, res) => {
   const organization_id = req.user.organization_id;
   const { page = 1, limit = 10, search, status, type } = req.query;
 
@@ -43,6 +43,20 @@ router.get('/', authMiddleware, checkRole([1, 2, 3]), async (req, res) => {
   if(type){
     query+= ` AND roles.name = ?`;
     params.push(type)
+  }
+
+  if(req.user.role_id === 4){
+     // Superadmin sees only admins
+    query+= ` AND roles.name =? `;
+    params.push('admin');
+  }else if(req.user.role_id == 1){
+    // Admin sees everyone except superadmin and themselves
+    query+= ` AND roles.name != ? AND users.id != ? `;
+    params.push('superadmin', req.user.id);
+  }else if (req.user.role_id === 2 || req.user.role_id === 3){
+    // Manager or HR sees only manager and HR
+    query+= ` AND roles.name IN (?, ?)`;
+    params.push('manager', 'hr');
   }
 
   const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -81,7 +95,7 @@ router.get('/', authMiddleware, checkRole([1, 2, 3]), async (req, res) => {
 });
 
 //Update the status
-router.put('/:id/status', authMiddleware, checkRole([1]), async(req, res) => {
+router.put('/:id/status', authMiddleware, checkRole([1, 4]), async(req, res) => {
     const {id} = req.params;
     const {status} = req.body;
 
@@ -95,22 +109,26 @@ router.put('/:id/status', authMiddleware, checkRole([1]), async(req, res) => {
 })
 
 // POST /api/users/invite - Invite/Create a new user within the organization (Admin only)
-router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {
+router.post('/invite', authMiddleware, checkRole([1, 4]), async (req, res) => {
     const { email, first_name, last_name, role_id } = req.body;
+    const requesterRoleId = req.user.role_id;
     const organization_id = req.user.organization_id;
 
     // Validate input
     if (!email || !first_name || !last_name || !role_id) {
         return res.status(400).json({ message: 'Email, first name, last name, and role ID are required.' });
     }
-    // Ensure admin isn't trying to create another admin or invalid role through this route
-    if (parseInt(role_id) === 1) { 
-        return res.status(400).json({ message: `Admin cannot invite another admin.` });
+
+    // Role-based invitation rules
+    if (requesterRoleId === 4 && parseInt(role_id) !== 1) {
+        // Superadmin can invite only admins
+        return res.status(403).json({ message: 'Superadmin can invite only admins.' });
     }
 
-    // TODO: Implement a proper invitation flow (e.g., generate temporary password/token, send email)
-    // For now, we'll create the user directly with a placeholder password or require password setup later.
-    const temporaryPassword = 'Password123!'; // Placeholder - DO NOT use in production!
+    if (requesterRoleId === 1 && ![2, 3].includes(parseInt(role_id))) {
+        // Admin can invite only HR or Managers
+        return res.status(403).json({ message: 'Admin can invite only HR or Manager roles.' });
+    }
 
     try {
         // Check if email already exists in the org or globally (depending on policy)
@@ -121,6 +139,7 @@ router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {
 
         // Hash the temporary password
         const salt = await bcrypt.genSalt(10);
+        const temporaryPassword = 'Password123!';
         const password_hash = await bcrypt.hash(temporaryPassword, salt);
 
         const profileImage = `${req.protocol}://${req.get('host')}/uploads/profileImg_temp/default_profile.jpg`;
@@ -144,31 +163,51 @@ router.post('/invite', authMiddleware, checkRole([1]), async (req, res) => {
     }
 }); 
 
-// DELETE /api/users/:id - Delete a user within the organization (Admin only)
-router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+// DELETE /api/users/:id - Delete a user (Superadmin/Admin roles)
+router.delete('/:id', authMiddleware, checkRole([1, 4]), async (req, res) => {
     const { id } = req.params; // ID of user to delete
-    const adminUserId = req.user.id;
-    const organization_id = req.user.organization_id;
-   
+    const requesterRoleId = req.user.role_id;
+    const requesterUserId = req.user.id;
 
-    if (parseInt(id) === adminUserId) {
-        return res.status(400).json({ message: 'Admin cannot delete themselves.' });
+    if (parseInt(id) === requesterUserId) {
+        return res.status(400).json({ message: 'You cannot delete yourself.' });
     }
 
     try {
-        // Ensure the user being deleted belongs to the admin's organization
+        // Fetch the user to delete
+        const [userRows] = await db.query(
+            'SELECT id, role_id FROM users WHERE id = ?',
+            [id]
+        );
+
+        if (!userRows.length) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        const userToDelete = userRows[0];
+
+        // Role-based deletion rules
+        if (requesterRoleId === 4 && userToDelete.role_id !== 1) {
+            // Superadmin can delete only Admins
+            return res.status(403).json({ message: 'Superadmin can delete only Admins.' });
+        }
+
+        if (requesterRoleId === 1 && ![2, 3].includes(userToDelete.role_id)) {
+            // Admin can delete only HR or Managers
+            return res.status(403).json({ message: 'Admin can delete only HR or Manager roles.' });
+        }
+
+        // Perform deletion
         const [result] = await db.query(
-            'DELETE FROM users WHERE id = ? AND organization_id = ?',
-            [id, organization_id]
+            'DELETE FROM users WHERE id = ?',
+            [id]
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'User not found within your organization or could not be deleted.' });
+            return res.status(404).json({ message: 'User could not be deleted.' });
         }
 
-        // TODO: Consider implications - reassign interviews/assignments?
-
-        res.status(204).send(); // No content
+        res.status(200).json({ message: 'User deleted successfully.' });
 
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -178,7 +217,7 @@ router.delete('/:id', authMiddleware, checkRole([1]), async (req, res) => {
 
 
 // GET /api/users/:id - Get a user by ID within the organization (Admin only)
-router.get('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+router.get('/:id', authMiddleware, checkRole([1, 4]), async (req, res) => {
     const { id } = req.params;
     const organization_id = req.user.organization_id;
 
@@ -201,7 +240,7 @@ router.get('/:id', authMiddleware, checkRole([1]), async (req, res) => {
 
 // TODO: Add PUT /api/users/:id for updating user details (e.g., name, role - maybe restrict role changes)
 // PUT /api/users/:id - Update a user within the organization (Admin only)
-router.put('/:id', authMiddleware, checkRole([1]), async (req, res) => {
+router.put('/:id', authMiddleware, checkRole([1, 4]), async (req, res) => {
     const userId = parseInt(req.params.id);
     const { email, first_name, last_name, role_id } = req.body;
     const organization_id = req.user.organization_id;

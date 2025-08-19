@@ -113,6 +113,59 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// POST /api/auth/login-as-user/:id - Superadmin logs in as another user
+router.post('/login-as-user/:id', authMiddleware, async(req, res) => {
+    try{
+        const requesterRoleId = req.user.role_id;
+
+        // Check if the requester is superadmin only
+        const [roleRows] = await db.query('SELECT name FROM roles WHERE id = ?' , [requesterRoleId]);
+        if(!roleRows.length || roleRows[0].name !== 'superadmin'){
+            return res.status(403).json({message: 'Forbidden: Only superadmin can perform this action'})
+        }
+
+        const userId = req.params.id;
+
+        const [userRows] = await db.query('SELECT id, role_id, organization_id, email, status FROM users WHERE id = ?', [userId]);
+        if(!userRows.length) return res.status(404).json({message: 'User not found'});
+
+        const user = userRows[0];
+
+        // Ensure the user is active
+        if(user.status !== 'active'){
+            return res.status(403).json({message: 'Cannot impersonate an inactive user.'});
+        }
+        
+        // Generate JWT for the impersonated user
+        const payload = {
+            user: {
+                id: user.id,
+                role_id: user.role_id,
+                organization_id: user.organization_id
+            }
+        }
+        const token = jwt.sign(payload, JWT_SECRET, {expiresIn: '1h'});
+
+        // 📝 Activity log for impersonation
+        await db.query(`
+            INSERT INTO activity_logs (user_id, action, description) VALUES(?, ?, ?)`, 
+            [req.user.id, 'Login As Admin', `Logged in as ${user.email}`]);
+
+        res.json({
+            message: `Impersonation successful. Logged in as ${user.email}`,
+            token,
+            userId: user.id,
+            email: user.email,
+            organization_id: user.organization_id,
+            role_id: user.role_id,
+        });
+
+    }catch(error){
+        console.error('Error during impersonation login:', error);
+        res.status(500).json({ message: 'Server error during impersonation login.' });
+    }
+})
+
 // Logging out the user
 const blacklistedTokens = new Set();
 

@@ -92,6 +92,16 @@ export default function CandidateList() {
           }
         });
         setShowDeleteModal(false);
+        const updatedList = candidatesList.filter(item => item.id !== selectedCandidateId);
+        setCandidatesList(updatedList);
+
+        setTotalEntries(prevTotal => prevTotal - 1);
+        setTotalPages(Math.ceil((totalEntries - 1) / itemsPerPage));
+
+         //if current page becomes empty, go back one page
+        if ((updatedList.length === 0) && currentPage > 1) {
+          handlePageChange(currentPage - 1);
+        }
         toast.success(response.data.message);
 
       }catch(error){

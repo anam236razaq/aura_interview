@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 07, 2025 at 07:11 AM
+-- Generation Time: Aug 19, 2025 at 02:23 PM
 -- Server version: 10.4.17-MariaDB
 -- PHP Version: 7.4.15
 
@@ -20,6 +20,41 @@ SET time_zone = "+00:00";
 --
 -- Database: `aura_interview`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `action` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `description`, `created_at`) VALUES
+(5, 12, 'Login As Admin', 'Logged in as admin@gmail.com', '2025-08-13 04:50:35'),
+(9, 12, 'Delete Transaction', 'Transaction by Zain Ali deleted\"', '2025-08-13 05:47:10'),
+(12, 12, 'Update Subscription', 'Subscription \"trial plan\" updated', '2025-08-13 06:41:27'),
+(13, 12, 'Delete Subscription', 'Subscription \"trial plan\" deleted', '2025-08-13 06:41:33'),
+(14, 12, 'Create Subscription', 'Subscription \"Basic Plan\" created', '2025-08-13 06:42:27'),
+(16, 12, 'Login As Admin', 'Logged in as admin@gmail.com', '2025-08-13 07:12:32'),
+(17, 12, 'Login As Admin', 'Logged in as admin@gmail.com', '2025-08-13 07:14:31'),
+(18, 12, 'Delete Transaction', 'Transaction by \"Zain Ali\" deleted', '2025-08-13 07:24:12'),
+(19, 12, 'Delete Transaction', 'Transaction by \"Zain Ali\" deleted', '2025-08-13 07:26:28'),
+(20, 12, 'Update Subscription', 'Subscription \"Basic Plan\" updated', '2025-08-13 09:44:46'),
+(21, 12, 'Create Subscription', 'Subscription \"trial\" created', '2025-08-13 09:46:29'),
+(22, 12, 'Update Subscription', 'Subscription \"trial\" updated', '2025-08-13 09:50:18'),
+(23, 12, 'Update Subscription', 'Subscription \"Basic Plan\" updated', '2025-08-13 09:50:31'),
+(24, 12, 'Delete Subscription', 'Subscription \"trial\" deleted', '2025-08-13 09:50:38'),
+(25, 12, 'Approve Transaction', 'Transaction by \"ali shan\" approved', '2025-08-19 07:16:19');
 
 -- --------------------------------------------------------
 
@@ -95,12 +130,11 @@ INSERT INTO `cvs` (`id`, `organization_id`, `job_id`, `file_path`, `personal_inf
 (17, 2, 1, '1744546393765-talha_dev.pdf', '{\"email\": \"funinaku@mailinator.com\", \"fullName\": \"Clayton Lamb\", \"phoneNumber\": \"+1 (142) 164-3248\"}', NULL, '2025-04-13 12:13:21', '2025-04-13 12:13:21', 'processed', NULL),
 (18, 2, 1, '1744546789077-REHAN+MANSOOR+CV.pdf', '{\"email\": \"tomyj@mailinator.com\", \"fullName\": \"Maxwell Sheppard\", \"phoneNumber\": \"+1 (343) 932-2715\"}', NULL, '2025-04-13 12:20:06', '2025-04-13 12:20:06', 'processed', NULL),
 (19, 2, 0, '1744626809742-Muneeb+Javed.pdf', '{\"email\": \"xofajosuku@mailinator.com\", \"fullName\": \"Reece Valentine\", \"phoneNumber\": \"+1 (715) 357-2828\"}', NULL, '2025-04-14 10:33:51', '2025-04-14 10:33:51', 'processed', NULL),
-(20, 2, 0, '1744626985818-Sufee+Latif.pdf', '{\"email\": \"pacu@mailinator.com\", \"fullName\": \"Ulric Gardner\", \"phoneNumber\": \"+1 (885) 444-3947\"}', NULL, '2025-04-14 10:36:38', '2025-04-14 10:36:38', 'processed', NULL),
 (21, 2, 1, 'sanafaizcv.pdf', '{\"name\": \"Sana Faiz\", \"email\": \"sana.faiz.muet83@gmail.com\", \"phone\": 3401116573, \"github\": null, \"address\": \"GOR Colony, Hyderabad\", \"summary\": \"Passionate and detail-oriented content writer eager to leverage strong writing skills and marketing expertise to create compelling, audience-centric content that drives brand visibility and engagement in the dynamic world of digital marketing\", \"website\": null, \"linkedin\": null, \"phone_country_code\": 92}', NULL, '2025-04-15 09:57:50', '2025-04-15 09:57:50', 'processed', NULL),
 (22, 2, 0, '1744711235081-resumee_1.pdf', '{\"email\": \"penoriqy@mailinator.com\", \"fullName\": \"Meghan Wolfe\", \"phoneNumber\": \"+1 (931) 738-6065\"}', NULL, '2025-04-15 10:01:04', '2025-04-15 10:01:04', 'processed', NULL),
 (23, 2, 1, 'cv-farhan-1.pdf', '{\"name\": \"Farhan Qureshi\", \"email\": \"farhanshakirqureshi@gmail.com\", \"phone\": 9986921026, \"github\": null, \"address\": \"Jaipur\", \"summary\": \"Business Analyst - Software\", \"website\": null, \"linkedin\": null, \"phone_country_code\": 91}', NULL, '2025-04-15 15:23:06', '2025-04-15 15:23:06', 'processed', NULL),
-(24, 2, 1, '1744730918938-Resume-2019.pdf', '{\"email\": \"domedata@gmail.com\", \"fullName\": \"Asmat ullah Tunio\", \"phoneNumber\": \"9346849687987\"}', NULL, '2025-04-15 15:28:58', '2025-07-02 06:38:30', 'draft', NULL),
-(25, 2, 1, 'Resume-2019.pdf', '{\"name\": \"Ahmed Issa\", \"email\": \"ahmedz709@gmail.com\", \"phone\": 1208218208, \"github\": null, \"address\": \"Cairo, Egypt\", \"summary\": \"A motivated and energetic Business development manager with 18 years experience & positive attitude seeking Marketing position with a reputable organization in which I can add value that lead to company growth.\", \"website\": null, \"linkedin\": null, \"phone_country_code\": 20}', NULL, '2025-04-16 07:48:39', '2025-07-02 06:38:23', 'draft', NULL),
+(24, 2, 1, '1744730918938-Resume-2019.pdf', '{\"email\": \"domedata@gmail.com\", \"fullName\": \"Asmat ullah Tunio\", \"phoneNumber\": \"9346849687987\"}', NULL, '2025-04-15 15:28:58', '2025-07-08 07:15:35', 'processed', NULL),
+(25, 2, 1, 'Resume-2019.pdf', '{\"name\": \"Ahmed Issa\", \"email\": \"ahmedz709@gmail.com\", \"phone\": 1208218208, \"github\": null, \"address\": \"Cairo, Egypt\", \"summary\": \"A motivated and energetic Business development manager with 18 years experience & positive attitude seeking Marketing position with a reputable organization in which I can add value that lead to company growth.\", \"website\": null, \"linkedin\": null, \"phone_country_code\": 20}', NULL, '2025-04-16 07:48:39', '2025-07-08 07:15:41', 'processed', NULL),
 (35, 8, 0, 'Anam\'s Resume.pdf', '{\"name\":\"Anam Razaq\",\"address\":\"Layyah\",\"email\":\"anamrazaq236@gmail.com\",\"phone\":3097328603,\"phone_country_code\":null,\"github\":\"https://github.com/anam236razaq\",\"linkedin\":null,\"website\":null,\"summary\":\"One year of experience in creating responsive and visually engaging User Interfaces. Committed to clean code, collaboration, ensuring seamless user experiences.\"}', NULL, '2025-04-29 10:21:55', '2025-04-29 10:21:55', 'processed', NULL),
 (52, 8, 0, 'Resume Anam Razaq.pdf', '{\"name\":\"Anam Razaq\",\"address\":\"Naseerabad ferozpur road, Lahore\",\"email\":\"anamrazaq236@gmail.com\",\"phone\":3097328603,\"phone_country_code\":92,\"github\":\"github.com/anam236razaq\",\"linkedin\":\"linkedin.com/in/anam-razaq-6baa3928b/\",\"website\":null,\"summary\":\"Six months of experience in creating responsive and visually engaging user interfaces. Committed to writing clean code, fostering collaboration, and ensuring seamless user experiences. Looking to utilize expertise and experience to inspire Innovation and make valuable contributions to varied projects.\"}', NULL, '2025-04-30 07:38:05', '2025-07-02 06:29:21', 'draft', NULL),
 (53, 2, 0, '1746000892151-Resume Anam Razaq.pdf', '{\"fullName\":\"Anam Razaq\",\"email\":\"anamrazaq236@gmail.com\",\"phoneNumber\":\"3097328603\"}', NULL, '2025-04-30 08:15:07', '2025-04-30 08:15:07', 'processed', NULL),
@@ -305,7 +339,6 @@ INSERT INTO `cvs_education` (`id`, `cv_id`, `institution`, `start_year`, `end_ye
 (36, 19, 'Government College University, Faisalabad', 2015, 2019, 'BS', 'Computer Science', '2.80', '2025-04-14 10:33:51'),
 (37, 19, 'Govt. High School No#1,PirMahal.', NULL, NULL, 'Matric', 'Physics, Chemistry, Mathematics and Biology', '4.00', '2025-04-14 10:33:51'),
 (38, 19, 'Govt. Fareed Buksh Gousia Degree Science College 333GB', NULL, NULL, 'FSC (Pre-Eng.)', 'Physics, Math, Chemistry and English', NULL, '2025-04-14 10:33:51'),
-(39, 20, 'University of SINDH Jamshoro', 2010, 2014, 'BS Software Engineering', NULL, NULL, '2025-04-14 10:36:38'),
 (40, 21, 'Mehran University of Engineering and Technology', 2017, 2019, 'Bachelor of Science', 'Software Engineering', NULL, '2025-04-15 09:57:50'),
 (41, 22, 'Ladoke Akintola University of Technology', 2003, 2003, 'M.B.,B.S.', NULL, NULL, '2025-04-15 10:01:04'),
 (42, 22, 'Wesley College of Science', 1994, 1994, NULL, NULL, NULL, '2025-04-15 10:01:04'),
@@ -414,13 +447,6 @@ INSERT INTO `cvs_experience` (`id`, `cv_id`, `position`, `company`, `duration`, 
 (58, 19, 'Software Engineer', 'Tanbits', '1.2 years', '[\"Expertise in Elixir,Phoenix,PHP including Laravel, Lumen.\",\"Core skills include JavaScript, React, HTML, CSS and Node.js.\",\"DBMS including Node.js ORM for PostgreSQL, MySQL, MariaDB, SQLite and Microsoft SQL Server.\",\"Expertise in Strapi CMS (Node JS), React Native and MongoDB.\",\"Worked on different projects for industries including E-commerce, point of sale, Real Estate and company websites in CMS like WordPress, Shopify and Wix.\",\"Confident communicator, strategic thinker, and innovative creator to develop software customized to meet a company’s organizational needs.\"]', 'Lahore, Pakistan', '2025-04-14 10:33:51'),
 (59, 19, 'Junior Software Engineer', 'Adrobz Solutions', '11 months', '[\"Lumen API build.\",\"Basic understanding of front-end technologies, such as JavaScript, HTML5 and CSS3.\",\"Assist team in resolution of hardware, software and system issues.\",\"Build efficient, testable, and reusable PHP modules\",\"Integration of data storage solutions.\",\"Strong knowledge of PHP web frameworks (such as Laravel).\",\"Understanding of MVC design patterns.\",\"Familiarity with SQL/MySQL databases and their declarative query languages.\",\"Knowledge of object oriented PHP programming.\",\"Understanding the fully synchronous behavior of PHP.\",\"Integration of multiple data sources and databases into one system.\",\"ERP Development in laravel.\"]', 'Lahore, Pakistan', '2025-04-14 10:33:51'),
 (60, 19, 'PHP Web Developer', 'Axio Limited', '1.2 years', '[\"Performing web backend infrastructure.\",\"Basic understanding of front-end technologies, such as JavaScript, HTML5 and CSS3.\",\"Assist team in resolution of hardware, software and system issues.\",\"Build efficient, testable, and reusable PHP modules\",\"Integration of data storage solutions.\",\"Strong knowledge of PHP web frameworks (such as Laravel).\",\"Understanding of MVC design patterns.\",\"Familiarity with SQL/MySQL databases and their declarative query languages.\",\"Knowledge of object oriented PHP programming.\",\"Understanding the fully synchronous behavior of PHP.\",\"Integration of multiple data sources and databases into one system.\",\"ERP Development in laravel.\"]', 'Faisalabad, Pakistan', '2025-04-14 10:33:51'),
-(61, 20, 'PHP Laravel Website Developer', 'Fiverr, Freelance, Upwork', 'Jun-2020 - Continue', '[\"Working as client requires\",\"Helped Developed new business logic\"]', NULL, '2025-04-14 10:36:38'),
-(62, 20, 'TEAM LEAD - PHP', 'Savi Tech Pvt. Ltd, Karachi', 'Nov 2019 - June 2020 (8 Month)', '[\"Using Laravel, Core PHP, MYSQL & JQUERY, JSON\",\"Develop CRM Medical Dashboard.\",\"Helped develop new business logic\"]', 'Karachi', '2025-04-14 10:36:38'),
-(63, 20, 'Software Engineer - PHP', 'Digitonics Labs Pvt. Ltd, Karachi', 'Nov 2018 - Nov 2019 (1 Year)', '[\"Using Codeigniter MVC & HMVC Pattern, Core PHP, MYSQL & JQUERY, JSON.\",\"Develop LiveChat Dashboard Using LiveChatInc API.\",\"Develop CallAnswer24 Dashboard Using Twilio API.\",\"Designed database ERD\",\"Helped develop new business logic\"]', 'Karachi', '2025-04-14 10:36:38'),
-(64, 20, 'Software Engineer - PHP', 'KBM, London', 'Jan 2017 - Dec 2018 (2 Years)', '[\"Using Codeigniter MVC & HMVC Pattern, Core PHP, MYSQL & JQUERY, JSON.\",\"Develop LMS - Learning Management System\",\"Develop JobPortal\"]', 'London', '2025-04-14 10:36:38'),
-(65, 20, 'PHP Developer', 'BRILLIANT I.T SOLUTION, Karachi', 'Feb 2016 - Feb 2017 (1 Year)', '[\"Develop management portal Noorani Cargo Services\",\"Develop management portal Sabz Traders\",\"Develop management portal Rescue Security\"]', 'Karachi', '2025-04-14 10:36:38'),
-(66, 20, 'PHP Developer', 'INCISIVE SOFT, Karachi', 'Sep 2015 - Feb 2016', '[\"Develop Human Resource Management System (HRM)\",\"Develop Finance Management System (FMS)\",\"Develop Learning Management System (LMS)\",\"Develop School College Management System (SCM)\",\"Develop Broker Management System (BMS)\",\"Develop Industrial Link International (ILI)\"]', 'Karachi', '2025-04-14 10:36:38'),
-(67, 20, 'PHP Developer', 'HIST, Jamshoro', 'Feb 2015 - Aug 2015', '[\"Using Codeigniter MVC & HMVC Pattern, Core PHP, MYSQL & JQUERY, JSON, HTML, Bootstrap.\",\"Develop ONLINE DOCTOR APPOINTMENT SYSTEM\",\"Develop STUDENT RECORD MANAGEMENT SYSTEM\",\"Develop Social Network Site (Be Friend)\"]', 'Jamshoro', '2025-04-14 10:36:38'),
 (68, 21, 'Tutor', 'Learning Tution Center', '2017 - Present', '[]', NULL, '2025-04-15 09:57:50'),
 (69, 21, 'Director Management', 'Ultimo (Event)', '2022 - 2023', '[]', NULL, '2025-04-15 09:57:50'),
 (70, 21, 'Director Media', 'EasyBazaar (Startup)', NULL, '[]', NULL, '2025-04-15 09:57:50'),
@@ -464,8 +490,7 @@ INSERT INTO `cvs_experience` (`id`, `cv_id`, `position`, `company`, `duration`, 
 (151, 63, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Lahore', '2025-07-02 10:51:27'),
 (152, 64, 'Frontend React Developer Intern', 'Eziline Software House', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-03 08:44:45'),
 (153, 64, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Lahore', '2025-07-03 08:44:45'),
-(154, 65, 'Frontend React Developer Intern', 'Eziline Software House Rawalpindi', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-04 06:19:32');
-INSERT INTO `cvs_experience` (`id`, `cv_id`, `position`, `company`, `duration`, `responsibilities`, `location`, `created_at`) VALUES
+(154, 65, 'Frontend React Developer Intern', 'Eziline Software House Rawalpindi', 'July 2023 – Dec 2023', '[\"Building responsive UI Components using React.\",\"Fetching data from RESTful APIs and integrating it into the frontend.\",\"Identifying and fixing frontend bugs.\",\"Working with design and backend teams to integrate frontend features.\",\"Managing application state using React hooks or Redux.\",\"Writing unit tests for React Components.\",\"Participating in code reviews and improving existing code.\",\"Ensuring mobile-friendly and cross-browser compatibility.\"]', 'Remote', '2025-07-04 06:19:32'),
 (155, 65, 'Frontend React Developer', 'Keydevs Technologies', 'Sep 2024 – Current', '[\"Designing adaptable UI components using React for optimal display across devices.\",\"Retrieving and incorporating data from RESTful APIs into the frontend seamlessly.\",\"Detecting and addressing bugs within the frontend codebase.\",\"Partnering with design and backend teams to implement and enhance frontend features.\",\"Utilizing React hooks or Redux to efficiently handle application state.\",\"Crafting unit tests to validate the functionality of React components.\",\"Engaging in code review sessions and refining existing code for performance improvements.\"]', 'Onsite', '2025-07-04 06:19:32');
 
 -- --------------------------------------------------------
@@ -504,7 +529,6 @@ INSERT INTO `cvs_extra` (`id`, `cv_id`, `programming_languages`, `foreign_langua
 (15, 17, '{\"tools\": [], \"languages\": [], \"methodologies\": []}', '[]', '2025-04-13 12:13:21'),
 (16, 18, '{\"tools\": [], \"languages\": [], \"methodologies\": []}', '[]', '2025-04-13 12:20:06'),
 (17, 19, '{\"tools\": [\"Laravel\", \"Lumen\", \"Phoenix\"], \"languages\": [\"PHP\", \"JavaScript\", \"Elixir\"], \"methodologies\": [\"MVC\"]}', '[{\"level\": \"Native\", \"language\": \"English\"}, {\"level\": \"Beginner\", \"language\": \"Urdu\"}]', '2025-04-14 10:33:51'),
-(18, 20, '{\"tools\": [], \"languages\": [], \"methodologies\": []}', '[]', '2025-04-14 10:36:38'),
 (19, 21, '{\"tools\": [], \"languages\": [\"Java\", \"C++\", \"Flutter\"], \"methodologies\": []}', '[{\"level\": null, \"language\": \"English\"}, {\"level\": null, \"language\": \"Urdu\"}, {\"level\": null, \"language\": \"Sindhi\"}]', '2025-04-15 09:57:50'),
 (20, 22, '{\"tools\": [], \"languages\": [], \"methodologies\": []}', '[]', '2025-04-15 10:01:04'),
 (21, 23, '{\"tools\": [], \"languages\": [], \"methodologies\": []}', '[{\"level\": null, \"language\": \"English\"}, {\"level\": null, \"language\": \"Hindi\"}]', '2025-04-15 15:23:06'),
@@ -550,7 +574,8 @@ INSERT INTO `cvs_internal_notes` (`id`, `cv_id`, `user_id`, `note`, `parent_note
 (7, 52, 8, '<p><strong>hi</strong></p>', NULL, '2025-05-01 06:52:12'),
 (8, 52, 8, '<p><strong>hy</strong></p>', NULL, '2025-05-01 06:56:18'),
 (9, 52, 8, '<p>hiiiii</p>', NULL, '2025-05-01 06:56:29'),
-(10, 52, 8, '<p>hiiiiii</p>', NULL, '2025-05-01 07:01:09');
+(10, 52, 8, '<p>hiiiiii</p>', NULL, '2025-05-01 07:01:09'),
+(11, 21, 2, '<p>hello</p><p></p>', NULL, '2025-07-25 11:16:18');
 
 -- --------------------------------------------------------
 
@@ -786,7 +811,7 @@ CREATE TABLE `cvs_shortlist` (
 INSERT INTO `cvs_shortlist` (`id`, `cv_id`, `shortlisted`, `organization_id`) VALUES
 (1, 53, 1, 2),
 (2, 25, 1, 2),
-(3, 24, 1, 2);
+(5, 16, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -980,17 +1005,6 @@ INSERT INTO `cvs_skills` (`id`, `cv_id`, `skill`, `level`, `created_at`) VALUES
 (171, 19, 'MongoDB', NULL, '2025-04-14 10:33:51'),
 (172, 19, 'Node JS', NULL, '2025-04-14 10:33:51'),
 (173, 19, 'PostgreSQL', NULL, '2025-04-14 10:33:51'),
-(174, 20, 'Laravel', NULL, '2025-04-14 10:36:38'),
-(175, 20, 'Codeigniter MVC & HMVC', NULL, '2025-04-14 10:36:38'),
-(176, 20, 'PHP Core', NULL, '2025-04-14 10:36:38'),
-(177, 20, 'JQuery', NULL, '2025-04-14 10:36:38'),
-(178, 20, 'AJAX', NULL, '2025-04-14 10:36:38'),
-(179, 20, 'JSON', NULL, '2025-04-14 10:36:38'),
-(180, 20, 'API’s Integrations', NULL, '2025-04-14 10:36:38'),
-(181, 20, 'API’S Development', NULL, '2025-04-14 10:36:38'),
-(182, 20, 'MySQL', NULL, '2025-04-14 10:36:38'),
-(183, 20, 'Sleeknote', NULL, '2025-04-14 10:36:38'),
-(184, 20, 'Zapier', NULL, '2025-04-14 10:36:38'),
 (185, 21, 'Java', NULL, '2025-04-15 09:57:50'),
 (186, 21, 'C++', NULL, '2025-04-15 09:57:50'),
 (187, 21, 'Flutter', NULL, '2025-04-15 09:57:50'),
@@ -1304,8 +1318,6 @@ INSERT INTO `interviews` (`id`, `organization_id`, `job_id`, `user_id`, `title`,
 (5, 2, 1, 2, 'Voluptates ut autem ', '', 'Debitis fugit iste ', 'draft', '2025-04-23 19:00:00', '2025-04-13 09:00:31', '2025-04-13 09:00:31', NULL),
 (6, 2, 1, 2, 'Esse elit aut labor', '', 'Quis vitae illum et', 'draft', '2025-04-24 19:00:00', '2025-04-15 09:59:18', '2025-04-15 09:59:18', NULL),
 (7, 2, 1, 2, 'Esse elit aut labor', '', 'Quis vitae illum et', 'draft', '2025-04-24 19:00:00', '2025-04-15 09:59:45', '2025-04-15 09:59:45', NULL),
-(8, 2, 1, 2, 'Esse elit aut labor', '', 'Quis vitae illum et', 'draft', '2025-04-24 19:00:00', '2025-04-15 09:59:55', '2025-04-15 09:59:55', NULL),
-(9, 2, 1, 2, 'asdf', '', 'asdfasfd', 'draft', '2025-04-30 19:00:00', '2025-04-15 15:33:45', '2025-04-15 15:33:45', NULL),
 (10, 2, 1, 2, 'hello', '', 'hello', 'archived', '2025-04-24 19:00:00', '2025-04-16 07:40:57', '2025-04-16 09:46:43', NULL),
 (11, 2, 1, 2, 'hello', '', 'hello', 'archived', '2025-04-24 19:00:00', '2025-04-16 07:41:02', '2025-04-16 09:46:43', NULL),
 (12, 2, 1, 2, 'hello', '', 'hello', 'archived', '2025-04-24 19:00:00', '2025-04-16 07:41:41', '2025-04-16 09:46:43', NULL),
@@ -1314,16 +1326,12 @@ INSERT INTO `interviews` (`id`, `organization_id`, `job_id`, `user_id`, `title`,
 (15, 2, 0, 2, 'gdgfdfgd', '', 'ffcsdsfdsdf', 'draft', NULL, '2025-05-15 10:06:54', '2025-05-15 10:06:54', NULL),
 (16, 2, 0, 2, 'gdgfdfgd', '', 'ffcsdsfdsdf', 'draft', NULL, '2025-05-15 10:07:01', '2025-05-15 10:07:01', NULL),
 (17, 2, 0, 2, 'gdgfdfgd', '', 'ffcsdsfdsdf', 'draft', NULL, '2025-05-15 10:08:40', '2025-05-15 10:08:40', NULL),
-(18, 2, 0, 2, 'gdgfdfgd', '', 'ffcsdsfdsdf', 'draft', '2025-05-13 10:10:00', '2025-05-15 10:10:11', '2025-05-15 10:10:11', NULL),
-(20, 2, 0, 2, 'sjksjdlksjdk', '', 'sdskljdksldjkslj', 'draft', '2025-05-23 05:19:00', '2025-05-16 05:21:52', '2025-05-16 05:21:52', NULL),
-(21, 2, 0, 2, 'sjksjdlksjdk', '', 'sdskljdksldjkslj', 'draft', '2025-05-23 05:19:00', '2025-05-16 05:26:38', '2025-05-16 05:26:38', NULL),
 (22, 2, 0, 2, 'sjksjdlksjdk', '', 'sdskljdksldjkslj', 'draft', '2025-05-23 05:19:00', '2025-05-16 05:43:35', '2025-05-16 05:43:35', NULL),
 (23, 2, 0, 2, 'sjksjdlksjdk', '', 'sdskljdksldjkslj', 'draft', '2025-05-23 05:19:00', '2025-05-16 05:48:43', '2025-05-16 05:48:43', NULL),
 (24, 2, 0, 2, 'sdhfjkdhfjkdfh', '', 'sdkjfhjkhfjkd', 'draft', '2025-05-22 06:35:00', '2025-05-16 06:35:33', '2025-05-16 06:35:33', NULL),
 (25, 2, 0, 2, 'wjlkfjlkfjk', '', 'fjkljfkljfkldfj', 'draft', '2025-05-21 10:50:00', '2025-05-16 07:46:43', '2025-05-16 07:46:43', NULL),
-(26, 2, 0, 2, 'dhfkjdhfjkd', '', 'sdjfkldjfkdl', 'draft', '2025-05-20 07:53:00', '2025-05-16 07:53:06', '2025-05-16 07:53:06', NULL),
 (43, 2, 2, 2, 'Database Management System (DBMS)', '40dfd43f-d415-4038-b777-6085d3ed5dd2', 'about managing, editing data in database', 'draft', '2025-07-16 10:00:00', '2025-07-02 10:00:53', '2025-07-02 10:10:09', 2),
-(45, 2, 3, 2, 'Operating system', 'e34b1f0f-3297-44cd-a2ae-42670b73ca27', 'about system', 'draft', '2025-07-24 10:22:00', '2025-07-02 10:23:02', '2025-07-02 10:23:02', 3);
+(45, 2, 3, 2, 'Operating system', 'e34b1f0f-3297-44cd-a2ae-42670b73ca27', 'about system', 'draft', '2025-08-28 05:22:00', '2025-07-02 10:23:02', '2025-08-13 08:05:56', 3);
 
 -- --------------------------------------------------------
 
@@ -1402,9 +1410,8 @@ CREATE TABLE `interview_shortlisted` (
 --
 
 INSERT INTO `interview_shortlisted` (`id`, `interview_id`, `cv_id`, `shortlisted`) VALUES
-(1, 45, 64, 1),
+(1, 45, 64, 0),
 (10, 1, 19, 1),
-(11, 1, 20, 1),
 (25, 1, 22, 1);
 
 -- --------------------------------------------------------
@@ -1633,6 +1640,28 @@ INSERT INTO `organizations` (`id`, `company_name`, `logo`, `address`, `city`, `s
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `payment_gateways`
+--
+
+CREATE TABLE `payment_gateways` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `type` enum('online','offline') NOT NULL,
+  `details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`details`)),
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `payment_gateways`
+--
+
+INSERT INTO `payment_gateways` (`id`, `name`, `type`, `details`, `status`, `created_at`) VALUES
+(1, 'Bank Transfer', 'offline', '{\"account_no\": \"1234567890\", \"bank\": \"HBL\"}', 'active', '2025-08-18 06:46:48');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `questions`
 --
 
@@ -1699,12 +1728,6 @@ INSERT INTO `questions` (`id`, `interview_id`, `text`, `type`, `time_limit`, `re
 (44, 18, 'wdhjgdhjgdhjgfgfjdg', 'video', 2, NULL, NULL, '2025-05-15 10:10:11', '2025-05-15 10:10:11'),
 (45, 18, 'gdhsgdhjdghjs', '', 2, NULL, NULL, '2025-05-15 10:10:11', '2025-05-15 10:10:11'),
 (46, 18, '', 'video', 2, NULL, NULL, '2025-05-15 10:10:11', '2025-05-15 10:10:11'),
-(47, 20, 'ksjdksjdklsjdksjdkls', 'video', 2, NULL, NULL, '2025-05-16 05:21:52', '2025-05-16 05:21:52'),
-(48, 20, 'asdksdjksdhjksdks', '', 2, NULL, NULL, '2025-05-16 05:21:52', '2025-05-16 05:21:52'),
-(49, 20, 'sjskhdjkshdsjkdhskj', '', 2, NULL, NULL, '2025-05-16 05:21:52', '2025-05-16 05:21:52'),
-(50, 21, 'ksjdksjdklsjdksjdkls', 'video', 2, NULL, NULL, '2025-05-16 05:26:38', '2025-05-16 05:26:38'),
-(51, 21, 'asdksdjksdhjksdks', '', 2, NULL, NULL, '2025-05-16 05:26:38', '2025-05-16 05:26:38'),
-(52, 21, 'sjskhdjkshdsjkdhskj', '', 2, NULL, NULL, '2025-05-16 05:26:38', '2025-05-16 05:26:38'),
 (53, 22, 'ksjdksjdklsjdksjdkls', 'video', 2, NULL, NULL, '2025-05-16 05:43:35', '2025-05-16 05:43:35'),
 (54, 22, 'asdksdjksdhjksdks', '', 2, NULL, NULL, '2025-05-16 05:43:35', '2025-05-16 05:43:35'),
 (55, 22, 'sjskhdjkshdsjkdhskj', '', 2, NULL, NULL, '2025-05-16 05:43:35', '2025-05-16 05:43:35'),
@@ -1750,9 +1773,15 @@ INSERT INTO `questions` (`id`, `interview_id`, `text`, `type`, `time_limit`, `re
 (101, 43, 'What is database??', 'video', 60, NULL, NULL, '2025-07-02 10:00:53', '2025-07-02 10:00:53'),
 (102, 43, 'What is data and information', 'text', 60, NULL, NULL, '2025-07-02 10:00:53', '2025-07-02 10:00:53'),
 (103, 43, 'how we can insert data in database', 'file', 60, NULL, NULL, '2025-07-02 10:00:53', '2025-07-02 10:00:53'),
-(107, 45, 'what is operating system??', 'video', 60, NULL, NULL, '2025-07-02 10:23:02', '2025-07-02 10:23:02'),
-(108, 45, 'what is context switch??', 'text', 60, NULL, NULL, '2025-07-02 10:23:02', '2025-07-02 10:23:02'),
-(109, 45, 'what is memory management??', 'file', 60, NULL, NULL, '2025-07-02 10:23:02', '2025-07-02 10:23:02');
+(110, 45, 'what is operating system??', 'video', 60, NULL, NULL, '2025-08-13 08:05:56', '2025-08-13 08:05:56'),
+(111, 45, 'what is context switch??', 'text', 60, NULL, NULL, '2025-08-13 08:05:56', '2025-08-13 08:05:56'),
+(112, 45, 'what is memory management??', 'file', 60, NULL, NULL, '2025-08-13 08:05:56', '2025-08-13 08:05:56'),
+(113, 20, 'ksjdksjdklsjdksjdkls', 'video', 2, NULL, NULL, '2025-08-13 08:06:22', '2025-08-13 08:06:22'),
+(114, 20, 'asdksdjksdhjksdks', '', 2, NULL, NULL, '2025-08-13 08:06:22', '2025-08-13 08:06:22'),
+(115, 20, 'sjskhdjkshdsjkdhskj', '', 2, NULL, NULL, '2025-08-13 08:06:22', '2025-08-13 08:06:22'),
+(116, 21, 'ksjdksjdklsjdksjdkls', 'video', 2, NULL, NULL, '2025-08-13 08:07:19', '2025-08-13 08:07:19'),
+(117, 21, 'asdksdjksdhjksdks', '', 2, NULL, NULL, '2025-08-13 08:07:19', '2025-08-13 08:07:19'),
+(118, 21, 'sjskhdjkshdsjkdhskj', '', 2, NULL, NULL, '2025-08-13 08:07:19', '2025-08-13 08:07:19');
 
 -- --------------------------------------------------------
 
@@ -1837,7 +1866,39 @@ CREATE TABLE `roles` (
 INSERT INTO `roles` (`id`, `name`, `description`, `permissions`, `created_at`, `updated_at`) VALUES
 (1, 'admin', 'Full access to the system', '[\"create\", \"read\", \"update\", \"delete\"]', '2025-07-02 07:32:55', '2025-07-02 07:32:55'),
 (2, 'manager', 'Can view user list and create interviews', '[\"view_users\", \"create_interviews\"]', '2025-07-02 07:32:55', '2025-07-02 07:35:44'),
-(3, 'hr', 'Can conduct interviews and see results', '[\"conduct_interviews\", \"view_results\"]', '2025-07-02 07:32:55', '2025-07-02 07:35:44');
+(3, 'hr', 'Can conduct interviews and see results', '[\"conduct_interviews\", \"view_results\"]', '2025-07-02 07:32:55', '2025-07-02 07:35:44'),
+(4, 'superadmin', 'Has full access to manage admins, view subscriptions, and transactions', '[\"manage_admins\", \"view_subscriptions\", \"view_transactions\"]', '2025-08-06 11:57:03', '2025-08-06 11:57:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscriptions`
+--
+
+CREATE TABLE `subscriptions` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  `duration_months` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `max_cvs` int(11) DEFAULT 0,
+  `max_interviews` int(11) DEFAULT 0,
+  `max_users` int(11) DEFAULT 1,
+  `max_processed_cvs` int(11) DEFAULT 0,
+  `no_of_companies` int(11) DEFAULT 0,
+  `no_of_conducted_interviews` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `subscriptions`
+--
+
+INSERT INTO `subscriptions` (`id`, `title`, `description`, `price`, `duration_months`, `created_at`, `max_cvs`, `max_interviews`, `max_users`, `max_processed_cvs`, `no_of_companies`, `no_of_conducted_interviews`) VALUES
+(2, 'Standard Plan', 'Advanced features and higher limits for recruitment needs.', 1200, 3, '2025-08-08 11:54:56', 100, 10, 6, 100, 15, 50),
+(3, 'Premium Plan', 'Unlimited hiring tools for high-volume recruitment.', 3000, 6, '2025-08-08 11:54:56', 500, 50, 30, 500, 50, 200),
+(6, 'Enterprise plan', 'Fully customized hiring solutions with dedicated support.', 6000, 12, '2025-08-11 11:55:34', 1000, 500, 200, 1000, 100, 500),
+(10, 'Basic Plan', 'Essential tools for small teams to post jobs and conduct interviews.', 600, 1, '2025-08-13 11:42:27', 20, 5, 5, 20, 4, 20);
 
 -- --------------------------------------------------------
 
@@ -1880,6 +1941,33 @@ INSERT INTO `text_responses` (`id`, `response_id`, `text`, `created_at`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `transactions`
+--
+
+CREATE TABLE `transactions` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `organization_id` int(11) NOT NULL,
+  `subscription_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('pending','approved','cancelled') NOT NULL DEFAULT 'pending',
+  `payment_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `gateway_id` int(11) DEFAULT NULL,
+  `file` varchar(255) NOT NULL,
+  `note` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `transactions`
+--
+
+INSERT INTO `transactions` (`id`, `user_id`, `organization_id`, `subscription_id`, `amount`, `status`, `payment_date`, `gateway_id`, `file`, `note`) VALUES
+(1, 2, 2, 2, '1200.00', 'approved', '2025-08-07 10:45:00', 1, 'http://localhost:3001/uploads/payment_temp/img-1755603849979-517795908.jpeg', 'this is my first transaction'),
+(10, 2, 2, 3, '3000.00', 'pending', '2025-08-19 11:44:09', 1, 'http://localhost:3001/uploads/payment_temp/img-1755603849979-517795908.jpeg', 'this is my first transaction');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -1903,10 +1991,11 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `email`, `password_hash`, `first_name`, `last_name`, `role_id`, `organization_id`, `created_at`, `updated_at`, `status`, `profile_image`) VALUES
 (1, 'anam@gmail.com', '$2b$10$JCSX.XGYvJbYr3XBKlPJROhwEtDUS.dhbmGWQoq/TqCs6l14QYAOu', 'ali', 'shan', 1, 1, '2025-04-13 03:56:31', '2025-07-02 06:19:14', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg\r\n'),
-(2, 'admin@gmail.com', '$2b$10$TB59XrJJ7GuoJbgt1uGa5OdiENpR.aK4LlkSFQEaOD/cOvHll1EyC', 'ali', 'shan', 1, 2, '2025-04-13 03:58:19', '2025-07-02 07:37:47', 'active', 'http://localhost:3001/uploads/profileImg_temp/img-1751441804202-897528932.png'),
+(2, 'admin@gmail.com', '$2b$10$TB59XrJJ7GuoJbgt1uGa5OdiENpR.aK4LlkSFQEaOD/cOvHll1EyC', 'ali', 'shan', 1, 2, '2025-04-13 03:58:19', '2025-08-07 08:28:33', 'active', 'http://localhost:3001/uploads/profileImg_temp/img-1751441804202-897528932.png'),
 (8, 'anamrazaq222@gmail.com', '$2b$10$pKVeFMy4ojc/gp4Za22VSe/mD6XPWOc7Dw5VYG1ybHbyUeKmzev6u', 'Anam', 'Razaq', 1, 8, '2025-04-29 06:37:40', '2025-07-02 06:19:21', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg\r\n'),
-(9, 'anamrazaq201@gmail.com', '$2b$10$hQO0i0z/6Xe4RfyGyutIGe18tDZjL6FQnjhQISxnWMnYZGAS9qZbK', 'Anam', 'Razaq', 3, 2, '2025-05-16 12:05:24', '2025-07-02 07:48:12', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg\r\n'),
-(11, 'zainali123@gmail.com', '$2b$10$qfO8DxGjIKVvkXQ.KGOM9OQ.leXAm3MVl4Gqp/Etqh5W/C.66NTWa', 'Zain', 'Ali', 2, 2, '2025-07-02 07:44:26', '2025-07-02 08:01:22', 'inactive', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg');
+(9, 'anamrazaq201@gmail.com', '$2b$10$TB59XrJJ7GuoJbgt1uGa5OdiENpR.aK4LlkSFQEaOD/cOvHll1EyC', 'Anam', 'Razaq', 3, 2, '2025-05-16 12:05:24', '2025-07-08 07:17:07', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg\r\n'),
+(11, 'zainali123@gmail.com', '$2b$10$TB59XrJJ7GuoJbgt1uGa5OdiENpR.aK4LlkSFQEaOD/cOvHll1EyC', 'Zain', 'Ali', 2, 2, '2025-07-02 07:44:26', '2025-08-07 05:28:14', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg'),
+(12, 'superadmin@gmail.com', '$2b$10$TB59XrJJ7GuoJbgt1uGa5OdiENpR.aK4LlkSFQEaOD/cOvHll1EyC', 'Anam', 'Razaq', 4, 2, '2025-08-06 12:05:01', '2025-08-06 12:07:06', 'active', 'http://localhost:3001/uploads/profileImg_temp/default_profile.jpg\r\n');
 
 -- --------------------------------------------------------
 
@@ -1951,6 +2040,12 @@ INSERT INTO `video_responses` (`id`, `response_id`, `video_url`, `duration`, `cr
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `companies`
@@ -2122,6 +2217,12 @@ ALTER TABLE `organizations`
   ADD PRIMARY KEY (`id`) USING BTREE;
 
 --
+-- Indexes for table `payment_gateways`
+--
+ALTER TABLE `payment_gateways`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `questions`
 --
 ALTER TABLE `questions`
@@ -2143,11 +2244,26 @@ ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`) USING BTREE;
 
 --
+-- Indexes for table `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `text_responses`
 --
 ALTER TABLE `text_responses`
   ADD PRIMARY KEY (`id`) USING BTREE,
   ADD KEY `response_id` (`response_id`) USING BTREE;
+
+--
+-- Indexes for table `transactions`
+--
+ALTER TABLE `transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `subscription_id` (`subscription_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `fk_gateway` (`gateway_id`);
 
 --
 -- Indexes for table `users`
@@ -2170,22 +2286,28 @@ ALTER TABLE `video_responses`
 --
 
 --
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
 -- AUTO_INCREMENT for table `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `cvs`
 --
 ALTER TABLE `cvs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT for table `cvs_achievements`
 --
 ALTER TABLE `cvs_achievements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=135;
 
 --
 -- AUTO_INCREMENT for table `cvs_certifications`
@@ -2197,31 +2319,31 @@ ALTER TABLE `cvs_certifications`
 -- AUTO_INCREMENT for table `cvs_education`
 --
 ALTER TABLE `cvs_education`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
 
 --
 -- AUTO_INCREMENT for table `cvs_experience`
 --
 ALTER TABLE `cvs_experience`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=156;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
 
 --
 -- AUTO_INCREMENT for table `cvs_extra`
 --
 ALTER TABLE `cvs_extra`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `cvs_internal_notes`
 --
 ALTER TABLE `cvs_internal_notes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `cvs_projects`
 --
 ALTER TABLE `cvs_projects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=219;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=223;
 
 --
 -- AUTO_INCREMENT for table `cvs_publications`
@@ -2239,13 +2361,13 @@ ALTER TABLE `cvs_references`
 -- AUTO_INCREMENT for table `cvs_shortlist`
 --
 ALTER TABLE `cvs_shortlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `cvs_skills`
 --
 ALTER TABLE `cvs_skills`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=831;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=851;
 
 --
 -- AUTO_INCREMENT for table `cvs_volunteer`
@@ -2281,7 +2403,7 @@ ALTER TABLE `interview_assignments`
 -- AUTO_INCREMENT for table `interview_shortlisted`
 --
 ALTER TABLE `interview_shortlisted`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `invitations`
@@ -2308,10 +2430,16 @@ ALTER TABLE `organizations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT for table `payment_gateways`
+--
+ALTER TABLE `payment_gateways`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `questions`
 --
 ALTER TABLE `questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT for table `responses`
@@ -2323,7 +2451,13 @@ ALTER TABLE `responses`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `text_responses`
@@ -2332,10 +2466,16 @@ ALTER TABLE `text_responses`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
+-- AUTO_INCREMENT for table `transactions`
+--
+ALTER TABLE `transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `video_responses`
@@ -2379,6 +2519,14 @@ ALTER TABLE `interview_shortlisted`
 --
 ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `transactions`
+--
+ALTER TABLE `transactions`
+  ADD CONSTRAINT `fk_gateway` FOREIGN KEY (`gateway_id`) REFERENCES `payment_gateways` (`id`),
+  ADD CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`),
+  ADD CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const authMiddleware = require('../middleware/authMiddleware');
+const checkRole = require('../middleware/roleMiddleware'); 
+
 
 //GET /api/dashboard/stats Getting dashboard statistics
 router.get('/stats', authMiddleware, async (req, res) => {
     const organization_id  = req.user.organization_id;
+    const role_id = req.user.role_id;
+    const user_id = req.user.id
 
     try{
         // 1. Interviews
@@ -62,14 +66,31 @@ router.get('/stats', authMiddleware, async (req, res) => {
         const total_responses = rRows[0].total_responses;
 
         // 4. Users
-        const [userRows] = await db.query(
-        'SELECT COUNT(*) AS total_users FROM users WHERE organization_id = ?',
-        [organization_id]);
+        let userQuery = `SELECT COUNT(*) AS total_users FROM users u JOIN roles r ON u.role_id = r.id WHERE u.organization_id = ?`;
+        let activeUserQuery = `SELECT COUNT(*) AS active_users FROM users u JOIN roles r ON u.role_id = r.id  WHERE u.status="active" AND u.organization_id = ?`;
+        const params = [organization_id];
+
+        if(role_id === 3 || role_id === 2){
+           // HR or Manager can see only HR and Manager
+          userQuery+= ' AND r.name IN (?, ?)';
+          activeUserQuery+= ' AND r.name IN (?, ?)';
+          params.push('hr', 'manager');
+        }else if(role_id ===1){
+          // Admin can see all except superadmin and himself
+          userQuery+= ' AND r.name != ? AND u.id != ?';
+          activeUserQuery+= ' AND r.name != ? AND u.id != ?';
+          params.push('superadmin', user_id);
+        }else if (role_id === 4) {
+          // Superadmin can see all except HR, Manager, and himself
+          userQuery += ' AND r.name NOT IN (?, ?) AND u.id != ?';
+          activeUserQuery += ' AND r.name NOT IN (?, ?) AND u.id != ?';
+          params.push('hr', 'manager', user_id);
+        }
+
+        const [userRows] = await db.query(userQuery, params);
         const total_users = userRows[0].total_users;
 
-        const [actUserRows] = await db.query(
-        'SELECT COUNT(*) AS active_users FROM users WHERE status="active" AND organization_id = ?',
-        [organization_id]);
+        const [actUserRows] = await db.query(activeUserQuery, params);
         const active_users = actUserRows[0].active_users;
 
         const response = {total_interviews, draft_interviews, active_interviews, completed_interviews,
@@ -84,7 +105,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
 })
 
 //GET /api/dashboard/stats/last-30-days getting interviews per day of last 30 days
-router.get('/stats/last-30-days', async (req, res) => {
+router.get('/stats/last-30-days', checkRole([1,2,3]),  async (req, res) => {
   const organization_id = req.user.organization_id;
 
   const query = `
@@ -125,8 +146,10 @@ router.get('/stats/last-30-days', async (req, res) => {
 });
 
 //GET /api/dashboard/latest-entries  getting latest interviews, candidates, users and questions
-router.get('/latest-entries', authMiddleware, async(req, res) => {
+router.get('/latest-entries', authMiddleware, checkRole([1,2,3]), async(req, res) => {
     const organization_id  = req.user.organization_id;
+    const role_id = req.user.role_id;
+    const user_id = req.user.id;
 
     try{
         const latestInterviews = await db.query(`SELECT * FROM interviews WHERE organization_id = ?
@@ -137,11 +160,25 @@ router.get('/latest-entries', authMiddleware, async(req, res) => {
         JSON_UNQUOTE(JSON_EXTRACT(personal_info, '$.email')) AS email FROM cvs WHERE organization_id = ?
         ORDER BY created_at DESC LIMIT 5`, [organization_id]).then(r => r[0]);
 
-        const latestUsers = await db.query(`SELECT u.id, u.first_name, u.last_name, u.profile_image,
+        //Latest Users
+        let latestUserQuery = `SELECT u.id, u.first_name, u.last_name, u.profile_image,
         u.created_at, u.status, r.name AS role_name FROM users u JOIN roles r 
-        ON u.role_id = r.id WHERE u.organization_id = ?
-        ORDER BY u.created_at DESC LIMIT 5`, 
-        [organization_id]).then(r => r[0]);
+        ON u.role_id = r.id WHERE u.organization_id = ?`;
+        const useParams = [organization_id];
+
+        if(role_id === 3 || role_id === 2){
+           // HR or Manager: See only HR and Manager
+          latestUserQuery+= ` AND r.name IN (?, ?)`;
+          useParams.push('hr', 'manager');
+        }else if(role_id === 1){
+          // Admin: See all except Superadmin and himself
+          latestUserQuery+= ` AND r.name != ? AND u.id != ?`;
+          useParams.push('superadmin', user_id);
+        }
+
+        latestUserQuery+= ` ORDER BY u.created_at DESC LIMIT 5`;
+
+        const latestUsers = await db.query(latestUserQuery, useParams).then(r => r[0]);
 
         const latestQuestions = await db.query(`SELECT q.* FROM questions q
         JOIN interviews i ON q.interview_id = i.id

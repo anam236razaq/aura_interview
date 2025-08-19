@@ -43,6 +43,8 @@ export default function Sidebar() {
 
   const roleId = parseInt(localStorage.getItem('roleId'), 10);
   const isHr = roleId === 3;
+  const isSuperAdmin = roleId === 4;
+  const isAdmin= roleId === 1;
 
   return (
     <aside
@@ -98,7 +100,7 @@ export default function Sidebar() {
             </li>
           </ul>
         </li>}
-        {!isHr && <li className={`menu-item ${isOpen === 2 ? 'open' : ''}`}>
+        {!isHr && !isSuperAdmin && <li className={`menu-item ${isOpen === 2 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(2)}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <circle cx="6" cy="6" r="3.5" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -144,7 +146,7 @@ export default function Sidebar() {
             </li>
           </ul>
         </li>}
-        <li className={`menu-item ${isOpen === 3 ? 'open' : ''}`}>
+        {!isSuperAdmin && <li className={`menu-item ${isOpen === 3 ? 'open' : ''}`}>
           <Link to="#" className="menu-link menu-toggle" onClick={()=>toggleMenu(3)}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                   <path d="M12.8334 2.75V6.41667C12.8334 6.92293 13.2438 7.33333 13.75 7.33333H17.4167" stroke="#2F2B3D" strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -187,8 +189,8 @@ export default function Sidebar() {
               </Link>
             </li>
           </ul>
-        </li>
-        <li className='menu-item'>
+        </li>}
+        {!isSuperAdmin && <li className='menu-item'>
           <Link to="/reporting" className={`menu-link ${location.pathname === '/reporting' ? 'active-links' : ''}`} onClick={handleLinkClick}>
             <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                 <rect x="4.58337" y="10.0834" width="12.8333" height="9.16667" rx="2" stroke={location.pathname === '/reporting' ? '#ffffff' : "#2F2B3D"} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -197,17 +199,58 @@ export default function Sidebar() {
             </svg>
             <div data-i18n="Reporting">Reporting</div>
           </Link>
-        </li>
-        <li className="menu-header small">
+        </li>}
+        {!isSuperAdmin && <li className="menu-header small">
             <span className="menu-header-text text-capitalize" data-i18n="Settings">Settings</span>
-        </li>
-        {!isHr && <li className="menu-item">
+        </li>}
+        {!isHr && !isSuperAdmin && <li className="menu-item">
           <Link to="/company" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/company' ? 'active-links' : ''}`}>
               <svg className='me-2 mb-1 menu-icon' xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
                   <path d="M12.8334 2.75V6.41667C12.8334 6.92293 13.2438 7.33333 13.75 7.33333H17.4167" stroke={`${location.pathname === '/company' ? '#ffffff' : '#2F2B3D'}`} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path fillRule="evenodd" clipRule="evenodd" d="M15.5834 19.25H6.41671C5.40419 19.25 4.58337 18.4292 4.58337 17.4167V4.58333C4.58337 3.57081 5.40419 2.75 6.41671 2.75H12.8334L17.4167 7.33333V17.4167C17.4167 18.4292 16.5959 19.25 15.5834 19.25Z" stroke={`${location.pathname === '/company' ? '#ffffff' : '#2F2B3D'}`} strokeOpacity="0.9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             <div data-i18n="Company Page">Company Page</div>
+          </Link>
+        </li>}
+        {isAdmin && <li className="menu-item">
+          <Link to="/billing" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/billing' ? 'active-links' : ''}`}>
+              <svg className="feather feather-package menu-icon me-2 mb-1" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke={`${location.pathname === '/billing' ? '#ffffff' : '#2F2B3D'}`} strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            <div data-i18n="Billing">Billing</div>
+          </Link>
+        </li>}
+        {isSuperAdmin && <li className="menu-item">
+          <Link to="/subscriptions" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/subscriptions' ? 'active-links' : ''}`}>
+              <svg className="feather feather-package menu-icon me-2 mb-1" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke={`${location.pathname === '/subscriptions' ? '#ffffff' : '#2F2B3D'}`} strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.73z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            <div data-i18n="Subscriptions">Subscriptions</div>
+          </Link>
+        </li>}
+        {isSuperAdmin && <li className="menu-item">
+          <Link to="/transactions" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/transactions' ? 'active-links' : ''}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="19" height="21" viewBox="0 0 24 24" fill="none" stroke={`${location.pathname === '/transactions' ? '#ffffff' : '#2F2B3D'}`} strokeWidth="2"
+                  strokeLinecap="round" strokeLinejoin="round" className="feather feather-credit-card menu-icon me-2 mb-1">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                  <line x1="1" y1="10" x2="23" y2="10"></line>
+              </svg>
+            <div data-i18n="Transactions">Transactions</div>
+          </Link>
+        </li>}
+        {isSuperAdmin && <li className="menu-item">
+          <Link to="/recent-activities" onClick={handleLinkClick} className={`menu-link ${location.pathname === '/recent-activities' ? 'active-links' : ''}`}>
+              <svg className='menu-icon me-2 mb-1' xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke={`${location.pathname === '/recent-activities' ? '#ffffff' : '#2F2B3D'}`} width="24" height="24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            <div data-i18n="Recent Activities">Recent Activities</div>
           </Link>
         </li>}
         <li className="menu-header small">

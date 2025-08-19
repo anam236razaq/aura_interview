@@ -19,6 +19,10 @@ const inquiriesRoutes = require('./routes/inquiriesRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const allResponsesRoutes = require('./routes/allResponsesRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+const activityLogRoutes = require('./routes/activityLogsRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 require('./Queues/invitationProcessor');
 const cors = require('cors');
 const app = express();
@@ -52,6 +56,10 @@ app.use('/api/dashboard', authMiddleware, dashboardRoutes);
 app.use('/api/profile', authMiddleware, profileRoutes);
 app.use('/api/report', authMiddleware, reportRoutes);
 app.use('/api/all-responses-org', authMiddleware, allResponsesRoutes);
+app.use('/api/subscription', authMiddleware, subscriptionRoutes);
+app.use('/api/transactions', authMiddleware, transactionRoutes);
+app.use('/api/activity-logs', authMiddleware, activityLogRoutes);
+app.use('/api/offline-payment', authMiddleware, paymentRoutes);
 
 // Routes potentially needing different access control:
 app.use('/api/inquiries',  inquiriesRoutes);

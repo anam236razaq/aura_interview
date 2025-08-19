@@ -11,6 +11,10 @@ export default function DashboardContent() {
   const[latestEntries, setLatestEntries] = useState([]);
   const[data, setData] = useState([]);
 
+  const roleId = parseInt(localStorage.getItem('roleId'), 10);
+  const isSuperAdmin = roleId === 4;
+
+
   //Dashboard Statistics
   useEffect(() => {
     const dashboardStats = async() => {
@@ -23,9 +27,12 @@ export default function DashboardContent() {
           }
         });
         setStats(response?.data)
-        console.log(response.data);
       }catch(error){
-        console.log(error);
+        if (error.response && error.response.status === 403) {
+        // Do nothing or handle gracefully
+        } else {
+        console.error(error); // Only log unexpected errors
+        }
       }
     }
     dashboardStats();
@@ -36,6 +43,14 @@ export default function DashboardContent() {
     const fetchLatestEntries = async() => {
       try{
         const token = localStorage.getItem('authToken');
+        const roleId = parseInt(localStorage.getItem('roleId'));
+
+        // Skip API call for disallowed roles
+        if (![1,2,3].includes(roleId)) {
+            console.log('Access denied: Not an allowed role');
+            return;
+        }
+        
         const response = await axios.get(`${API_BASE_URL}/dashboard/latest-entries`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -43,9 +58,10 @@ export default function DashboardContent() {
           }
         });
         setLatestEntries(response.data);
-        console.log(response.data);
       }catch(error){
-        console.log(error);
+        if (error.response?.status !== 403) {
+          console.log(error);
+        }
       }
     }
     fetchLatestEntries();
@@ -56,6 +72,14 @@ export default function DashboardContent() {
     const fetchLastMonthInterviews = async () => {
       try{
         const token = localStorage.getItem('authToken');
+        const roleId = parseInt(localStorage.getItem('roleId'));
+
+        // Skip API call for disallowed roles
+        if (![1,2,3].includes(roleId)) {
+            console.log('Access denied: Not an allowed role');
+            return;
+        }
+
         const response = await axios.get(`${API_BASE_URL}/dashboard/stats/last-30-days`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,9 +87,14 @@ export default function DashboardContent() {
           }
         })
         setData(response.data);
-        console.log(response);
       }catch(error){
-        console.log(error);
+        if (error.response && error.response.status === 403) {
+        // Do nothing or handle gracefully
+      } else {
+        if (error.response?.status !== 403) {
+          console.log(error);
+        }
+      }
       }
     }
 
@@ -102,26 +131,26 @@ return (
       <div className="row g-6">
           <Card title = 'Total Users' value={stats?.total_users || 0} icon="tabler-users" />
           <Card title = 'Active Users' value={stats?.active_users || 0} icon="tabler-user-check" />
-          <Card title = 'Total Candidates' value={stats?.total_candidates || 0} icon="tabler-users-group" />
-          <Card title = 'Shortlisted Candidates' value={stats?.shortlisted_candidates || 0} icon="tabler-user-star"/>
-          <Card title = 'Total Interviews' value={stats?.total_interviews || 0} icon="tabler-microphone" />
-          <Card title = 'Draft Interviews' value={stats?.draft_interviews || 0} icon="tabler-edit-circle"/>
-          <Card title = 'Active Interviews' value={stats?.active_interviews || 0} icon="tabler-microphone-2"/>
-          <Card title = 'Completed Interviews' value={stats?.completed_interviews || 0} icon="tabler-checkbox"/>
-          <Card title = 'Expired Interviews' value={stats?.expired_interviews || 0} icon="tabler-clock-exclamation"/>
-          <Card title = 'Upcoming Interviews' value={stats?.upcoming_interviews || 0} icon="tabler-calendar-event" />
-          <Card title = 'Total Questions' value={stats?.total_questions || 0} icon="tabler-help-circle" />
-          <Card title = 'Total Responses' value={stats?.total_responses || 0} icon="tabler-message-circle-2" />
+          {!isSuperAdmin && <Card title = 'Total Candidates' value={stats?.total_candidates || 0} icon="tabler-users-group" />}
+          {!isSuperAdmin && <Card title = 'Shortlisted Candidates' value={stats?.shortlisted_candidates || 0} icon="tabler-user-star"/>}
+          {!isSuperAdmin && <Card title = 'Total Interviews' value={stats?.total_interviews || 0} icon="tabler-microphone" />}
+          {!isSuperAdmin && <Card title = 'Draft Interviews' value={stats?.draft_interviews || 0} icon="tabler-edit-circle"/>}
+          {!isSuperAdmin && <Card title = 'Active Interviews' value={stats?.active_interviews || 0} icon="tabler-microphone-2"/>}
+          {!isSuperAdmin && <Card title = 'Completed Interviews' value={stats?.completed_interviews || 0} icon="tabler-checkbox"/>}
+          {!isSuperAdmin && <Card title = 'Expired Interviews' value={stats?.expired_interviews || 0} icon="tabler-clock-exclamation"/>}
+          {!isSuperAdmin && <Card title = 'Upcoming Interviews' value={stats?.upcoming_interviews || 0} icon="tabler-calendar-event" />}
+          {!isSuperAdmin && <Card title = 'Total Questions' value={stats?.total_questions || 0} icon="tabler-help-circle" />}
+          {!isSuperAdmin && <Card title = 'Total Responses' value={stats?.total_responses || 0} icon="tabler-message-circle-2" />}
           
           {/*Chart for interviews conducted in last 30 days */}
-          <div className='d-flex align-items-center justify-content-center'>
+          {!isSuperAdmin && <div className='d-flex align-items-center justify-content-center'>
             <div style={{ width: '900px', height: '500px' }}>
                 <Line data={chartData} options={options} />
             </div>
-          </div>
+          </div>}
 
           {/*Latest Users*/}
-          <div className="col-xxl-6 col-md-6">
+          {!isSuperAdmin && <div className="col-xxl-6 col-md-6">
             <div className="card h-100">
               <div className="card-header d-flex justify-content-between">
                 <div className="card-title m-0 me-2">
@@ -156,10 +185,10 @@ return (
                 </ul>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/*Latest Candidates*/}
-          <div className="col-xxl-6 col-md-6">
+          {!isSuperAdmin && <div className="col-xxl-6 col-md-6">
             <div className="card h-100">
               <div className="card-header d-flex justify-content-between">
                 <div className="card-title m-0 me-2">
@@ -197,10 +226,10 @@ return (
                 </ul>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/**Latest Interviews**/}
-          <div className="col-xxl-6 col-md-6">
+          {!isSuperAdmin && <div className="col-xxl-6 col-md-6">
             <div className="card h-100">
               <div className="card-header d-flex justify-content-between">
                 <div className="card-title m-0 me-2">
@@ -243,10 +272,10 @@ return (
                 </ul>
               </div>
             </div>
-          </div>
+          </div>}
 
           {/*Latest Questions */}
-          <div className="col-xxl-6 col-md-6">
+          {!isSuperAdmin && <div className="col-xxl-6 col-md-6">
             <div className="card h-100">
               <div className="card-header d-flex justify-content-between">
                 <div className="card-title m-0 me-2">
@@ -276,7 +305,7 @@ return (
                 </ul>
               </div>
             </div>
-          </div>
+          </div>}
       </div>
   </div>
   <Footer />

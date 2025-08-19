@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom';
 import UserModel from '../../UI/UserModel';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '../../utils/Constants';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import Pagination from '../../UI/Pagination';
 import Loader from '../../UI/Loader';
 import UpdateUser from '../../UI/UpdateUser';
 import Footer from '../../UI/Footer';
+import DeleteModal from '../../UI/DeleteModal';
+import { Link } from 'react-router-dom';
 
 export default function UserList() {
+  const[showDeleteModal, setShowDeleteModal] = useState(false);
   const[showModal, setShowModal] = useState(false);
   const[showUpdateModal, setShowUpdateModal] = useState(false);
   const[selectedUserId, setSelectedUserId] = useState(null);
@@ -83,7 +85,21 @@ export default function UserList() {
     }
 
     const handleAddedUser = (newUser) => {
-      setUserList(prev => [newUser, ...prev]);
+      const updatedList = [newUser, ...userList];
+      setUserList(updatedList);
+
+      // Update total entries
+      const newTotalEntries = totalEntries + 1;
+      setTotalEntries(newTotalEntries);
+
+      // Update total pages
+      const newTotalPages = Math.ceil(newTotalEntries / itemsPerPage);
+      setTotalPages(newTotalPages);
+
+      // If the current page is no longer valid (e.g., adding to a new page), adjust
+      if (currentPage > newTotalPages) {
+        handlePageChange(newTotalPages);
+      }
     }
 
     const handleStatusToggle = async (userId, currentStatus) => {
@@ -121,6 +137,62 @@ export default function UserList() {
       fetchRoles();
     }, []);
 
+    //method for handling id for delete
+    const handleDeleteClick = (id) => {
+      setSelectedUserId(id);
+      setShowDeleteModal(true);
+    }
+
+    //Deleting specific transaction
+    const confirmDelete = async () => {
+      try{
+        const token = localStorage.getItem('authToken');
+        const response = await axios.delete(`${API_BASE_URL}/users/${selectedUserId}`, {
+          headers: {
+            "Content-Type": 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setShowDeleteModal(false);
+        const updatedList = userList.filter(item => item.id !== selectedUserId);
+        setUserList(updatedList);
+
+        setTotalEntries(prevTotal => prevTotal - 1);
+        setTotalPages(Math.ceil((totalEntries - 1) / itemsPerPage));
+
+         //if current page becomes empty, go back one page
+        if ((updatedList.length === 0) && currentPage > 1) {
+          handlePageChange(currentPage - 1);
+        }
+        toast.success(response.data.message);
+
+      }catch(error){
+        console.log(error);
+        toast.error(error.response?.data?.message || 'An unexpected error occured');
+      }
+    }
+
+    const handleLoginAsUser = async (userId) => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+
+        //Save current superadmin token
+        localStorage.setItem('superadminSession', JSON.stringify({token: authToken}));
+
+        const res = await axios.post(`${API_BASE_URL}/auth/login-as-user/${userId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        localStorage.setItem('authToken', res.data.token);
+        localStorage.setItem('roleId', res.data.role_id);
+        window.location.reload();
+
+      }catch(error){
+        console.log(error);
+      }
+    }
+
   const columns = [
   { columnName: 'Full name', dtColumn: '1' },
   { columnName: 'email', dtColumn: '2' },
@@ -131,6 +203,7 @@ export default function UserList() {
 
   const roleId = parseInt(localStorage.getItem('roleId'), 10);
   const isManager = roleId === 2;
+  const isSuperAdmin = roleId === 4;
 
   const visibleColumns = isManager
   ? columns.filter(col => col.columnName !== 'ACTIONS')
@@ -233,7 +306,11 @@ export default function UserList() {
                                       <tr key={user.id}>
                                         <td className="dt-select"><input aria-label="Select row" className="form-check-input custom-checkbox" type="checkbox" /></td>
                                         <td className="sorting_1 text-black">{user.first_name} {user.last_name}</td>
-                                        <td className='text-black'>{user.email}</td>
+                                        <td className='text-black'>
+                                          {user.email} <br />
+                                          {isSuperAdmin && <button className='btn add-new btn-primary override-radius
+                                          mt-2 ' onClick={()=> handleLoginAsUser(user.id)}>Login</button>}
+                                          </td>
                                         <td>
                                           <div className="form-check form-switch m-0">
                                             <input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" 
@@ -253,6 +330,12 @@ export default function UserList() {
                                                       <path d="M22.6666 12.5833L25.4166 15.3333" stroke="#2F2B3D" strokeOpacity="0.7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                   </svg>
                                               </button>
+                                              <Link to="#" className="btn btn-text-secondary rounded-pill waves-effect btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i className="icon-base ti tabler-dots-vertical icon-22px"></i>
+                                              </Link>
+                                              <div className="dropdown-menu dropdown-menu-end m-0">
+                                                <button onClick={()=> handleDeleteClick(user.id)} className="dropdown-item">Delete</button>
+                                              </div>
                                           </div>
                                         </td>}
                                       </tr>
@@ -266,6 +349,7 @@ export default function UserList() {
                               {showUpdateModal && <UpdateUser setShowModal={setShowUpdateModal} userId={selectedUserId} 
                                 onAddedUser = {(updatedUser) => {setUserList((prevUser) =>
                                   prevUser.map((user) => user.id === updatedUser.id ? updatedUser : user))}}/>}
+                              {showDeleteModal && <DeleteModal confirmDelete ={confirmDelete} setShowDeleteModal= {setShowDeleteModal} />}
                             </div>
                         </div>
                         <Pagination currentPage={currentPage} itemsPerPage={itemsPerPage} 

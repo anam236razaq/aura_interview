@@ -187,7 +187,7 @@ export default function Reporting() {
                             <tbody>
                             {loading? (
                                     <tr>
-                                        <td colSpan="6" className="text-center py-5">
+                                        <td colSpan="8" className="text-center py-5">
                                             <Loader /> 
                                         </td>
                                     </tr>
@@ -206,7 +206,7 @@ export default function Reporting() {
                                 )
                                 )) : (
                                 <tr>
-                                    <td colSpan="6" className="text-center">No Interviews found</td>
+                                    <td colSpan="8" className="text-center">No Interviews found</td>
                                 </tr>
                                 )}
                           </tbody>

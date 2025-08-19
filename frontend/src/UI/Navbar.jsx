@@ -61,7 +61,6 @@ export default function Navbar() {
           const unread = response?.data.some(n => !n.is_read);
           setHasUnread(unread);
 
-          console.log(response.data);
         }catch(error){
             console.log(error);
         }
@@ -108,6 +107,24 @@ export default function Navbar() {
       }
     };
 
+    const returnToSuperadmin = async () => {
+      try {
+        const superadminSession = JSON.parse(localStorage.getItem('superadminSession'));
+        if (!superadminSession) return;
+
+         // Restore token
+        localStorage.setItem('authToken', superadminSession.token);
+        localStorage.setItem('roleId', '4'); 
+
+        localStorage.removeItem('superadminSession');
+        window.location.reload();
+        
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+
   return (
   <>
     <Toaster reverseOrder={false} position='top-center' />
@@ -122,14 +139,13 @@ export default function Navbar() {
 
             <div className="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
               <div className="navbar-nav align-items-center">
-                <div className="nav-item navbar-search-wrapper px-md-0 px-2 mb-0">
-                  <Link className="nav-item nav-link search-toggler d-flex align-items-center px-0" to="#">
-                    <span className="d-inline-block text-body-secondary fw-normal" id="autocomplete"></span>
-                  </Link>
+                <div className="nav-item px-md-0 px-2 mb-0">
+                  {localStorage.getItem('superadminSession') && (
+                  <button className='btn btn-primary' onClick={returnToSuperadmin}>Back</button>
+                  )}
                 </div>
               </div>
-
-
+      
               <ul className="navbar-nav flex-row align-items-center ms-md-auto">
                 <li className="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-2">
                   <Link

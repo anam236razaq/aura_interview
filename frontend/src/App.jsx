@@ -9,8 +9,6 @@ const DashboardContent = lazy(() => import('./Pages/DashboardContent'));
 const UserList = lazy(() => import('./Pages/Users/UserList'));
 const CandidateList = lazy(() => import('./Pages/Candidates/CandidateList'));
 const InterviewSetup = lazy(() => import('./Pages/Interview/InterviewSetup'));
-const AccountSettings = lazy(() => import('./Pages/Accounts/AccountSettings'));
-const AccountSecurity = lazy(() => import('./Pages/Accounts/AccountSecurity'));
 const BulkImportCv = lazy(() => import('./Pages/Candidates/BulkImportCv'));
 const CVDetails = lazy(() => import('./Pages/Candidates/CVDetails'));
 const Documentation = lazy(() => import('./Pages/Documentation'));
@@ -35,6 +33,10 @@ const InterviewPicks = lazy(() => import('./Pages/Interview/InterviewPicks'));
 const ContactUs = lazy(() => import('./LandingPages/ContactUs'));
 const TermsConditions = lazy(() => import('./LandingPages/TermsConditions'));
 const PrivacyPolicy = lazy(() => import('./LandingPages/PrivacyPolicy'));
+const Subscription = lazy(() => import('./Pages/Subscriptions/Subscription'));
+const Transactions = lazy(() => import('./Pages/Transactions/Transactions'));
+const RecentActivities = lazy(() => import('./Pages/RecentActivities'));
+const Billing = lazy(() => import('./Pages/Billing'));
 
 import Register from './UI/Register'
 import Login from './UI/Login'
@@ -68,11 +70,6 @@ export default function App() {
     setIsAuthenticated(true);
   }
 
-  /*function handleLogout() {
-    localStorage.removeItem('authToken');
-    setIsAuthenticated(false);
-  }*/
-
     function ProtectedRoute({children}){
         return isAuthenticated? children : <Navigate to='/login' replace />
     }
@@ -99,14 +96,14 @@ export default function App() {
       <Routes>
         <Route path='/' element ={isAuthenticated? <ProtectedRoute><Dashboard /></ProtectedRoute> : <Navigate to="/login" replace />}>
             <Route index element ={<DashboardContent />} />
-            <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1,2]}><UserList /></RoleBasedRoute>} />
-            <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2]}><CandidateList  /></RoleBasedRoute>} />
-            <Route path='candidates/cv-import' element={<RoleBasedRoute allowedRoles={[1,2]}><BulkImportCv /></RoleBasedRoute>} />
-            <Route path='candidates/draft-cvs' element={<RoleBasedRoute allowedRoles={[1,2]}><DraftCv /></RoleBasedRoute>} />
-            <Route path='candidates/:id' element={<RoleBasedRoute allowedRoles={[1,2]}><CVDetails /></RoleBasedRoute>} />
-            <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2]}><ShortListedCandidates /></RoleBasedRoute>} />
-            <Route path="candidates/blacklisted" element={<RoleBasedRoute allowedRoles={[1,2]}><BlackListedCandidates /></RoleBasedRoute>} />
-            <Route path='/interviewed/create-interview' element={<RoleBasedRoute allowedRoles={[1,2]}>
+            <Route path='users/user-list' element={<RoleBasedRoute allowedRoles={[1,2,4]}><UserList /></RoleBasedRoute>} />
+            <Route path='candidates/candidate-list' element={<RoleBasedRoute allowedRoles={[1,2,4]}><CandidateList  /></RoleBasedRoute>} />
+            <Route path='candidates/cv-import' element={<RoleBasedRoute allowedRoles={[1,2,4]}><BulkImportCv /></RoleBasedRoute>} />
+            <Route path='candidates/draft-cvs' element={<RoleBasedRoute allowedRoles={[1,2,4]}><DraftCv /></RoleBasedRoute>} />
+            <Route path='candidates/:id' element={<RoleBasedRoute allowedRoles={[1,2,4]}><CVDetails /></RoleBasedRoute>} />
+            <Route path="candidates/short-listed" element={<RoleBasedRoute allowedRoles={[1,2,4]}><ShortListedCandidates /></RoleBasedRoute>} />
+            <Route path="candidates/blacklisted" element={<RoleBasedRoute allowedRoles={[1,2,4]}><BlackListedCandidates /></RoleBasedRoute>} />
+            <Route path='/interviewed/create-interview' element={<RoleBasedRoute allowedRoles={[1,2,4]}>
                   <InterviewSetup/>
               </RoleBasedRoute>} />
             <Route path='/interviewed/interview-list' element={<InterviewList />} />
@@ -117,14 +114,16 @@ export default function App() {
             <Route path="/interview/:interviewId/responses/:cvId" element={<ViewResponse />} />
             <Route path="/interviewed/draft-interviews" element={<DraftInterviews />} />
             <Route path="/interviewed/interview-picks" element={<InterviewPicks />} />
-            <Route path='/accounts/account-settings' element={<AccountSettings />} />
-            <Route path='/accounts/account-security' element={<AccountSecurity />} />
             <Route path='/documentation' element={<Documentation />} />
             <Route path='/support' element={<Support />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/reporting" element={<Reporting />} />
-            <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2]}><CompanyDetails /></RoleBasedRoute>} />
+            <Route path='/company' element={<RoleBasedRoute allowedRoles={[1,2,4]}><CompanyDetails /></RoleBasedRoute>} />
+            <Route path="/subscriptions" element ={<Subscription />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/recent-activities" element={<RecentActivities />} />
+            <Route path="/billing" element={<Billing />} />
         </Route> 
         <Route path='register' element={<PublicRoute><Register /></PublicRoute>} />
         <Route path='login' element={<PublicRoute><Login onLogin = {handleLogin}/></PublicRoute>} />
