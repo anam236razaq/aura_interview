@@ -249,10 +249,6 @@ router.put('/:id', authMiddleware, checkRole([1, 4]), async (req, res) => {
         return res.status(400).json({ message: 'Email, first name, last name, and role ID are required.' });
     }
 
-    if (parseInt(role_id) === 1) {
-        return res.status(400).json({ message: 'Cannot assign admin role through this route.' });
-    }
-
     try {
         // Check if the user exists and belongs to the same organization
         const [existingUser] = await db.query(
