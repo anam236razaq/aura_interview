@@ -117,7 +117,7 @@ export default function Navbar() {
         localStorage.setItem('roleId', '4'); 
 
         localStorage.removeItem('superadminSession');
-        window.location.reload();
+        window.location.href = '/';
         
       } catch (error) {
         console.log(error);
