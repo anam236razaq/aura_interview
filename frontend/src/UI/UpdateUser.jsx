@@ -67,7 +67,6 @@ export default function UpdateUser({setShowModal, onAddedUser, userId}) {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log(response);
 
             const role = roles.find(r => r.id === parseInt(data.role_id));
             const updatedUser = { ...data, id: userId, role_name: role?.name };
